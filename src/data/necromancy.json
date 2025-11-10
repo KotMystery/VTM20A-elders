@@ -1,0 +1,51 @@
+{
+  "paths": [
+    { "id": "path_sepulchre", "name": "Путь Склепа" },
+    { "id": "path_cenotaph", "name": "Путь Кенотафа" },
+    { "id": "path_bone", "name": "Путь Костей" },
+    { "id": "path_corpse", "name": "Путь Мертвеца" },
+    { "id": "path_ash", "name": "Путь Пепла" },
+    { "id": "path_decay", "name": "Путь Тлена" },
+    { "id": "path_four_humours", "name": "Путь Четырёх Гуморов" },
+    { "id": "path_entropy", "name": "Путь Энтропии" }
+  ],
+  "rituals": {
+    "level1": [
+      { "id": "call_hungry_dead", "name": "Зов ненасытной смерти" },
+      { "id": "minestra_di_morte", "name": "Минестра ди морте" },
+      { "id": "insight", "name": "Озарение" },
+      { "id": "beacon_otherworld", "name": "Потусторонний маяк" },
+      { "id": "ritual_tezcatlipoca", "name": "Ритуал Тескатлипоки" },
+      { "id": "pointing_stone", "name": "Указующий камень" }
+    ],
+    "level2": [
+      { "id": "eyes_grave", "name": "Взгляд в могилу" },
+      { "id": "two_centimes", "name": "Два сантима" },
+      { "id": "puppet", "name": "Марионетка" },
+      { "id": "occhio_duomo_morto", "name": "Оккио Д'Уомо Морто" },
+      { "id": "ritual_huitzilopochtli", "name": "Ритуал Уицилопочтли" },
+      { "id": "hand_glory", "name": "Рука Славы" }
+    ],
+    "level3": [
+      { "id": "drums_nightmare", "name": "Барабаны ночных кошмаров" },
+      { "id": "sign_above", "name": "Знак свыше" },
+      { "id": "search_wraith_anchor", "name": "Поиск призрачного якоря" },
+      { "id": "din_damned", "name": "Гам проклятых" },
+      { "id": "blood_dance", "name": "Танец крови" },
+      { "id": "tempesta_scudo", "name": "Темпеста скудо" }
+    ],
+    "level4": [
+      { "id": "bastone_diabolico", "name": "Бастоне Диаболико" },
+      { "id": "peek_beyond_shroud", "name": "Взгляд за Завесу" },
+      { "id": "curse_doll", "name": "Зловящая кукла" },
+      { "id": "touch_corpse", "name": "Касание мертвеца" },
+      { "id": "ritual_xipe_totec", "name": "Ритуал Шипе-Тотека" }
+    ],
+    "level5": [
+      { "id": "wraith_extraction", "name": "Призрачная добыча" },
+      { "id": "hand_dead", "name": "Рука мертвеца" },
+      { "id": "cold_oblivion", "name": "Холод забвения" },
+      { "id": "ezilio", "name": "Эзилио" }
+    ]
+  }
+}

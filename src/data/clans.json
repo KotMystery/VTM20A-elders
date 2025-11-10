@@ -1,0 +1,86 @@
+[
+  {
+    "id": "brujah",
+    "name": "Бруха",
+    "disciplines": ["celerity", "potence", "presence"],
+    "weakness": "Трудности с сопротивлением френези (-2 к броскам)"
+  },
+  {
+    "id": "gangrel",
+    "name": "Гангрел",
+    "disciplines": ["animalism", "fortitude", "protean"],
+    "weakness": "Получают животные черты при френези"
+  },
+  {
+    "id": "malkavian",
+    "name": "Малкавиан",
+    "disciplines": ["auspex", "dementation", "obfuscate"],
+    "weakness": "Безумие (обязательное психическое расстройство)"
+  },
+  {
+    "id": "nosferatu",
+    "name": "Носферату",
+    "disciplines": ["animalism", "obfuscate", "potence"],
+    "weakness": "Внешность = 0 (отвратительны)"
+  },
+  {
+    "id": "toreador",
+    "name": "Тореадор",
+    "disciplines": ["auspex", "celerity", "presence"],
+    "weakness": "Зачарованность прекрасным"
+  },
+  {
+    "id": "tremere",
+    "name": "Тремер",
+    "disciplines": ["auspex", "dominate", "thaumaturgy"],
+    "weakness": "Кровавая клятва Совету Семи"
+  },
+  {
+    "id": "ventrue",
+    "name": "Вентру",
+    "disciplines": ["dominate", "fortitude", "presence"],
+    "weakness": "Избирательность в питании"
+  },
+  {
+    "id": "lasombra",
+    "name": "Лазомбра",
+    "disciplines": ["dominate", "obtenebration", "potence"],
+    "weakness": "Не отражаются в зеркалах, не видны на записях"
+  },
+  {
+    "id": "tzimisce",
+    "name": "Цимисхи",
+    "disciplines": ["animalism", "auspex", "vicissitude"],
+    "weakness": "Должны спать в родной земле"
+  },
+  {
+    "id": "assamite",
+    "name": "Ассамиты",
+    "disciplines": ["celerity", "obfuscate", "quietus"],
+    "weakness": "Зависимость от крови вампиров"
+  },
+  {
+    "id": "followers_of_set",
+    "name": "Последователи Сета",
+    "disciplines": ["obfuscate", "presence", "serpentis"],
+    "weakness": "Уязвимость к яркому свету"
+  },
+  {
+    "id": "giovanni",
+    "name": "Джованни",
+    "disciplines": ["dominate", "necromancy", "potence"],
+    "weakness": "Укус причиняет страшную боль"
+  },
+  {
+    "id": "ravnos",
+    "name": "Равнос",
+    "disciplines": ["animalism", "chimerstry", "fortitude"],
+    "weakness": "Компульсивный порок"
+  },
+  {
+    "id": "caitiff",
+    "name": "Каитифф",
+    "disciplines": [],
+    "weakness": "Нет клана, презираемы обществом"
+  }
+]

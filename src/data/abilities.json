@@ -1,0 +1,38 @@
+{
+  "talents": [
+    { "id": "alertness", "name": "Бдительность" },
+    { "id": "athletics", "name": "Атлетика" },
+    { "id": "awareness", "name": "Шестое чувство" },
+    { "id": "brawl", "name": "Драка" },
+    { "id": "empathy", "name": "Эмпатия" },
+    { "id": "expression", "name": "Красноречие" },
+    { "id": "intimidation", "name": "Запугивание" },
+    { "id": "leadership", "name": "Лидерство" },
+    { "id": "streetwise", "name": "Уличное чутье" },
+    { "id": "subterfuge", "name": "Хитрость" }
+  ],
+  "skills": [
+    { "id": "animal_ken", "name": "Обращение с животными" },
+    { "id": "crafts", "name": "Ремесло" },
+    { "id": "drive", "name": "Вождение" },
+    { "id": "etiquette", "name": "Этикет" },
+    { "id": "firearms", "name": "Стрельба" },
+    { "id": "larceny", "name": "Воровство" },
+    { "id": "melee", "name": "Фехтование" },
+    { "id": "performance", "name": "Исполнение" },
+    { "id": "stealth", "name": "Скрытность" },
+    { "id": "survival", "name": "Выживание" }
+  ],
+  "knowledges": [
+    { "id": "academics", "name": "Гуманитарные науки" },
+    { "id": "computer", "name": "Информатика" },
+    { "id": "finance", "name": "Финансы" },
+    { "id": "investigation", "name": "Расследование" },
+    { "id": "law", "name": "Юриспруденция" },
+    { "id": "medicine", "name": "Медицина" },
+    { "id": "occult", "name": "Оккультизм" },
+    { "id": "politics", "name": "Политика" },
+    { "id": "science", "name": "Естественные науки" },
+    { "id": "technology", "name": "Электроника" }
+  ]
+}

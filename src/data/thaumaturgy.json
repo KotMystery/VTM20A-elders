@@ -1,0 +1,70 @@
+{
+  "paths": [
+    { "id": "path_blood", "name": "Путь Крови" },
+    { "id": "path_elemental_mastery", "name": "Власть над Стихиями" },
+    { "id": "path_hand_destruction", "name": "Длань Разрушения" },
+    { "id": "path_lure_flames", "name": "Игра с Огнём" },
+    { "id": "path_beckoning", "name": "Мановение Мысли" },
+    { "id": "path_neptune", "name": "Могущество Нептуна" },
+    { "id": "path_incarnation", "name": "Путь Воплощения" },
+    { "id": "path_mars", "name": "Путь Марса" },
+    { "id": "path_fathers_vengeance", "name": "Путь Отчего Воздаяния" },
+    { "id": "path_corruption", "name": "Путь Совращения" },
+    { "id": "path_technomancy", "name": "Путь Техномантии" },
+    { "id": "path_flora", "name": "Путь Флоры" },
+    { "id": "thaumaturgic_countermagic", "name": "Тауматургическая Защита" },
+    { "id": "weather_control", "name": "Управление Погодой" }
+  ],
+  "rituals": {
+    "level1": [
+      { "id": "wake_energy", "name": "Вечерняя Бодрость" },
+      { "id": "appearance_life", "name": "Видимость Жизни" },
+      { "id": "shepherd_spell", "name": "Заклинание пастыря" },
+      { "id": "haven_defense", "name": "Защита неприкосновенного убежища" },
+      { "id": "wicked_widow", "name": "Злая вдова" },
+      { "id": "devils_mark", "name": "Метка дьявола" },
+      { "id": "baneful_tree_rejection", "name": "Отторжение губительного древа" },
+      { "id": "trackers_glow", "name": "Свечение следопыта" },
+      { "id": "blood_bond", "name": "Связь с сиром" },
+      { "id": "silence_malicious_mouths", "name": "Смежение злословных уст" },
+      { "id": "iridescent_vessel", "name": "Создание переливающего сосуда" },
+      { "id": "blood_current", "name": "Ток крови" },
+      { "id": "purity_flesh", "name": "Чистота плоти" }
+    ],
+    "level2": [
+      { "id": "ghoul_ward", "name": "Защитная печать против гулей" },
+      { "id": "ghoul_circle", "name": "Защитный круг против гулей" },
+      { "id": "donning_shadow_mask", "name": "Облачение в маску теней" },
+      { "id": "night_hawks_eye", "name": "Око ночного ястреба" },
+      { "id": "machine_shutdown", "name": "Отключение машины" },
+      { "id": "blood_comprehension", "name": "Постижение крови" },
+      { "id": "burning_blade", "name": "Пылающий клинок" },
+      { "id": "vitae_repository", "name": "Хранилище пролитой витэ" },
+      { "id": "healing_native_soil", "name": "Целебная сила родной земли" }
+    ],
+    "level3": [
+      { "id": "incorporeal_passage", "name": "Бесплотный путь" },
+      { "id": "homunculus_servant", "name": "Гомункул-помощник" },
+      { "id": "wand_inevitable_repose", "name": "Жезл неизбежного покоя" },
+      { "id": "lupine_ward", "name": "Защитная печать против люпенов" },
+      { "id": "mirror_second_sight", "name": "Зеркало второго зрения" },
+      { "id": "flesh_fire", "name": "Огненная плоть" },
+      { "id": "reflected_presence", "name": "Отражённое Величие" },
+      { "id": "spider_paws", "name": "Паучьи лапы" }
+    ],
+    "level4": [
+      { "id": "wooden_servant", "name": "Деревянный слуга" },
+      { "id": "kindred_ward", "name": "Защитная печать против Сородичей" },
+      { "id": "stone_heart", "name": "Каменное сердце" },
+      { "id": "bone_lies", "name": "Кость лжи" },
+      { "id": "flame_eater", "name": "Пожиратель пламени" }
+    ],
+    "level5": [
+      { "id": "paper_flesh", "name": "Бумажная плоть" },
+      { "id": "gates_true_friendship", "name": "Врата истинной дружбы" },
+      { "id": "enchant_talisman", "name": "Зачарование талисмана" },
+      { "id": "spirit_ward", "name": "Защитная печать против духов" },
+      { "id": "blood_contract", "name": "Кровавый договор" }
+    ]
+  }
+}

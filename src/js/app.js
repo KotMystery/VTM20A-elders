@@ -1,0 +1,1283 @@
+import { Character } from './character.js';
+import { PointTracker, ELDER_RULES, FREEBIE_COSTS, XP_COSTS } from './pointTracker.js';
+
+// Import data
+import clansData from '../data/clans.json';
+import disciplinesData from '../data/disciplines.json';
+import abilitiesData from '../data/abilities.json';
+import backgroundsData from '../data/backgrounds.json';
+import necromancyData from '../data/necromancy.json';
+import thaumaturgyData from '../data/thaumaturgy.json';
+import conceptsData from '../data/concepts.json';
+import archetypesData from '../data/archetypes.json';
+
+class CharacterCreatorApp {
+  constructor() {
+    this.character = new Character();
+    this.tracker = new PointTracker(this.character);
+    this.currentTab = 'basic';
+    this.allDisciplines = this.flattenDisciplines();
+
+    this.init();
+  }
+
+  flattenDisciplines() {
+    const all = [];
+    Object.values(disciplinesData).forEach(category => {
+      all.push(...category);
+    });
+    return all;
+  }
+
+  init() {
+    this.render();
+    this.attachEventListeners();
+    this.updateAllDisplays();
+  }
+
+  // Main render method
+  render() {
+    const app = document.getElementById('app');
+    app.innerHTML = `
+      <div class="min-h-screen p-6">
+        <header class="mb-8">
+          <h1 class="text-4xl font-bold text-center text-vtm-red mb-2">
+            Vampire: The Masquerade 20A
+          </h1>
+          <h2 class="text-2xl text-center text-gray-400">
+            Создание персонажа - Древний
+          </h2>
+        </header>
+
+        <div class="max-w-7xl mx-auto">
+          <!-- Tabs -->
+          <div class="flex border-b border-gray-700 mb-6">
+            <div class="tab ${this.currentTab === 'basic' ? 'active' : ''}" data-tab="basic">
+              Основное
+            </div>
+            <div class="tab ${this.currentTab === 'attributes' ? 'active' : ''}" data-tab="attributes">
+              Атрибуты
+            </div>
+            <div class="tab ${this.currentTab === 'abilities' ? 'active' : ''}" data-tab="abilities">
+              Способности
+            </div>
+            <div class="tab ${this.currentTab === 'advantages' ? 'active' : ''}" data-tab="advantages">
+              Преимущества
+            </div>
+            <div class="tab ${this.currentTab === 'freebies' ? 'active' : ''}" data-tab="freebies">
+              Freebies & XP
+            </div>
+            <div class="tab ${this.currentTab === 'summary' ? 'active' : ''}" data-tab="summary">
+              Итоги
+            </div>
+          </div>
+
+          <!-- Tab Content -->
+          <div id="tabContent">
+            ${this.renderTabContent()}
+          </div>
+
+          <!-- Action buttons -->
+          <div class="mt-8 flex gap-4 justify-center">
+            <button class="btn btn-secondary" id="saveBtn">💾 Сохранить</button>
+            <button class="btn btn-secondary" id="loadBtn">📂 Загрузить</button>
+            <button class="btn btn-primary" id="exportBtn">📄 Экспорт в PDF</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  renderTabContent() {
+    switch (this.currentTab) {
+      case 'basic':
+        return this.renderBasicInfo();
+      case 'attributes':
+        return this.renderAttributes();
+      case 'abilities':
+        return this.renderAbilities();
+      case 'advantages':
+        return this.renderAdvantages();
+      case 'freebies':
+        return this.renderFreebiesXP();
+      case 'summary':
+        return this.renderSummary();
+      default:
+        return '';
+    }
+  }
+
+  renderBasicInfo() {
+    return `
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="card">
+          <h3 class="section-title">Основная информация</h3>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium mb-1">Имя</label>
+              <input type="text" id="name" class="input-field" value="${this.character.name}">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Игрок</label>
+              <input type="text" id="player" class="input-field" value="${this.character.player}">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Хроника</label>
+              <input type="text" id="chronicle" class="input-field" value="${this.character.chronicle}">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Натура</label>
+              <input type="text" id="nature" class="input-field"
+                     list="nature-list" value="${this.character.nature}">
+              <datalist id="nature-list">
+                ${archetypesData.map(arch => `
+                  <option value="${arch.name}">
+                `).join('')}
+              </datalist>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Маска</label>
+              <input type="text" id="demeanor" class="input-field"
+                     list="demeanor-list" value="${this.character.demeanor}">
+              <datalist id="demeanor-list">
+                ${archetypesData.map(arch => `
+                  <option value="${arch.name}">
+                `).join('')}
+              </datalist>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Концепция</label>
+              <input type="text" id="concept" class="input-field"
+                     list="concept-list" value="${this.character.concept}">
+              <datalist id="concept-list">
+                ${conceptsData.map(concept => `
+                  <option value="${concept.name}">
+                `).join('')}
+              </datalist>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="section-title">Клан и Поколение</h3>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium mb-1">Клан</label>
+              <select id="clan" class="input-field">
+                <option value="">Выберите клан</option>
+                ${clansData.map(clan => `
+                  <option value="${clan.id}" ${this.character.clan === clan.id ? 'selected' : ''}>
+                    ${clan.name}
+                  </option>
+                `).join('')}
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Сир</label>
+              <input type="text" id="sire" class="input-field" value="${this.character.sire}">
+            </div>
+            <div class="p-4 bg-gray-800 rounded">
+              <div class="text-sm font-medium mb-2">Текущее поколение: ${this.character.getEffectiveGeneration()}</div>
+              <div class="text-xs text-gray-400">
+                Базовое: 9<br>
+                Фон "Поколение": -${this.character.backgrounds.generation || 0}<br>
+                Недостаток "Разбавленная кровь": +${this.character.dilutedVitae}
+              </div>
+            </div>
+            ${this.renderBloodPoolInfo()}
+          </div>
+        </div>
+
+        <div class="card md:col-span-2">
+          <h3 class="section-title">Слабость клана</h3>
+          <div id="clanWeakness" class="p-4 bg-gray-800 rounded text-gray-300">
+            ${this.character.clan ? this.getClanWeakness() : 'Выберите клан'}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  renderBloodPoolInfo() {
+    const stats = this.character.getBloodPoolStats();
+    return `
+      <div class="p-4 bg-gray-800 rounded">
+        <div class="text-sm font-medium mb-2">Запас крови</div>
+        <div class="text-xs text-gray-400">
+          Максимум: ${stats.max}<br>
+          За ход: ${stats.perTurn}
+        </div>
+      </div>
+    `;
+  }
+
+  getClanWeakness() {
+    const clan = clansData.find(c => c.id === this.character.clan);
+    return clan ? clan.weakness : '';
+  }
+
+  renderAttributes() {
+    const validation = this.tracker.validateAttributes();
+
+    return `
+      <div class="card">
+        <h3 class="section-title">Атрибуты</h3>
+        <div class="mb-4 p-4 bg-gray-800 rounded">
+          <div class="text-sm font-medium mb-2">Правила распределения: 9/7/5</div>
+          <div class="text-xs text-gray-400 mb-2">
+            Максимум 6 в одном атрибуте до Freebies. Каждый атрибут начинается с 1.
+          </div>
+          <div class="flex gap-4">
+            <div>Физические: <span class="${validation.totals?.physical === 9 || validation.totals?.physical === 7 || validation.totals?.physical === 5 ? 'text-green-400' : 'text-red-400'}">${validation.totals?.physical || 0}</span></div>
+            <div>Социальные: <span class="${validation.totals?.social === 9 || validation.totals?.social === 7 || validation.totals?.social === 5 ? 'text-green-400' : 'text-red-400'}">${validation.totals?.social || 0}</span></div>
+            <div>Ментальные: <span class="${validation.totals?.mental === 9 || validation.totals?.mental === 7 || validation.totals?.mental === 5 ? 'text-green-400' : 'text-red-400'}">${validation.totals?.mental || 0}</span></div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          ${this.renderAttributeCategory('physical', 'Физические', ['strength', 'dexterity', 'stamina'], ['Сила', 'Ловкость', 'Выносливость'])}
+          ${this.renderAttributeCategory('social', 'Социальные', ['charisma', 'manipulation', 'appearance'], ['Обаяние', 'Манипулирование', 'Привлекательность'])}
+          ${this.renderAttributeCategory('mental', 'Ментальные', ['perception', 'intelligence', 'wits'], ['Восприятие', 'Интеллект', 'Смекалка'])}
+        </div>
+      </div>
+    `;
+  }
+
+  renderAttributeCategory(category, title, attrs, labels) {
+    return `
+      <div>
+        <h4 class="subsection-title">${title}</h4>
+        ${attrs.map((attr, idx) => `
+          <div class="stat-row">
+            <span class="stat-label">${labels[idx]}</span>
+            <div class="dot-tracker" data-category="attributes" data-subcategory="${category}" data-attr="${attr}">
+              ${this.renderDots(this.character.attributes[category][attr], 9)}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  renderAbilities() {
+    const validation = this.tracker.validateAbilities();
+
+    return `
+      <div class="card">
+        <h3 class="section-title">Способности</h3>
+        <div class="mb-4 p-4 bg-gray-800 rounded">
+          <div class="text-sm font-medium mb-2">Правила распределения: 18/12/8</div>
+          <div class="text-xs text-gray-400 mb-2">
+            Максимум 5 в одной способности до Freebies.
+          </div>
+          <div class="flex gap-4">
+            <div>Таланты: <span class="${validation.totals?.talents === 18 || validation.totals?.talents === 12 || validation.totals?.talents === 8 ? 'text-green-400' : 'text-red-400'}">${validation.totals?.talents || 0}</span></div>
+            <div>Навыки: <span class="${validation.totals?.skills === 18 || validation.totals?.skills === 12 || validation.totals?.skills === 8 ? 'text-green-400' : 'text-red-400'}">${validation.totals?.skills || 0}</span></div>
+            <div>Познания: <span class="${validation.totals?.knowledges === 18 || validation.totals?.knowledges === 12 || validation.totals?.knowledges === 8 ? 'text-green-400' : 'text-red-400'}">${validation.totals?.knowledges || 0}</span></div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          ${this.renderAbilityCategory('talents', 'Таланты', abilitiesData.talents)}
+          ${this.renderAbilityCategory('skills', 'Навыки', abilitiesData.skills)}
+          ${this.renderAbilityCategory('knowledges', 'Познания', abilitiesData.knowledges)}
+        </div>
+      </div>
+    `;
+  }
+
+  renderAbilityCategory(category, title, abilities) {
+    return `
+      <div>
+        <h4 class="subsection-title">${title}</h4>
+        ${abilities.map(ability => `
+          <div class="stat-row">
+            <span class="stat-label">${ability.name}</span>
+            <div class="dot-tracker" data-category="abilities" data-subcategory="${category}" data-attr="${ability.id}">
+              ${this.renderDots(this.character.abilities[category][ability.id] || 0, 9)}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  renderAdvantages() {
+    const discValidation = this.tracker.validateDisciplines();
+    const bgValidation = this.tracker.validateBackgrounds();
+    const virtValidation = this.tracker.validateVirtues();
+
+    return `
+      <div class="space-y-6">
+        <!-- Disciplines -->
+        <div class="card">
+          <h3 class="section-title">Дисциплины</h3>
+          <div class="mb-4 p-4 bg-gray-800 rounded">
+            <div class="text-sm font-medium">Всего очков: <span class="${discValidation.total <= 7 ? 'text-green-400' : 'text-red-400'}">${discValidation.total}/7</span></div>
+          </div>
+          <div id="disciplinesList">
+            ${this.renderDisciplinesList()}
+          </div>
+          <button class="btn btn-secondary mt-4" id="addDisciplineBtn">+ Добавить дисциплину</button>
+        </div>
+
+        <!-- Backgrounds -->
+        <div class="card">
+          <h3 class="section-title">Предыстории</h3>
+          <div class="mb-4 p-4 bg-gray-800 rounded">
+            <div class="text-sm font-medium mb-2">Всего очков: <span class="${bgValidation.total <= 3 ? 'text-green-400' : 'text-red-400'}">${bgValidation.total}/3</span></div>
+            <div class="text-xs text-gray-400">Доступны: Поколение, Стадо, Ресурсы, Слуги</div>
+          </div>
+          ${backgroundsData.map(bg => `
+            <div class="stat-row">
+              <div>
+                <span class="stat-label">${bg.name}</span>
+                <div class="text-xs text-gray-400">${bg.description}</div>
+              </div>
+              <div class="dot-tracker" data-category="backgrounds" data-attr="${bg.id}">
+                ${this.renderDots(this.character.backgrounds[bg.id] || 0, 5)}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+
+        <!-- Virtues -->
+        <div class="card">
+          <h3 class="section-title">Добродетели</h3>
+          <div class="mb-4 p-4 bg-gray-800 rounded">
+            <div class="text-sm font-medium">Всего очков: <span class="${virtValidation.total <= 5 ? 'text-green-400' : 'text-red-400'}">${virtValidation.total}/5</span></div>
+            <div class="text-xs text-gray-400">Каждая добродетель начинается с 1</div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Совесть/Убеждение</span>
+            <div class="dot-tracker" data-category="virtues" data-attr="conscience">
+              ${this.renderDots(this.character.virtues.conscience, 5)}
+            </div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Самоконтроль/Инстинкт</span>
+            <div class="dot-tracker" data-category="virtues" data-attr="selfControl">
+              ${this.renderDots(this.character.virtues.selfControl, 5)}
+            </div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Храбрость</span>
+            <div class="dot-tracker" data-category="virtues" data-attr="courage">
+              ${this.renderDots(this.character.virtues.courage, 5)}
+            </div>
+          </div>
+        </div>
+
+        <!-- Humanity & Willpower -->
+        <div class="card">
+          <h3 class="section-title">Человечность и Сила воли</h3>
+          <div class="stat-row">
+            <span class="stat-label">Человечность</span>
+            <div class="dot-tracker" data-category="humanity" data-attr="humanity">
+              ${this.renderDots(this.character.humanity, 10)}
+            </div>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Сила воли</span>
+            <div class="dot-tracker" data-category="willpower" data-attr="willpower">
+              ${this.renderDots(this.character.willpower, 10)}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  renderDisciplinesList() {
+    const clanDisciplines = this.getClanDisciplines();
+    const entries = Object.entries(this.character.disciplines);
+
+    if (entries.length === 0) {
+      return '<div class="text-gray-400 text-center py-4">Нет дисциплин. Нажмите "Добавить дисциплину"</div>';
+    }
+
+    return entries.map(([discId, level]) => {
+      const disc = this.allDisciplines.find(d => d.id === discId);
+      const isClan = clanDisciplines.includes(discId);
+      const hasPathsRituals = discId === 'necromancy' || discId === 'thaumaturgy';
+
+      let pathsInfo = '';
+      if (discId === 'necromancy' && this.character.necromancyPaths.length > 0) {
+        const paths = this.character.necromancyPaths;
+        pathsInfo = `<div class="text-xs text-gray-400 mt-1">`;
+        paths.forEach((path, idx) => {
+          const pathData = necromancyData.paths.find(p => p.id === path.pathId);
+          const label = idx === 0 ? 'Основной' : `Вторичный ${idx}`;
+          pathsInfo += `${label}: ${pathData?.name || path.pathId} (${path.level})${idx < paths.length - 1 ? '<br>' : ''}`;
+        });
+        pathsInfo += `</div>`;
+      } else if (discId === 'thaumaturgy' && this.character.thaumaturgyPaths.length > 0) {
+        const paths = this.character.thaumaturgyPaths;
+        pathsInfo = `<div class="text-xs text-gray-400 mt-1">`;
+        paths.forEach((path, idx) => {
+          const pathData = thaumaturgyData.paths.find(p => p.id === path.pathId);
+          const label = idx === 0 ? 'Основной' : `Вторичный ${idx}`;
+          pathsInfo += `${label}: ${pathData?.name || path.pathId} (${path.level})${idx < paths.length - 1 ? '<br>' : ''}`;
+        });
+        pathsInfo += `</div>`;
+      }
+
+      return `
+        <div class="mb-4 p-3 bg-gray-800 rounded">
+          <div class="flex justify-between items-start">
+            <div class="flex-1">
+              <div class="flex items-center gap-2">
+                <span class="stat-label">${disc?.name || discId}</span>
+                ${isClan ? '<span class="text-xs text-green-400">(Клановая)</span>' : ''}
+              </div>
+              ${pathsInfo}
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="dot-tracker" data-category="disciplines" data-attr="${discId}">
+                ${this.renderDots(level, 9)}
+              </div>
+              <button class="text-red-500 hover:text-red-400 text-xl" onclick="app.removeDiscipline('${discId}')">×</button>
+            </div>
+          </div>
+          ${hasPathsRituals ? `
+            <button class="btn btn-secondary text-sm mt-2" onclick="app.managePaths('${discId}')">
+              📜 Управление путями и ритуалами
+            </button>
+          ` : ''}
+        </div>
+      `;
+    }).join('');
+  }
+
+  renderFreebiesXP() {
+    return `
+      <div class="space-y-6">
+        <div class="card">
+          <h3 class="section-title">Freebies</h3>
+          <div class="mb-4 p-4 bg-gray-800 rounded">
+            <div class="text-sm font-medium mb-2">Доступно Freebies: ${this.character.freebies - this.character.freebiesSpent}</div>
+            <div class="text-xs text-gray-400">
+              Базовые (с обязательным недостатком котерии): 22<br>
+              Личные недостатки: +${Math.min(this.character.flaws.reduce((sum, f) => sum + f.cost, 0), 7)}<br>
+              Достоинства: -${this.character.merits.reduce((sum, m) => sum + m.cost, 0)}
+            </div>
+          </div>
+          <div class="mb-4">
+            <h4 class="subsection-title">Стоимость в Freebies</h4>
+            <div class="grid grid-cols-2 gap-2 text-sm">
+              <div>Атрибут: 5</div>
+              <div>Способность: 2</div>
+              <div>Предыстория: 1</div>
+              <div>Дисциплина: 7</div>
+              <div>Добродетель: 2</div>
+              <div>Человечность: 1</div>
+              <div>Сила воли: 1</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="section-title">Опыт (XP)</h3>
+          <div class="mb-4 p-4 bg-gray-800 rounded">
+            <div class="text-sm font-medium">Доступно XP: ${this.character.experience - this.character.experienceSpent}/33</div>
+          </div>
+
+          <div class="mb-4">
+            <h4 class="subsection-title">Потратить XP</h4>
+            <div class="space-y-4">
+              <!-- XP Purchase Type -->
+              <div>
+                <label class="block text-sm font-medium mb-1">Что покупаем?</label>
+                <select id="xpType" class="input-field">
+                  <option value="">Выберите...</option>
+                  <option value="attribute">Атрибут</option>
+                  <option value="ability">Способность</option>
+                  <option value="discipline">Дисциплина</option>
+                  <option value="virtue">Добродетель</option>
+                  <option value="humanity">Человечность/Путь</option>
+                  <option value="willpower">Сила воли</option>
+                </select>
+              </div>
+
+              <!-- Dynamic selection based on type -->
+              <div id="xpPurchaseOptions"></div>
+
+              <!-- Cost display -->
+              <div id="xpCostDisplay" class="p-3 bg-gray-800 rounded hidden">
+                <div class="text-sm font-medium mb-1">Стоимость: <span id="xpCostAmount">0</span> XP</div>
+                <div class="text-xs text-gray-400" id="xpCostDetails"></div>
+              </div>
+
+              <!-- Purchase button -->
+              <button id="xpPurchaseBtn" class="btn btn-primary w-full hidden">Купить</button>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <h4 class="subsection-title">Справка: Стоимость в XP</h4>
+            <div class="space-y-1 text-xs text-gray-400">
+              <div>• Новая способность: 3</div>
+              <div>• Новая дисциплина: 10</div>
+              <div>• Новый путь Некромантии/Тауматургии: 7</div>
+              <div>• Атрибут: текущее × 4</div>
+              <div>• Способность: текущее × 2</div>
+              <div>• Физическая дисциплина (клановая): текущее × 5</div>
+              <div>• Ментальная дисциплина (клановая): текущее × 6</div>
+              <div>• Уникальная дисциплина (клановая): текущее × 7</div>
+              <div>• Дисциплина (сторонняя): текущее × 10</div>
+              <div>• Дисциплина Каитифф: текущее × 6</div>
+              <div>• Добродетель: текущее × 2</div>
+              <div>• Человечность/Путь: текущее × 2</div>
+              <div>• Сила воли: текущее</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  renderSummary() {
+    const validation = this.tracker.validateAll();
+    const allValid = Object.values(validation).every(v => v.valid);
+
+    return `
+      <div class="card">
+        <h3 class="section-title">Итоги персонажа</h3>
+
+        <div class="mb-6 p-4 ${allValid ? 'bg-green-900' : 'bg-red-900'} rounded">
+          <div class="font-medium mb-2">${allValid ? '✓ Персонаж завершён' : '⚠ Персонаж не завершён'}</div>
+          ${!allValid ? `
+            <div class="text-sm space-y-1">
+              ${Object.entries(validation).map(([key, val]) =>
+                !val.valid ? val.errors.map(err => `<div>• ${err}</div>`).join('') : ''
+              ).join('')}
+            </div>
+          ` : ''}
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <strong>Имя:</strong> ${this.character.name || '—'}<br>
+            <strong>Клан:</strong> ${this.getClanName()}<br>
+            <strong>Поколение:</strong> ${this.character.getEffectiveGeneration()}<br>
+            <strong>Концепция:</strong> ${this.character.concept || '—'}
+          </div>
+
+          <div>
+            <strong>Freebies:</strong> ${this.character.freebiesSpent}/${this.character.freebies}<br>
+            <strong>Опыт:</strong> ${this.character.experienceSpent}/${this.character.experience}
+          </div>
+
+          <button class="btn btn-primary w-full" ${allValid ? '' : 'disabled'} id="finalizeBtn">
+            Завершить создание персонажа
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  getClanName() {
+    const clan = clansData.find(c => c.id === this.character.clan);
+    return clan ? clan.name : '—';
+  }
+
+  getClanDisciplines() {
+    const clan = clansData.find(c => c.id === this.character.clan);
+    return clan ? clan.disciplines : [];
+  }
+
+  renderDots(current, max) {
+    let html = '';
+    for (let i = 1; i <= max; i++) {
+      html += `<div class="dot ${i <= current ? 'filled' : ''}" data-value="${i}"></div>`;
+    }
+    return html;
+  }
+
+  attachEventListeners() {
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', (e) => {
+        this.currentTab = e.target.dataset.tab;
+        this.render();
+        this.attachEventListeners();
+        this.updateAllDisplays();
+      });
+    });
+
+    // Basic info text inputs
+    ['name', 'player', 'chronicle', 'nature', 'demeanor', 'concept', 'sire'].forEach(field => {
+      const el = document.getElementById(field);
+      if (el) {
+        el.addEventListener('input', (e) => {
+          this.character[field] = e.target.value;
+          this.saveToLocalStorage();
+        });
+      }
+    });
+
+    // Clan selection
+    const clanSelect = document.getElementById('clan');
+    if (clanSelect) {
+      clanSelect.addEventListener('change', (e) => {
+        this.character.clan = e.target.value;
+        this.saveToLocalStorage();
+        this.render();
+        this.attachEventListeners();
+      });
+    }
+
+    // Dot trackers
+    document.querySelectorAll('.dot-tracker').forEach(tracker => {
+      const category = tracker.dataset.category;
+      const subcategory = tracker.dataset.subcategory;
+      const attr = tracker.dataset.attr;
+
+      tracker.querySelectorAll('.dot').forEach(dot => {
+        dot.addEventListener('click', () => {
+          const value = parseInt(dot.dataset.value);
+          this.updateCharacterValue(category, subcategory, attr, value);
+        });
+      });
+    });
+
+    // Add discipline button
+    const addDiscBtn = document.getElementById('addDisciplineBtn');
+    if (addDiscBtn) {
+      addDiscBtn.addEventListener('click', () => this.showAddDisciplineDialog());
+    }
+
+    // Save/Load buttons
+    const saveBtn = document.getElementById('saveBtn');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', () => this.saveCharacter());
+    }
+
+    const loadBtn = document.getElementById('loadBtn');
+    if (loadBtn) {
+      loadBtn.addEventListener('click', () => this.loadCharacter());
+    }
+
+    const exportBtn = document.getElementById('exportBtn');
+    if (exportBtn) {
+      exportBtn.addEventListener('click', () => this.exportToPDF());
+    }
+
+    // XP spending interface
+    const xpTypeSelect = document.getElementById('xpType');
+    if (xpTypeSelect) {
+      xpTypeSelect.addEventListener('change', (e) => this.handleXPTypeChange(e.target.value));
+    }
+
+    const xpPurchaseBtn = document.getElementById('xpPurchaseBtn');
+    if (xpPurchaseBtn) {
+      xpPurchaseBtn.addEventListener('click', () => this.handleXPPurchase());
+    }
+  }
+
+  updateCharacterValue(category, subcategory, attr, value) {
+    if (category === 'attributes') {
+      this.character.attributes[subcategory][attr] = value;
+    } else if (category === 'abilities') {
+      this.character.abilities[subcategory][attr] = value;
+    } else if (category === 'disciplines') {
+      this.character.disciplines[attr] = value;
+
+      // Sync primary path level with discipline level
+      if (attr === 'necromancy' && this.character.necromancyPaths.length > 0) {
+        this.character.necromancyPaths[0].level = value;
+      } else if (attr === 'thaumaturgy' && this.character.thaumaturgyPaths.length > 0) {
+        this.character.thaumaturgyPaths[0].level = value;
+      }
+    } else if (category === 'backgrounds') {
+      this.character.backgrounds[attr] = value;
+    } else if (category === 'virtues') {
+      this.character.virtues[attr] = value;
+    } else if (category === 'humanity') {
+      this.character.humanity = value;
+    } else if (category === 'willpower') {
+      this.character.willpower = value;
+    }
+
+    this.saveToLocalStorage();
+    this.updateAllDisplays();
+  }
+
+  updateAllDisplays() {
+    // Re-render current tab to update point displays
+    const content = document.getElementById('tabContent');
+    if (content) {
+      content.innerHTML = this.renderTabContent();
+      this.attachEventListeners();
+    }
+  }
+
+  showAddDisciplineDialog() {
+    const discId = prompt('Введите ID дисциплины (например: potence, auspex)');
+    if (discId && this.allDisciplines.find(d => d.id === discId)) {
+      this.character.disciplines[discId] = 1;
+      this.saveToLocalStorage();
+      this.updateAllDisplays();
+    }
+  }
+
+  removeDiscipline(discId) {
+    delete this.character.disciplines[discId];
+    this.saveToLocalStorage();
+    this.updateAllDisplays();
+  }
+
+  managePaths(discId) {
+    this.currentManagingDiscipline = discId;
+    this.showPathManagementModal(discId);
+  }
+
+  showPathManagementModal(discId) {
+    const isNecromancy = discId === 'necromancy';
+    const paths = isNecromancy ? this.character.necromancyPaths : this.character.thaumaturgyPaths;
+    const availablePaths = isNecromancy ? necromancyData.paths : thaumaturgyData.paths;
+    const disciplineLevel = this.character.disciplines[discId] || 0;
+    const title = isNecromancy ? 'Некромантия' : 'Тауматургия';
+
+    // Create modal overlay
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50';
+    modal.innerHTML = `
+      <div class="bg-vtm-grey rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-2xl font-bold text-vtm-red">Пути ${title}</h3>
+          <button class="text-3xl text-gray-400 hover:text-white" onclick="app.closePathModal()">&times;</button>
+        </div>
+
+        <div class="mb-4 p-3 bg-gray-800 rounded">
+          <div class="text-sm text-gray-400">
+            <strong>Основной путь:</strong> Уровень равен уровню дисциплины (${disciplineLevel})<br>
+            <strong>Вторичные пути:</strong> Изучение нового пути - 7 XP, повышение - текущее × 4 XP
+          </div>
+        </div>
+
+        ${paths.length > 0 ? `
+          <div class="mb-6">
+            <h4 class="text-lg font-semibold mb-3">Изученные пути</h4>
+            ${paths.map((path, idx) => {
+              const pathData = availablePaths.find(p => p.id === path.pathId);
+              const isPrimary = idx === 0;
+              return `
+                <div class="mb-3 p-3 bg-gray-800 rounded">
+                  <div class="flex justify-between items-start mb-2">
+                    <div class="flex-1">
+                      <div class="font-medium">${pathData?.name || path.pathId}</div>
+                      ${isPrimary ? '<div class="text-xs text-green-400">Основной путь</div>' : '<div class="text-xs text-blue-400">Вторичный путь</div>'}
+                    </div>
+                    ${!isPrimary ? `
+                      <button class="text-red-500 hover:text-red-400 text-xl" onclick="app.removePath('${discId}', '${path.pathId}')">×</button>
+                    ` : ''}
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-sm text-gray-400">Уровень:</span>
+                    <div class="dot-tracker" data-discipline="${discId}" data-path="${path.pathId}">
+                      ${this.renderDotsForPath(path.level, isPrimary ? disciplineLevel : 5, isPrimary)}
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        ` : '<div class="text-gray-400 text-center py-4 mb-4">Пути не изучены</div>'}
+
+        <button class="btn btn-primary w-full" onclick="app.showAddPathDialog('${discId}')">
+          + Добавить ${paths.length === 0 ? 'основной' : 'вторичный'} путь
+        </button>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Attach event listeners to path dots
+    setTimeout(() => {
+      this.attachPathDotListeners(discId);
+    }, 0);
+  }
+
+  renderDotsForPath(currentLevel, maxLevel, isPrimary) {
+    let html = '';
+    for (let i = 1; i <= maxLevel; i++) {
+      const filled = i <= currentLevel ? 'filled' : '';
+      const disabled = isPrimary ? 'opacity-50 cursor-not-allowed' : '';
+      html += `<div class="dot ${filled} ${disabled}" data-value="${i}"></div>`;
+    }
+    return html;
+  }
+
+  attachPathDotListeners(discId) {
+    const trackers = document.querySelectorAll(`[data-discipline="${discId}"]`);
+    trackers.forEach(tracker => {
+      const pathId = tracker.dataset.path;
+      const dots = tracker.querySelectorAll('.dot:not(.opacity-50)');
+
+      dots.forEach(dot => {
+        dot.addEventListener('click', () => {
+          const level = parseInt(dot.dataset.value);
+          this.updatePathLevel(discId, pathId, level);
+        });
+      });
+    });
+  }
+
+  updatePathLevel(discId, pathId, level) {
+    if (discId === 'necromancy') {
+      this.character.updateNecromancyPathLevel(pathId, level);
+    } else {
+      this.character.updateThaumaturgyPathLevel(pathId, level);
+    }
+    this.saveToLocalStorage();
+    this.closePathModal();
+    this.managePaths(discId); // Reopen modal with updated data
+  }
+
+  showAddPathDialog(discId) {
+    const isNecromancy = discId === 'necromancy';
+    const paths = isNecromancy ? this.character.necromancyPaths : this.character.thaumaturgyPaths;
+    const availablePaths = isNecromancy ? necromancyData.paths : thaumaturgyData.paths;
+    const disciplineLevel = this.character.disciplines[discId] || 0;
+
+    // Filter out already learned paths
+    const usedPathIds = paths.map(p => p.pathId);
+    const unusedPaths = availablePaths.filter(p => !usedPathIds.includes(p.id));
+
+    if (unusedPaths.length === 0) {
+      alert('Все пути уже изучены!');
+      return;
+    }
+
+    let message = 'Выберите путь для изучения:\n\n';
+    unusedPaths.forEach((p, idx) => {
+      message += `${idx + 1}. ${p.name}\n`;
+    });
+    message += '\nВведите номер пути:';
+
+    const choice = prompt(message);
+    if (choice && !isNaN(choice)) {
+      const idx = parseInt(choice) - 1;
+      if (idx >= 0 && idx < unusedPaths.length) {
+        const pathId = unusedPaths[idx].id;
+        const isPrimary = paths.length === 0;
+        const startLevel = isPrimary ? disciplineLevel : 1;
+
+        if (isNecromancy) {
+          this.character.addNecromancyPath(pathId, startLevel);
+        } else {
+          this.character.addThaumaturgyPath(pathId, startLevel);
+        }
+
+        this.saveToLocalStorage();
+        this.closePathModal();
+        this.managePaths(discId); // Reopen modal
+      }
+    }
+  }
+
+  removePath(discId, pathId) {
+    if (confirm('Удалить этот путь?')) {
+      if (discId === 'necromancy') {
+        this.character.removeNecromancyPath(pathId);
+      } else {
+        this.character.removeThaumaturgyPath(pathId);
+      }
+      this.saveToLocalStorage();
+      this.closePathModal();
+      this.managePaths(discId); // Reopen modal
+    }
+  }
+
+  closePathModal() {
+    const modal = document.querySelector('.fixed.inset-0');
+    if (modal) {
+      modal.remove();
+    }
+    this.updateAllDisplays();
+  }
+
+  // XP Spending Interface Methods
+  handleXPTypeChange(type) {
+    const optionsDiv = document.getElementById('xpPurchaseOptions');
+    const costDisplay = document.getElementById('xpCostDisplay');
+    const purchaseBtn = document.getElementById('xpPurchaseBtn');
+
+    if (!type) {
+      optionsDiv.innerHTML = '';
+      costDisplay.classList.add('hidden');
+      purchaseBtn.classList.add('hidden');
+      return;
+    }
+
+    let optionsHTML = '';
+
+    if (type === 'attribute') {
+      optionsHTML = `
+        <div>
+          <label class="block text-sm font-medium mb-1">Категория</label>
+          <select id="xpAttrCategory" class="input-field">
+            <option value="">Выберите категорию</option>
+            <option value="physical">Физические</option>
+            <option value="social">Социальные</option>
+            <option value="mental">Ментальные</option>
+          </select>
+        </div>
+        <div id="xpAttrSelection"></div>
+      `;
+    } else if (type === 'ability') {
+      optionsHTML = `
+        <div>
+          <label class="block text-sm font-medium mb-1">Категория</label>
+          <select id="xpAbilityCategory" class="input-field">
+            <option value="">Выберите категорию</option>
+            <option value="talents">Таланты</option>
+            <option value="skills">Навыки</option>
+            <option value="knowledges">Познания</option>
+          </select>
+        </div>
+        <div id="xpAbilitySelection"></div>
+      `;
+    } else if (type === 'discipline') {
+      const disciplinesList = this.allDisciplines.map(disc =>
+        `<option value="${disc.id}">${disc.name}</option>`
+      ).join('');
+      optionsHTML = `
+        <div>
+          <label class="block text-sm font-medium mb-1">Дисциплина</label>
+          <select id="xpDiscipline" class="input-field">
+            <option value="">Выберите дисциплину</option>
+            ${disciplinesList}
+          </select>
+        </div>
+      `;
+    } else if (type === 'virtue') {
+      optionsHTML = `
+        <div>
+          <label class="block text-sm font-medium mb-1">Добродетель</label>
+          <select id="xpVirtue" class="input-field">
+            <option value="">Выберите добродетель</option>
+            <option value="conscience">Совесть</option>
+            <option value="selfControl">Самоконтроль</option>
+            <option value="courage">Храбрость</option>
+          </select>
+        </div>
+      `;
+    } else if (type === 'humanity' || type === 'willpower') {
+      optionsHTML = `<div class="text-sm text-gray-400">Выбрано: ${type === 'humanity' ? 'Человечность' : 'Сила воли'}</div>`;
+    }
+
+    optionsDiv.innerHTML = optionsHTML;
+
+    // Add change listeners for dynamic selects
+    if (type === 'attribute') {
+      const catSelect = document.getElementById('xpAttrCategory');
+      if (catSelect) {
+        catSelect.addEventListener('change', (e) => this.showXPAttributeList(e.target.value));
+      }
+    } else if (type === 'ability') {
+      const catSelect = document.getElementById('xpAbilityCategory');
+      if (catSelect) {
+        catSelect.addEventListener('change', (e) => this.showXPAbilityList(e.target.value));
+      }
+    } else if (type === 'discipline') {
+      const discSelect = document.getElementById('xpDiscipline');
+      if (discSelect) {
+        discSelect.addEventListener('change', () => this.calculateXPCost());
+      }
+    } else if (type === 'virtue') {
+      const virtueSelect = document.getElementById('xpVirtue');
+      if (virtueSelect) {
+        virtueSelect.addEventListener('change', () => this.calculateXPCost());
+      }
+    } else if (type === 'humanity' || type === 'willpower') {
+      this.calculateXPCost();
+    }
+  }
+
+  showXPAttributeList(category) {
+    const selectionDiv = document.getElementById('xpAttrSelection');
+    if (!category) {
+      selectionDiv.innerHTML = '';
+      return;
+    }
+
+    const attrs = this.character.attributes[category];
+    const attrNames = {
+      physical: { strength: 'Сила', dexterity: 'Ловкость', stamina: 'Выносливость' },
+      social: { charisma: 'Обаяние', manipulation: 'Манипулирование', appearance: 'Привлекательность' },
+      mental: { perception: 'Восприятие', intelligence: 'Интеллект', wits: 'Смекалка' }
+    };
+
+    const options = Object.keys(attrs).map(attr =>
+      `<option value="${attr}">${attrNames[category][attr]} (${attrs[attr]})</option>`
+    ).join('');
+
+    selectionDiv.innerHTML = `
+      <div>
+        <label class="block text-sm font-medium mb-1">Атрибут</label>
+        <select id="xpAttribute" class="input-field">
+          <option value="">Выберите атрибут</option>
+          ${options}
+        </select>
+      </div>
+    `;
+
+    const attrSelect = document.getElementById('xpAttribute');
+    if (attrSelect) {
+      attrSelect.addEventListener('change', () => this.calculateXPCost());
+    }
+  }
+
+  showXPAbilityList(category) {
+    const selectionDiv = document.getElementById('xpAbilitySelection');
+    if (!category) {
+      selectionDiv.innerHTML = '';
+      return;
+    }
+
+    const abilities = abilitiesData[category];
+    const options = abilities.map(ability => {
+      const current = this.character.abilities[category][ability.id] || 0;
+      return `<option value="${ability.id}">${ability.name} (${current})</option>`;
+    }).join('');
+
+    selectionDiv.innerHTML = `
+      <div>
+        <label class="block text-sm font-medium mb-1">Способность</label>
+        <select id="xpAbility" class="input-field">
+          <option value="">Выберите способность</option>
+          ${options}
+        </select>
+      </div>
+    `;
+
+    const abilitySelect = document.getElementById('xpAbility');
+    if (abilitySelect) {
+      abilitySelect.addEventListener('change', () => this.calculateXPCost());
+    }
+  }
+
+  calculateXPCost() {
+    const type = document.getElementById('xpType')?.value;
+    if (!type) return;
+
+    let cost = 0;
+    let details = '';
+    let canPurchase = false;
+
+    if (type === 'attribute') {
+      const category = document.getElementById('xpAttrCategory')?.value;
+      const attr = document.getElementById('xpAttribute')?.value;
+      if (category && attr) {
+        const current = this.character.attributes[category][attr];
+        cost = current * 4;
+        details = `Текущее значение: ${current}, новое: ${current + 1}`;
+        canPurchase = current < 10;
+      }
+    } else if (type === 'ability') {
+      const category = document.getElementById('xpAbilityCategory')?.value;
+      const ability = document.getElementById('xpAbility')?.value;
+      if (category && ability) {
+        const current = this.character.abilities[category][ability] || 0;
+        cost = current === 0 ? 3 : current * 2;
+        details = current === 0 ? 'Новая способность' : `Текущее значение: ${current}, новое: ${current + 1}`;
+        canPurchase = current < 10;
+      }
+    } else if (type === 'discipline') {
+      const discId = document.getElementById('xpDiscipline')?.value;
+      if (discId) {
+        const current = this.character.disciplines[discId] || 0;
+        const disc = this.allDisciplines.find(d => d.id === discId);
+
+        // Check if clan discipline
+        const clan = clansData.find(c => c.id === this.character.clan);
+        const isClan = clan && clan.disciplines.includes(discId);
+        const isCaitiff = this.character.clan === 'caitiff';
+
+        if (current === 0) {
+          cost = 10;
+          details = 'Новая дисциплина';
+        } else {
+          // Physical: 5, Mental: 6, Unique: 7 (clan), Non-clan: 10, Caitiff: 6
+          if (isCaitiff) {
+            cost = current * 6;
+            details = `Каитифф: текущее × 6 = ${current} × 6`;
+          } else if (isClan) {
+            if (disc.category === 'physical') {
+              cost = current * 5;
+              details = `Физическая (клановая): текущее × 5 = ${current} × 5`;
+            } else if (disc.category === 'mental') {
+              cost = current * 6;
+              details = `Ментальная (клановая): текущее × 6 = ${current} × 6`;
+            } else {
+              cost = current * 7;
+              details = `Уникальная (клановая): текущее × 7 = ${current} × 7`;
+            }
+          } else {
+            cost = current * 10;
+            details = `Сторонняя дисциплина: текущее × 10 = ${current} × 10`;
+          }
+        }
+        canPurchase = current < 10;
+      }
+    } else if (type === 'virtue') {
+      const virtue = document.getElementById('xpVirtue')?.value;
+      if (virtue) {
+        const current = this.character.virtues[virtue];
+        cost = current * 2;
+        details = `Текущее значение: ${current}, новое: ${current + 1}`;
+        canPurchase = current < 10;
+      }
+    } else if (type === 'humanity') {
+      const current = this.character.humanity;
+      cost = current * 2;
+      details = `Текущее значение: ${current}, новое: ${current + 1}`;
+      canPurchase = current < 10;
+    } else if (type === 'willpower') {
+      const current = this.character.willpower;
+      cost = current;
+      details = `Текущее значение: ${current}, новое: ${current + 1}`;
+      canPurchase = current < 10;
+    }
+
+    // Update display
+    const costDisplay = document.getElementById('xpCostDisplay');
+    const costAmount = document.getElementById('xpCostAmount');
+    const costDetailsDiv = document.getElementById('xpCostDetails');
+    const purchaseBtn = document.getElementById('xpPurchaseBtn');
+
+    if (cost > 0 && canPurchase) {
+      costAmount.textContent = cost;
+      costDetailsDiv.textContent = details;
+      costDisplay.classList.remove('hidden');
+      purchaseBtn.classList.remove('hidden');
+
+      const available = this.character.experience - this.character.experienceSpent;
+      if (cost > available) {
+        purchaseBtn.disabled = true;
+        purchaseBtn.textContent = `Недостаточно XP (нужно ${cost}, есть ${available})`;
+      } else {
+        purchaseBtn.disabled = false;
+        purchaseBtn.textContent = 'Купить';
+      }
+    } else {
+      costDisplay.classList.add('hidden');
+      purchaseBtn.classList.add('hidden');
+    }
+  }
+
+  handleXPPurchase() {
+    const type = document.getElementById('xpType')?.value;
+    if (!type) return;
+
+    const costAmount = parseInt(document.getElementById('xpCostAmount')?.textContent || '0');
+    const available = this.character.experience - this.character.experienceSpent;
+
+    if (costAmount > available) {
+      alert('Недостаточно опыта!');
+      return;
+    }
+
+    // Make the purchase
+    if (type === 'attribute') {
+      const category = document.getElementById('xpAttrCategory')?.value;
+      const attr = document.getElementById('xpAttribute')?.value;
+      if (category && attr) {
+        this.character.attributes[category][attr]++;
+        this.character.experienceSpent += costAmount;
+      }
+    } else if (type === 'ability') {
+      const category = document.getElementById('xpAbilityCategory')?.value;
+      const ability = document.getElementById('xpAbility')?.value;
+      if (category && ability) {
+        if (!this.character.abilities[category][ability]) {
+          this.character.abilities[category][ability] = 0;
+        }
+        this.character.abilities[category][ability]++;
+        this.character.experienceSpent += costAmount;
+      }
+    } else if (type === 'discipline') {
+      const discId = document.getElementById('xpDiscipline')?.value;
+      if (discId) {
+        if (!this.character.disciplines[discId]) {
+          this.character.disciplines[discId] = 0;
+        }
+        this.character.disciplines[discId]++;
+        this.character.experienceSpent += costAmount;
+      }
+    } else if (type === 'virtue') {
+      const virtue = document.getElementById('xpVirtue')?.value;
+      if (virtue) {
+        this.character.virtues[virtue]++;
+        this.character.experienceSpent += costAmount;
+      }
+    } else if (type === 'humanity') {
+      this.character.humanity++;
+      this.character.experienceSpent += costAmount;
+    } else if (type === 'willpower') {
+      this.character.willpower++;
+      this.character.experienceSpent += costAmount;
+    }
+
+    // Save and re-render
+    this.saveToLocalStorage();
+    this.render();
+    this.attachEventListeners();
+    this.updateAllDisplays();
+
+    alert(`Куплено за ${costAmount} XP!`);
+  }
+
+  saveToLocalStorage() {
+    localStorage.setItem('vtm_character', this.character.toJSON());
+  }
+
+  loadFromLocalStorage() {
+    const saved = localStorage.getItem('vtm_character');
+    if (saved) {
+      this.character = Character.fromJSON(saved);
+      this.tracker = new PointTracker(this.character);
+    }
+  }
+
+  saveCharacter() {
+    const json = this.character.toJSON();
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${this.character.name || 'персонаж'}.json`;
+    a.click();
+  }
+
+  loadCharacter() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        this.character = Character.fromJSON(event.target.result);
+        this.tracker = new PointTracker(this.character);
+        this.render();
+        this.attachEventListeners();
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  }
+
+  exportToPDF() {
+    alert('Экспорт в PDF будет реализован позже. Пока используйте функцию печати браузера.');
+  }
+}
+
+// Initialize app
+let app;
+document.addEventListener('DOMContentLoaded', () => {
+  app = new CharacterCreatorApp();
+  window.app = app; // Make available globally for inline event handlers
+});

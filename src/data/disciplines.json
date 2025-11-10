@@ -1,0 +1,61 @@
+{
+  "physical": [
+    { "id": "potence", "name": "Мощь", "category": "physical" },
+    { "id": "fortitude", "name": "Стойкость", "category": "physical" },
+    { "id": "celerity", "name": "Стремительность", "category": "physical" }
+  ],
+  "mental": [
+    { "id": "animalism", "name": "Анимализм", "category": "mental" },
+    { "id": "presence", "name": "Величие", "category": "mental" },
+    { "id": "dominate", "name": "Доминирование", "category": "mental" },
+    { "id": "auspex", "name": "Ясновидение", "category": "mental" },
+    { "id": "obfuscate", "name": "Сокрытие", "category": "mental" }
+  ],
+  "unique": [
+    { "id": "obtenebration", "name": "Затмение", "category": "unique" },
+    { "id": "protean", "name": "Метаморфозы", "category": "unique" },
+    {
+      "id": "necromancy",
+      "name": "Некромантия",
+      "category": "unique",
+      "hasPaths": true,
+      "paths": [
+        "path_sepulchre",
+        "path_cenotaph",
+        "path_bone",
+        "path_corpse",
+        "path_ash",
+        "path_decay",
+        "path_four_humours",
+        "path_entropy"
+      ]
+    },
+    { "id": "dementation", "name": "Помешательство", "category": "unique" },
+    { "id": "vicissitude", "name": "Преображение", "category": "unique" },
+    { "id": "serpentis", "name": "Серпентис", "category": "unique" },
+    {
+      "id": "thaumaturgy",
+      "name": "Тауматургия",
+      "category": "unique",
+      "hasPaths": true,
+      "paths": [
+        "path_blood",
+        "path_elemental_mastery",
+        "path_hand_destruction",
+        "path_lure_flames",
+        "path_beckoning",
+        "path_neptune",
+        "path_incarnation",
+        "path_mars",
+        "path_fathers_vengeance",
+        "path_corruption",
+        "path_technomancy",
+        "path_flora",
+        "thaumaturgic_countermagic",
+        "weather_control"
+      ]
+    },
+    { "id": "quietus", "name": "Упокоение", "category": "unique" },
+    { "id": "chimerstry", "name": "Фантасмагория", "category": "unique" }
+  ]
+}
