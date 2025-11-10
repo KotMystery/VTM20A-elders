@@ -460,7 +460,8 @@ class CharacterCreatorApp {
           </div>
           <div class="text-sm text-gray-400">
             Базовые: 22 (с обязательным недостатком котерии)<br>
-            Использовано: ${this.character.freebiesSpent}
+            Использовано: ${this.character.freebiesSpent}<br>
+            <span class="text-yellow-400 mt-1 block">Бонусные очки используются для улучшения характеристик сверх базового распределения.</span>
           </div>
         </div>
 
@@ -588,8 +589,8 @@ class CharacterCreatorApp {
       <div class="card">
         <h3 class="section-title">Итоги персонажа</h3>
 
-        <div class="mb-6 p-4 ${allValid ? 'bg-green-900' : 'bg-red-900'} rounded">
-          <div class="font-medium mb-2">${allValid ? '✓ Персонаж завершён' : '⚠ Персонаж не завершён'}</div>
+        <div class="mb-6 p-4 ${allValid ? 'bg-green-900' : 'bg-yellow-900'} rounded">
+          <div class="font-medium mb-2">${allValid ? '✓ Базовая настройка завершена' : '⚠ Базовая настройка не завершена'}</div>
           ${!allValid ? `
             <div class="text-sm space-y-1">
               ${Object.entries(validation).map(([key, val]) =>
@@ -612,7 +613,11 @@ class CharacterCreatorApp {
             <strong>Опыт:</strong> ${this.character.experienceSpent}/${this.character.experience}
           </div>
 
-          <button class="btn btn-primary w-full" ${allValid ? '' : 'disabled'} id="finalizeBtn">
+          <div class="text-sm text-gray-400 mb-2">
+            Вы можете завершить создание персонажа даже если не потратили все бонусные очки или опыт.
+          </div>
+
+          <button class="btn btn-primary w-full" id="finalizeBtn">
             Завершить создание персонажа
           </button>
         </div>
@@ -671,6 +676,20 @@ class CharacterCreatorApp {
     if (clanSelect) {
       clanSelect.addEventListener('change', (e) => {
         this.character.clan = e.target.value;
+
+        // Auto-add clan disciplines
+        if (this.character.clan) {
+          const clan = clansData.find(c => c.id === this.character.clan);
+          if (clan && clan.disciplines) {
+            clan.disciplines.forEach(discId => {
+              // Only add if not already present
+              if (!(discId in this.character.disciplines)) {
+                this.character.disciplines[discId] = 0;
+              }
+            });
+          }
+        }
+
         this.saveToLocalStorage();
         this.render();
         this.attachEventListeners();
@@ -981,6 +1000,7 @@ class CharacterCreatorApp {
     const paths = isNecromancy ? this.character.necromancyPaths : this.character.thaumaturgyPaths;
     const availablePaths = isNecromancy ? necromancyData.paths : thaumaturgyData.paths;
     const disciplineLevel = this.character.disciplines[discId] || 0;
+    const title = isNecromancy ? 'Некромантии' : 'Тауматургии';
 
     // Filter out already learned paths
     const usedPathIds = paths.map(p => p.pathId);
@@ -991,31 +1011,81 @@ class CharacterCreatorApp {
       return;
     }
 
-    let message = 'Выберите путь для изучения:\n\n';
-    unusedPaths.forEach((p, idx) => {
-      message += `${idx + 1}. ${p.name}\n`;
+    const isPrimary = paths.length === 0;
+
+    // Create modal
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50';
+    modal.id = 'pathSelectionModal';
+    modal.innerHTML = `
+      <div class="bg-vtm-grey rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-2xl font-bold text-vtm-red">Выбрать путь ${title}</h3>
+          <button class="text-3xl text-gray-400 hover:text-white" onclick="document.getElementById('pathSelectionModal').remove()">&times;</button>
+        </div>
+
+        <div class="mb-4 p-3 bg-gray-800 rounded">
+          <div class="text-sm text-gray-400">
+            ${isPrimary ? '<strong>Основной путь:</strong> Уровень будет равен уровню дисциплины' : '<strong>Вторичный путь:</strong> Начнётся с уровня 1'}
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <input type="text" id="pathSearch" placeholder="Поиск по названию..."
+                 class="input-field" autocomplete="off">
+        </div>
+
+        <div id="pathList" class="space-y-2">
+          ${unusedPaths.map(path => `
+            <div class="path-item p-3 bg-gray-800 rounded hover:bg-gray-700 cursor-pointer transition-colors"
+                 data-name="${path.name}"
+                 onclick="app.selectPath('${discId}', '${path.id}')">
+              <div class="font-medium">${path.name}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Add search functionality
+    const searchInput = document.getElementById('pathSearch');
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase();
+      const items = document.querySelectorAll('.path-item');
+      items.forEach(item => {
+        const name = item.dataset.name.toLowerCase();
+        item.style.display = name.includes(query) ? 'block' : 'none';
+      });
     });
-    message += '\nВведите номер пути:';
 
-    const choice = prompt(message);
-    if (choice && !isNaN(choice)) {
-      const idx = parseInt(choice) - 1;
-      if (idx >= 0 && idx < unusedPaths.length) {
-        const pathId = unusedPaths[idx].id;
-        const isPrimary = paths.length === 0;
-        const startLevel = isPrimary ? disciplineLevel : 1;
+    // Focus search input
+    searchInput.focus();
+  }
 
-        if (isNecromancy) {
-          this.character.addNecromancyPath(pathId, startLevel);
-        } else {
-          this.character.addThaumaturgyPath(pathId, startLevel);
-        }
+  selectPath(discId, pathId) {
+    const isNecromancy = discId === 'necromancy';
+    const paths = isNecromancy ? this.character.necromancyPaths : this.character.thaumaturgyPaths;
+    const disciplineLevel = this.character.disciplines[discId] || 0;
+    const isPrimary = paths.length === 0;
+    const startLevel = isPrimary ? disciplineLevel : 1;
 
-        this.saveToLocalStorage();
-        this.closePathModal();
-        this.managePaths(discId); // Reopen modal
-      }
+    if (isNecromancy) {
+      this.character.addNecromancyPath(pathId, startLevel);
+    } else {
+      this.character.addThaumaturgyPath(pathId, startLevel);
     }
+
+    this.saveToLocalStorage();
+
+    // Close path selection modal
+    const selectionModal = document.getElementById('pathSelectionModal');
+    if (selectionModal) selectionModal.remove();
+
+    // Close and reopen main path management modal
+    this.closePathModal();
+    this.managePaths(discId);
   }
 
   removePath(discId, pathId) {
