@@ -305,17 +305,17 @@ Legend:
 ### Assamites (Ассамиты)
 
 #### Merits
-- ⚡ **Ally in Another Faction** (Союзник в другой фракции) - 1pt
+- ⚡ **Ally in Another Faction** (Союзник в другой фракции) - 1pt [Fine, but encourage roll AND let the player know the Vamp has to be alive for Camarilla/Sabbat/Anarch thing to happen]
   - *Note: Only works if ally is also an ancient vampire who survived torpor*
-- ⚠️ **Thousand-Meter Killer** (Тысячеметровый убийца) - 1pt
+- ⚠️ **Thousand-Meter Killer** (Тысячеметровый убийца) - 1pt [Fine, but make sure the player understands it's not something they did per se and moreso something they are capable of]
   - **REASON: Sniper rifles are 20th century technology, "Club of One Thousand Meters" is modern concept**
 
 #### Flaws
-- ⚡ **Outcast** (Изгнанник) - 2pt
+- ⚡ **Outcast** (Изгнанник) - 2pt [Fine]
   - *Note: Context-dependent on reason for exile*
-- ⚠️ **Broken Antitribu** (Сломленный антитрибу) - 3pt
+- ⚠️ **Broken Antitribu** (Сломленный антитрибу) - 3pt [Remove]
   - **REASON: Sabbat is modern (15th century+), references modern sect politics**
-- ⚡ **Multiple Curses** (Многочисленные проклятия) - 3pt
+- ⚡ **Multiple Curses** (Многочисленные проклятия) - 3pt [Fine]
   - *Note: References modern caste/sect divisions and Baali curse*
 
 ### Brujah (Бруха)
@@ -332,7 +332,7 @@ Legend:
 #### Merits
 - ✅ **Antitoxin Blood** (Невосприимчивость к наркотикам) - 2pt
 - ✅ **Addictive Blood** (Вызывающая привыкание кровь) - 3pt
-- ✅ **Setite Initiate** (Сетит-посвященный) - 5pt
+- ✅ **Setite Initiate** (Сетит-посвященный) - 5pt [Fine]
   - *Perfect for Elders - cult survived centuries*
 
 #### Flaws
@@ -360,7 +360,7 @@ Legend:
 
 #### Merits
 - ✅ **Cannibal** (Каннибал) - 1pt
-- ⚡ **Mortuario** (Моритарио) - 2-4pt
+- ⚡ **Mortuario** (Моритарио) - 2-4pt [Fine]
   - *Note: References specific modern ritual, but concept could work*
 - ✅ **Bloodline Resistance** (Сопротивление единокровию) - 1pt
 - ✅ **Sanguine Incongruity** (Неприятие крови) - 5pt
@@ -372,10 +372,10 @@ Legend:
 ### Lasombra (Лазомбра)
 
 #### Merits
-- ⚠️ **Court Favorite** (Фаворит двора) - 1-5pt
+- ⚠️ **Court Favorite** (Фаворит двора) - 1-5pt [Remove]
   - **REASON: Courts of Blood are modern Sabbat institutions**
 - ✅ **Eyes of Shadow** (Глаза Тени) - 1-4pt
-- ⚡ **Heavy Hitters** (Серьёзные ребята) - 2pt
+- ⚡ **Heavy Hitters** (Серьёзные ребята) - 2pt [Remove]
   - *Note: Contacts from centuries ago likely dead*
 - ✅ **Aura of Command** (Ореол власти) - 3pt
 - ✅ **Shadow King/Queen** (Король/Королева Тени) - 4pt
@@ -386,7 +386,7 @@ Legend:
 #### Flaws
 - ✅ **Uncontrollable Night Vision** (Неуправляемое ночное зрение) - 2pt
 - ✅ **Disobedient** (Непослушный) - 3pt
-- ⚠️ **Unworthy** (Недостойный) - 3pt
+- ⚠️ **Unworthy** (Недостойный) - 3pt [Fine, but encourage a roll to see if it survived]
   - **REASON: Implies recent failure to prove worthiness in modern clan structure**
 
 ### Malkavians (Малкавиане)
@@ -397,7 +397,7 @@ Legend:
 - ✅ **Cold Reading** (Холодное чтение) - 3pt
 
 #### Flaws
-- ⚠️ **Paper Trail** (Бумажный след) - 2pt
+- ⚠️ **Paper Trail** (Бумажный след) - 2pt [Remove]
   - **REASON: Modern institutions and government records**
 - ✅ **Stigmata** (Стигматы) - 2-4pt
 - ✅ **Infectious** (Инфекционный) - 3pt
@@ -413,25 +413,25 @@ Legend:
 - ✅ **Monstrous Maw** (Чудовищная пасть) - 1pt
 - ✅ **Piscine** (Рыбий) - 1pt
 - ✅ **Slippery** (Скользкий) - 1pt
-- ⚡ **Spawning Pool** (Нерестилище) - 1-3pt
+- ⚡ **Spawning Pool** (Нерестилище) - 1-3pt [Remove]
   - *Note: Needs established presence in "home city" - may have changed after centuries*
-- ⚡ **Tunnel Rat** (Туннельная крыса) - 1-5pt
+- ⚡ **Tunnel Rat** (Туннельная крыса) - 1-5pt [Remove]
   - *Note: Knowledge of specific tunnels after centuries of torpor questionable*
 - ✅ **Hidden Sleep** (Скрытый сон) - 2pt
 - ✅ **Thick Hide** (Толстая шкура) - 2pt
-- ⚠️ **Erroneous Reflection** (Неверное отражение) - 3pt
+- ⚠️ **Erroneous Reflection** (Неверное отражение) - 3pt [Fine - it's not something that requires the knowledge of the modern world]
   - **REASON: References modern technology (cameras, video surveillance, facial recognition software)**
 - ✅ **Webbed** (Перепонки) - 4pt
 - ✅ **Presentable** (Потрёпанный вид) - 5pt
 
 #### Flaws
 - ✅ **Stench** (Вонь) - 1pt
-- ⚡ **Dangerous Secret** (Опасная тайна) - 1-5pt
+- ⚡ **Dangerous Secret** (Опасная тайна) - 1-5pt [Remove]
   - *Note: Secret from centuries ago might be irrelevant now*
 - ✅ **Loss of Scent** (Потеря обоняния) - 2pt
 - ✅ **Parasite Haven** (Рассадник паразитов) - 2pt
 - ✅ **Bestial** (Зверьё) - 3pt
-- ⚡ **Enemy Brood** (Вражеский выводок) - 3pt
+- ⚡ **Enemy Brood** (Вражеский выводок) - 3pt [Remove, imo]
   - *Note: Enemies from centuries ago, require roll to see if survived*
 - ✅ **Rot** (Гниение) - 4pt
 - ✅ **Tainted** (Заражение) - 5pt
@@ -456,52 +456,52 @@ Legend:
 - ✅ **Chandala** (Чандала) - 1pt
   - *Ancient caste system*
 - ✅ **Imperfect Reality** (Несовершенная реальность) - 2pt
-- ⚡ **Oathbreaker** (Клятвопреступник) - 2pt
+- ⚡ **Oathbreaker** (Клятвопреступник) - 2pt [Fine]
   - *Note: Broken oath could be from any time period*
-- ⚡ **Lost Svadharma** (Потерянная Свадхарма) - 3pt
+- ⚡ **Lost Svadharma** (Потерянная Свадхарма) - 3pt [Fine]
   - *Note: Failed destiny could be ancient*
 
 ### Toreador (Тореадор)
 
 #### Merits
-- ⚠️ **Indelible** (Неизгладимый) - 1-2pt
+- ⚠️ **Indelible** (Неизгладимый) - 1-2pt [Fine]
   - **REASON: 2pt version references modern technology (RFID implants)**
 - ✅ **Impressive Composure** (Впечатляющее самообладание) - 2pt
   - *Note: Only works on Humanity path*
-- ⚡ **Master of the Masquerade** (Мастер Маскарада) - 2pt
+- ⚡ **Master of the Masquerade** (Мастер Маскарада) - 2pt [fine]
   - *Note: "Masquerade" is modern Camarilla concept (1450s+)*
 - ✅ **Slow Degeneration** (Медленная деградация) - 5pt
   - *Note: Only works on Humanity path*
 
 #### Flaws
 - ✅ **Perfectionist Artist** (Художник-перфекционист) - 1pt
-- ⚠️ **Private Life** (Частная жизнь) - 3pt
+- ⚠️ **Private Life** (Частная жизнь) - 3pt [Remove]
   - **REASON: References modern separate life (YouTube channel, social media)**
 
 ### Tremere (Тремер)
 
 #### Merits
-- ⚠️ **Unbonded by the Cup** (Становление без чаши) - 1pt
+- ⚠️ **Unbonded by the Cup** (Становление без чаши) - 1pt [fine for Tremere - if Tremere existed as a clan, than this ritual did as well; if the ritual didn't, then the Tremere didn't exist either]
   - **REASON: References modern clan initiation ritual structure**
-- ⚡ **Secret Society Member** (Член тайного общества) - 1pt
+- ⚡ **Secret Society Member** (Член тайного общества) - 1pt [Remove]
   - *Note: Depends on which society and when it was founded*
-- ⚡ **Library Keys** (Ключи от библиотеки) - 1-5pt
+- ⚡ **Library Keys** (Ключи от библиотеки) - 1-5pt [Remove]
   - *Note: Requires active membership in current chantry*
-- ⚡ **Outside Haven** (Внешнее убежище) - 2pt
+- ⚡ **Outside Haven** (Внешнее убежище) - 2pt [Remove]
   - *Note: References current chantry living arrangements*
-- ⚠️ **Unmarked Antitribu** (Антитрибу без метки) - 2-5pt
+- ⚠️ **Unmarked Antitribu** (Антитрибу без метки) - 2-5pt [Remove]
   - **REASON: Sabbat-related, modern sect politics**
-- ⚡ **Quartermaster** (Интендант) - 3pt
+- ⚡ **Quartermaster** (Интендант) - 3pt [Remove]
   - *Note: Active chantry role, requires current position*
 
 #### Flaws
 - ✅ **Magical Curse** (Магическое Проклятие) - 1-5pt
   - *Depends on nature of curse*
-- ⚠️ **Recluse** (Затворник) - 2pt
-  - **REASON: Implies spent entire existence in chantry, contradicts torpor**
+- ⚠️ **Recluse** (Затворник) - 2pt [fine]
+  - **REASON: Implies spent entire existence in chantry, contradicts torpor** [does not for obvious reasons]
 - ⚠️ **Mark of the Traitor** (Метка предателя) - 3pt
-  - **REASON: Modern antitribu mark, Sabbat/Camarilla politics**
-- ⚠️ **Clan Bound** (Узы клана) - 3pt
+  - **REASON: Modern antitribu mark, Sabbat/Camarilla politics** [Remove]
+- ⚠️ **Clan Bound** (Узы клана) - 3pt [Remove]
   - **REASON: References modern clan blood bond initiation practices**
 - ✅ **Blood of the Mage** (Кровь мага) - 5pt
 - ✅ **Thaumaturgy Incapable** (Неспособность к Тауматургии) - 5pt
@@ -513,7 +513,7 @@ Legend:
 - ✅ **Bioluminescence** (Биолюминесценция) - 1pt
 - ✅ **Pain Tolerance** (Терпимость к боли) - 2pt
 - ✅ **Dragon's Temperament** (Темперамент дракона) - 3pt
-- ⚡ **Haven Affinity** (Связь с убежищем) - 3pt
+- ⚡ **Haven Affinity** (Связь с убежищем) - 3pt [Fine]
   - *Note: Requires established primary haven*
 - ✅ **Revenant Disciplines** (Дисциплины ревенантов) - 3pt
 - ✅ **Promethean Clay** (Прометеева глина) - 5pt
@@ -531,7 +531,7 @@ Legend:
 
 #### Merits
 - ✅ **Connoisseur** (Знаток) - 2pt
-- ⚠️ **Blessing of St. Gustav** (Благословение Святого Густава) - 4pt
+- ⚠️ **Blessing of St. Gustav** (Благословение Святого Густава) - 4pt [Fine, it was clearly developed in the Middle Ages]
   - **REASON: Sabbat-specific ritual (ignobilis ritus), modern sect**
 
 #### Flaws
@@ -540,13 +540,13 @@ Legend:
 ### Caitiff (Каитиффы)
 
 #### Merits
-- ⚡ **Personal Masquerade** (Личный Маскарад) - 3pt
+- ⚡ **Personal Masquerade** (Личный Маскарад) - 3pt [Fine]
   - *Note: "Masquerade" is modern concept, but pretending to be from a clan could work*
 
 #### Flaws
 - ✅ **Clan Weakness** (Слабость Клана) - 2pt
 - ✅ **Absence of Fangs** (Отсутствие клыков) - 2pt
-- ⚠️ **Ignorance** (Невежество) - 2pt
+- ⚠️ **Ignorance** (Невежество) - 2pt [Remove]
   - **REASON: Implies recent Embrace without instruction, contradicts Elder status**
 - ✅ **Bulimia** (Булимия) - 4pt
 
