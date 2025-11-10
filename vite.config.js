@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import { copyFileSync } from 'fs'
 
+// Updated: 2025-11-10 - Ensuring correct base path for GitHub Pages
 export default defineConfig({
   base: '/VTM20A-elders/',
   build: {
