@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import { copyFileSync } from 'fs'
 
 export default defineConfig({
-  base: '/VTM20A-elder/',
+  base: '/VTM20A-elders/',
   build: {
     outDir: 'dist',
     rollupOptions: {
