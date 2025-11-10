@@ -300,11 +300,287 @@ Legend:
 
 ---
 
+## CLAN-SPECIFIC MERITS & FLAWS (Lore of the Clans)
+
+### Assamites (Ассамиты)
+
+#### Merits
+- ⚡ **Ally in Another Faction** (Союзник в другой фракции) - 1pt
+  - *Note: Only works if ally is also an ancient vampire who survived torpor*
+- ⚠️ **Thousand-Meter Killer** (Тысячеметровый убийца) - 1pt
+  - **REASON: Sniper rifles are 20th century technology, "Club of One Thousand Meters" is modern concept**
+
+#### Flaws
+- ⚡ **Outcast** (Изгнанник) - 2pt
+  - *Note: Context-dependent on reason for exile*
+- ⚠️ **Broken Antitribu** (Сломленный антитрибу) - 3pt
+  - **REASON: Sabbat is modern (15th century+), references modern sect politics**
+- ⚡ **Multiple Curses** (Многочисленные проклятия) - 3pt
+  - *Note: References modern caste/sect divisions and Baali curse*
+
+### Brujah (Бруха)
+
+#### Merits
+- ✅ **Focus of Rage** (Средоточие ярости) - 3pt (Requires Path of Entelechy)
+- ✅ **Dynamic Nature** (Динамичная натура) - 5pt
+
+#### Flaws
+- ✅ **Predator's Demeanor** (Повадки хищника) - 2pt
+
+### Followers of Set (Последователи Сета)
+
+#### Merits
+- ✅ **Antitoxin Blood** (Невосприимчивость к наркотикам) - 2pt
+- ✅ **Addictive Blood** (Вызывающая привыкание кровь) - 3pt
+- ✅ **Setite Initiate** (Сетит-посвященный) - 5pt
+  - *Perfect for Elders - cult survived centuries*
+
+#### Flaws
+- ✅ **Scales** (Чешуя) - 1-3pt
+- ✅ **Venomous Bite** (Ядовитый укус) - 2pt
+- ✅ **Forked Tongue** (Раздвоенный язык) - 2pt
+- ✅ **Heartless** (Бессердечный) - 4pt
+- ✅ **Aura of Typhon** (Аура Тифона) - 5pt
+
+### Gangrel (Гангрел)
+
+#### Merits
+- ✅ **Hive Mind** (Разум улья) - 1-2pt
+- ✅ **Skald** (Скальд) - 2pt
+  - *Perfect for Elders - ancient vampire history*
+- ✅ **Lesser Mark of the Beast** (Малая метка Зверя) - 4pt
+  - *Note: Only works on Humanity path*
+- ✅ **Totem Shift** (Смена Тотема) - 5pt
+
+#### Flaws
+- ✅ **Caged Rat** (Крыса в клетке) - 2pt
+- ✅ **Pack Member** (Член стаи) - 2pt
+
+### Giovanni (Джованни)
+
+#### Merits
+- ✅ **Cannibal** (Каннибал) - 1pt
+- ⚡ **Mortuario** (Моритарио) - 2-4pt
+  - *Note: References specific modern ritual, but concept could work*
+- ✅ **Bloodline Resistance** (Сопротивление единокровию) - 1pt
+- ✅ **Sanguine Incongruity** (Неприятие крови) - 5pt
+
+#### Flaws
+- ✅ **Inbred** (Плод инбридинга) - 1-5pt
+- ✅ **Shadowwalker** (Идущий в тени) - 6pt
+
+### Lasombra (Лазомбра)
+
+#### Merits
+- ⚠️ **Court Favorite** (Фаворит двора) - 1-5pt
+  - **REASON: Courts of Blood are modern Sabbat institutions**
+- ✅ **Eyes of Shadow** (Глаза Тени) - 1-4pt
+- ⚡ **Heavy Hitters** (Серьёзные ребята) - 2pt
+  - *Note: Contacts from centuries ago likely dead*
+- ✅ **Aura of Command** (Ореол власти) - 3pt
+- ✅ **Shadow King/Queen** (Король/Королева Тени) - 4pt
+  - *Note: Only works on Humanity path*
+- ✅ **Long-Term Planning** (Долгосрочное планирование) - 4pt
+- ✅ **Hand of God** (Длань Бога) - 5pt
+
+#### Flaws
+- ✅ **Uncontrollable Night Vision** (Неуправляемое ночное зрение) - 2pt
+- ✅ **Disobedient** (Непослушный) - 3pt
+- ⚠️ **Unworthy** (Недостойный) - 3pt
+  - **REASON: Implies recent failure to prove worthiness in modern clan structure**
+
+### Malkavians (Малкавиане)
+
+#### Merits
+- ✅ **Blurry Aura** (Нечёткая аура) - 2pt
+- ✅ **Prophetic Dreams** (Пророческие сны) - 2pt
+- ✅ **Cold Reading** (Холодное чтение) - 3pt
+
+#### Flaws
+- ⚠️ **Paper Trail** (Бумажный след) - 2pt
+  - **REASON: Modern institutions and government records**
+- ✅ **Stigmata** (Стигматы) - 2-4pt
+- ✅ **Infectious** (Инфекционный) - 3pt
+- ✅ **Hypersensitive** (Сверхвосприимчивый) - 3pt
+- ✅ **Dead Inside** (Мёртвый внутри) - 4pt
+
+### Nosferatu (Носферату)
+
+#### Merits
+- ✅ **Bad Blood** (Дурная кровь) - 1pt
+- ✅ **Lizard Limbs** (Конечности ящерицы) - 1pt
+- ✅ **Long Fingers** (Длинные пальцы) - 1pt
+- ✅ **Monstrous Maw** (Чудовищная пасть) - 1pt
+- ✅ **Piscine** (Рыбий) - 1pt
+- ✅ **Slippery** (Скользкий) - 1pt
+- ⚡ **Spawning Pool** (Нерестилище) - 1-3pt
+  - *Note: Needs established presence in "home city" - may have changed after centuries*
+- ⚡ **Tunnel Rat** (Туннельная крыса) - 1-5pt
+  - *Note: Knowledge of specific tunnels after centuries of torpor questionable*
+- ✅ **Hidden Sleep** (Скрытый сон) - 2pt
+- ✅ **Thick Hide** (Толстая шкура) - 2pt
+- ⚠️ **Erroneous Reflection** (Неверное отражение) - 3pt
+  - **REASON: References modern technology (cameras, video surveillance, facial recognition software)**
+- ✅ **Webbed** (Перепонки) - 4pt
+- ✅ **Presentable** (Потрёпанный вид) - 5pt
+
+#### Flaws
+- ✅ **Stench** (Вонь) - 1pt
+- ⚡ **Dangerous Secret** (Опасная тайна) - 1-5pt
+  - *Note: Secret from centuries ago might be irrelevant now*
+- ✅ **Loss of Scent** (Потеря обоняния) - 2pt
+- ✅ **Parasite Haven** (Рассадник паразитов) - 2pt
+- ✅ **Bestial** (Зверьё) - 3pt
+- ⚡ **Enemy Brood** (Вражеский выводок) - 3pt
+  - *Note: Enemies from centuries ago, require roll to see if survived*
+- ✅ **Rot** (Гниение) - 4pt
+- ✅ **Tainted** (Заражение) - 5pt
+- ✅ **Garbled Speech** (Бессвязная речь) - 5pt
+
+### Ravnos (Равнос)
+
+#### Merits
+- ✅ **Antitoxin Blood** (Антитоксин в крови) - 1pt
+- ✅ **Brahmin** (Брахман) - 1pt
+  - *Ancient caste system, perfect for Elders*
+- ✅ **Kshatriya** (Кшатрия) - 1pt
+  - *Ancient caste system, perfect for Elders*
+- ✅ **Sleight of Hand** (Ловкость Рук) - 1pt
+- ✅ **Mute Devotion** (Немая Преданность) - 1pt
+- ✅ **Vaishya** (Вайшья) - 1pt
+  - *Ancient caste system, perfect for Elders*
+- ✅ **Friendly Critters** (Дружелюбные зверьки) - 2pt
+- ✅ **Hardened Heart** (Огрубевшее сердце) - 3pt
+
+#### Flaws
+- ✅ **Chandala** (Чандала) - 1pt
+  - *Ancient caste system*
+- ✅ **Imperfect Reality** (Несовершенная реальность) - 2pt
+- ⚡ **Oathbreaker** (Клятвопреступник) - 2pt
+  - *Note: Broken oath could be from any time period*
+- ⚡ **Lost Svadharma** (Потерянная Свадхарма) - 3pt
+  - *Note: Failed destiny could be ancient*
+
+### Toreador (Тореадор)
+
+#### Merits
+- ⚠️ **Indelible** (Неизгладимый) - 1-2pt
+  - **REASON: 2pt version references modern technology (RFID implants)**
+- ✅ **Impressive Composure** (Впечатляющее самообладание) - 2pt
+  - *Note: Only works on Humanity path*
+- ⚡ **Master of the Masquerade** (Мастер Маскарада) - 2pt
+  - *Note: "Masquerade" is modern Camarilla concept (1450s+)*
+- ✅ **Slow Degeneration** (Медленная деградация) - 5pt
+  - *Note: Only works on Humanity path*
+
+#### Flaws
+- ✅ **Perfectionist Artist** (Художник-перфекционист) - 1pt
+- ⚠️ **Private Life** (Частная жизнь) - 3pt
+  - **REASON: References modern separate life (YouTube channel, social media)**
+
+### Tremere (Тремер)
+
+#### Merits
+- ⚠️ **Unbonded by the Cup** (Становление без чаши) - 1pt
+  - **REASON: References modern clan initiation ritual structure**
+- ⚡ **Secret Society Member** (Член тайного общества) - 1pt
+  - *Note: Depends on which society and when it was founded*
+- ⚡ **Library Keys** (Ключи от библиотеки) - 1-5pt
+  - *Note: Requires active membership in current chantry*
+- ⚡ **Outside Haven** (Внешнее убежище) - 2pt
+  - *Note: References current chantry living arrangements*
+- ⚠️ **Unmarked Antitribu** (Антитрибу без метки) - 2-5pt
+  - **REASON: Sabbat-related, modern sect politics**
+- ⚡ **Quartermaster** (Интендант) - 3pt
+  - *Note: Active chantry role, requires current position*
+
+#### Flaws
+- ✅ **Magical Curse** (Магическое Проклятие) - 1-5pt
+  - *Depends on nature of curse*
+- ⚠️ **Recluse** (Затворник) - 2pt
+  - **REASON: Implies spent entire existence in chantry, contradicts torpor**
+- ⚠️ **Mark of the Traitor** (Метка предателя) - 3pt
+  - **REASON: Modern antitribu mark, Sabbat/Camarilla politics**
+- ⚠️ **Clan Bound** (Узы клана) - 3pt
+  - **REASON: References modern clan blood bond initiation practices**
+- ✅ **Blood of the Mage** (Кровь мага) - 5pt
+- ✅ **Thaumaturgy Incapable** (Неспособность к Тауматургии) - 5pt
+  - *Appropriate but extremely problematic for Tremere character*
+
+### Tzimisce (Цимисхи)
+
+#### Merits
+- ✅ **Bioluminescence** (Биолюминесценция) - 1pt
+- ✅ **Pain Tolerance** (Терпимость к боли) - 2pt
+- ✅ **Dragon's Temperament** (Темперамент дракона) - 3pt
+- ⚡ **Haven Affinity** (Связь с убежищем) - 3pt
+  - *Note: Requires established primary haven*
+- ✅ **Revenant Disciplines** (Дисциплины ревенантов) - 3pt
+- ✅ **Promethean Clay** (Прометеева глина) - 5pt
+
+#### Flaws
+- ✅ **Unblinking Stare** (Немигающий взгляд) - 1pt
+- ✅ **Ancestral Soil Dependence** (Зависимость от земли предков) - 2pt
+  - *Very thematic for Elders - need Eastern European soil*
+- ✅ **Faceless** (Безликий) - 3pt
+- ✅ **Privacy Obsession** (Одержимость уединением) - 3pt
+- ✅ **Revenant Weakness** (Слабость ревенантов) - 3pt
+- ✅ **Consumption** (Потребление) - 5pt
+
+### Ventrue (Вентру)
+
+#### Merits
+- ✅ **Connoisseur** (Знаток) - 2pt
+- ⚠️ **Blessing of St. Gustav** (Благословение Святого Густава) - 4pt
+  - **REASON: Sabbat-specific ritual (ignobilis ritus), modern sect**
+
+#### Flaws
+- ✅ **Rarefied Tastes** (Необычные предпочтения) - 2pt
+
+### Caitiff (Каитиффы)
+
+#### Merits
+- ⚡ **Personal Masquerade** (Личный Маскарад) - 3pt
+  - *Note: "Masquerade" is modern concept, but pretending to be from a clan could work*
+
+#### Flaws
+- ✅ **Clan Weakness** (Слабость Клана) - 2pt
+- ✅ **Absence of Fangs** (Отсутствие клыков) - 2pt
+- ⚠️ **Ignorance** (Невежество) - 2pt
+  - **REASON: Implies recent Embrace without instruction, contradicts Elder status**
+- ✅ **Bulimia** (Булимия) - 4pt
+
+---
+
+## UPDATED SUMMARY
+
+### Additional Clan Merits to Remove/Restrict:
+1. Thousand-Meter Killer (modern weaponry)
+2. Broken Antitribu (Sabbat too modern)
+3. Court Favorite (modern Sabbat Courts)
+4. Erroneous Reflection (modern technology)
+5. Indelible 2pt version (RFID implants)
+6. Private Life (modern social media)
+7. Unbonded by the Cup (modern ritual)
+8. Unmarked Antitribu (Sabbat-related)
+9. Recluse (contradicts torpor)
+10. Mark of the Traitor (modern sect politics)
+11. Clan Bound (modern practices)
+12. Blessing of St. Gustav (Sabbat ritual)
+
+### Additional Clan Flaws to Remove/Restrict:
+1. Paper Trail (modern institutions)
+2. Unworthy (modern clan politics)
+3. Ignorance (contradicts Elder status)
+
+---
+
 ## RECOMMENDATIONS
 
-1. **Remove entirely** - Merits/flaws that are completely incompatible (generation flaws, computer aptitude, all Masquerade-related)
-2. **Add warnings** - Merits/flaws that need context (True Love, Boons, Enemies - note that centuries have passed)
-3. **Modify descriptions** - Some could work with adjusted text explaining they're from ancient times
+1. **Remove entirely** - Merits/flaws that are completely incompatible (generation flaws, computer aptitude, all Masquerade-related, modern technology, Sabbat-specific for pre-1450s Elders)
+2. **Add warnings** - Merits/flaws that need context (True Love, Boons, Enemies, social positions, contacts - note that centuries have passed)
+3. **Modify descriptions** - Some could work with adjusted text explaining they're from ancient times or require "survival rolls"
+4. **Era restrictions** - Some merits/flaws should be restricted based on when the Elder went into torpor (e.g., Sabbat Survivor only for post-15th century Elders)
 
 
 # Достоинства и Недостатки Кланов
