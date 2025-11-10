@@ -15,7 +15,7 @@ class CharacterCreatorApp {
   constructor() {
     this.character = new Character();
     this.tracker = new PointTracker(this.character);
-    this.currentTab = 'basic';
+    this.currentPhase = 'setup';
     this.allDisciplines = this.flattenDisciplines();
 
     this.init();
@@ -39,80 +39,78 @@ class CharacterCreatorApp {
   render() {
     const app = document.getElementById('app');
     app.innerHTML = `
-      <div class="min-h-screen p-6">
-        <header class="mb-8">
-          <h1 class="text-4xl font-bold text-center text-vtm-red mb-2">
+      <div class="min-h-screen p-4 md:p-6">
+        <header class="mb-4">
+          <h1 class="text-2xl md:text-3xl font-bold text-center text-vtm-red mb-1">
             Vampire: The Masquerade 20A
           </h1>
-          <h2 class="text-2xl text-center text-gray-400">
+          <h2 class="text-lg md:text-xl text-center text-gray-400">
             Создание персонажа - Древний
           </h2>
         </header>
 
-        <div class="max-w-7xl mx-auto">
-          <!-- Tabs -->
-          <div class="flex border-b border-gray-700 mb-6">
-            <div class="tab ${this.currentTab === 'basic' ? 'active' : ''}" data-tab="basic">
-              Основное
+        <div class="max-w-5xl mx-auto">
+          <!-- Phase tabs -->
+          <div class="flex border-b border-gray-700 mb-4 overflow-x-auto">
+            <div class="tab ${this.currentPhase === 'setup' ? 'active' : ''}" data-phase="setup">
+              1. Базовая настройка
             </div>
-            <div class="tab ${this.currentTab === 'attributes' ? 'active' : ''}" data-tab="attributes">
-              Атрибуты
+            <div class="tab ${this.currentPhase === 'freebies' ? 'active' : ''}" data-phase="freebies">
+              2. Freebies
             </div>
-            <div class="tab ${this.currentTab === 'abilities' ? 'active' : ''}" data-tab="abilities">
-              Способности
-            </div>
-            <div class="tab ${this.currentTab === 'advantages' ? 'active' : ''}" data-tab="advantages">
-              Преимущества
-            </div>
-            <div class="tab ${this.currentTab === 'freebies' ? 'active' : ''}" data-tab="freebies">
-              Freebies & XP
-            </div>
-            <div class="tab ${this.currentTab === 'summary' ? 'active' : ''}" data-tab="summary">
-              Итоги
+            <div class="tab ${this.currentPhase === 'xp' ? 'active' : ''}" data-phase="xp">
+              3. Опыт (XP)
             </div>
           </div>
 
-          <!-- Tab Content -->
-          <div id="tabContent">
-            ${this.renderTabContent()}
+          <!-- Phase content -->
+          <div id="phaseContent">
+            ${this.renderPhaseContent()}
           </div>
 
           <!-- Action buttons -->
-          <div class="mt-8 flex gap-4 justify-center">
-            <button class="btn btn-secondary" id="saveBtn">💾 Сохранить</button>
-            <button class="btn btn-secondary" id="loadBtn">📂 Загрузить</button>
-            <button class="btn btn-primary" id="exportBtn">📄 Экспорт в PDF</button>
+          <div class="mt-6 flex gap-3 justify-center flex-wrap sticky bottom-2 bg-vtm-dark p-3 rounded-lg shadow-lg">
+            <button class="btn btn-secondary text-sm" id="saveBtn">💾 Сохранить</button>
+            <button class="btn btn-secondary text-sm" id="loadBtn">📂 Загрузить</button>
+            <button class="btn btn-primary text-sm" id="exportBtn">📄 PDF</button>
           </div>
         </div>
       </div>
     `;
   }
 
-  renderTabContent() {
-    switch (this.currentTab) {
-      case 'basic':
-        return this.renderBasicInfo();
-      case 'attributes':
-        return this.renderAttributes();
-      case 'abilities':
-        return this.renderAbilities();
-      case 'advantages':
-        return this.renderAdvantages();
+  renderPhaseContent() {
+    switch (this.currentPhase) {
+      case 'setup':
+        return this.renderSetupPhase();
       case 'freebies':
-        return this.renderFreebiesXP();
-      case 'summary':
-        return this.renderSummary();
+        return this.renderFreebiesPhase();
+      case 'xp':
+        return this.renderXPPhase();
       default:
         return '';
     }
   }
 
+  renderSetupPhase() {
+    return `
+      <div class="space-y-4">
+        ${this.renderBasicInfo()}
+        ${this.renderAttributes()}
+        ${this.renderAbilities()}
+        ${this.renderAdvantages()}
+        ${this.renderSummary()}
+      </div>
+    `;
+  }
+
+
   renderBasicInfo() {
     return `
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="card">
           <h3 class="section-title">Основная информация</h3>
-          <div class="space-y-4">
+          <div class="space-y-3">
             <div>
               <label class="block text-sm font-medium mb-1">Имя</label>
               <input type="text" id="name" class="input-field" value="${this.character.name}">
@@ -160,7 +158,7 @@ class CharacterCreatorApp {
 
         <div class="card">
           <h3 class="section-title">Клан и Поколение</h3>
-          <div class="space-y-4">
+          <div class="space-y-3">
             <div>
               <label class="block text-sm font-medium mb-1">Клан</label>
               <select id="clan" class="input-field">
@@ -234,7 +232,7 @@ class CharacterCreatorApp {
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           ${this.renderAttributeCategory('physical', 'Физические', ['strength', 'dexterity', 'stamina'], ['Сила', 'Ловкость', 'Выносливость'])}
           ${this.renderAttributeCategory('social', 'Социальные', ['charisma', 'manipulation', 'appearance'], ['Обаяние', 'Манипулирование', 'Привлекательность'])}
           ${this.renderAttributeCategory('mental', 'Ментальные', ['perception', 'intelligence', 'wits'], ['Восприятие', 'Интеллект', 'Смекалка'])}
@@ -251,7 +249,7 @@ class CharacterCreatorApp {
           <div class="stat-row">
             <span class="stat-label">${labels[idx]}</span>
             <div class="dot-tracker" data-category="attributes" data-subcategory="${category}" data-attr="${attr}">
-              ${this.renderDots(this.character.attributes[category][attr], 9)}
+              ${this.renderDots(this.character.attributes[category][attr], 10)}
             </div>
           </div>
         `).join('')}
@@ -277,7 +275,7 @@ class CharacterCreatorApp {
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           ${this.renderAbilityCategory('talents', 'Таланты', abilitiesData.talents)}
           ${this.renderAbilityCategory('skills', 'Навыки', abilitiesData.skills)}
           ${this.renderAbilityCategory('knowledges', 'Познания', abilitiesData.knowledges)}
@@ -294,7 +292,7 @@ class CharacterCreatorApp {
           <div class="stat-row">
             <span class="stat-label">${ability.name}</span>
             <div class="dot-tracker" data-category="abilities" data-subcategory="${category}" data-attr="${ability.id}">
-              ${this.renderDots(this.character.abilities[category][ability.id] || 0, 9)}
+              ${this.renderDots(this.character.abilities[category][ability.id] || 0, 10)}
             </div>
           </div>
         `).join('')}
@@ -434,7 +432,7 @@ class CharacterCreatorApp {
             </div>
             <div class="flex items-center gap-2">
               <div class="dot-tracker" data-category="disciplines" data-attr="${discId}">
-                ${this.renderDots(level, 9)}
+                ${this.renderDots(level, 10)}
               </div>
               <button class="text-red-500 hover:text-red-400 text-xl" onclick="app.removeDiscipline('${discId}')">×</button>
             </div>
@@ -449,89 +447,133 @@ class CharacterCreatorApp {
     }).join('');
   }
 
-  renderFreebiesXP() {
+  renderFreebiesPhase() {
+    const available = this.character.freebies - this.character.freebiesSpent;
+
     return `
-      <div class="space-y-6">
-        <div class="card">
-          <h3 class="section-title">Freebies</h3>
-          <div class="mb-4 p-4 bg-gray-800 rounded">
-            <div class="text-sm font-medium mb-2">Доступно Freebies: ${this.character.freebies - this.character.freebiesSpent}</div>
-            <div class="text-xs text-gray-400">
-              Базовые (с обязательным недостатком котерии): 22<br>
-              Личные недостатки: +${Math.min(this.character.flaws.reduce((sum, f) => sum + f.cost, 0), 7)}<br>
-              Достоинства: -${this.character.merits.reduce((sum, m) => sum + m.cost, 0)}
-            </div>
+      <div class="card">
+        <h3 class="section-title">Распределение Freebies</h3>
+
+        <div class="mb-4 p-4 bg-gray-800 rounded">
+          <div class="text-lg font-bold mb-2">
+            Доступно: <span class="${available >= 0 ? 'text-green-400' : 'text-red-400'}">${available}</span> Freebies
           </div>
-          <div class="mb-4">
-            <h4 class="subsection-title">Стоимость в Freebies</h4>
-            <div class="grid grid-cols-2 gap-2 text-sm">
-              <div>Атрибут: 5</div>
-              <div>Способность: 2</div>
-              <div>Предыстория: 1</div>
-              <div>Дисциплина: 7</div>
-              <div>Добродетель: 2</div>
-              <div>Человечность: 1</div>
-              <div>Сила воли: 1</div>
+          <div class="text-sm text-gray-400">
+            Базовые: 22 (с обязательным недостатком котерии)<br>
+            Использовано: ${this.character.freebiesSpent}
+          </div>
+        </div>
+
+        <div class="mb-6 p-4 bg-gray-800 rounded">
+          <h4 class="font-semibold mb-3">Стоимость в Freebies:</h4>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+            <div class="p-2 bg-gray-900 rounded">
+              <div class="text-vtm-red font-bold">5</div>
+              <div class="text-gray-400">Атрибут</div>
+            </div>
+            <div class="p-2 bg-gray-900 rounded">
+              <div class="text-vtm-red font-bold">2</div>
+              <div class="text-gray-400">Способность</div>
+            </div>
+            <div class="p-2 bg-gray-900 rounded">
+              <div class="text-vtm-red font-bold">1</div>
+              <div class="text-gray-400">Предыстория</div>
+            </div>
+            <div class="p-2 bg-gray-900 rounded">
+              <div class="text-vtm-red font-bold">7</div>
+              <div class="text-gray-400">Дисциплина</div>
+            </div>
+            <div class="p-2 bg-gray-900 rounded">
+              <div class="text-vtm-red font-bold">2</div>
+              <div class="text-gray-400">Добродетель</div>
+            </div>
+            <div class="p-2 bg-gray-900 rounded">
+              <div class="text-vtm-red font-bold">1</div>
+              <div class="text-gray-400">Человечность</div>
+            </div>
+            <div class="p-2 bg-gray-900 rounded">
+              <div class="text-vtm-red font-bold">1</div>
+              <div class="text-gray-400">Сила воли</div>
             </div>
           </div>
         </div>
 
-        <div class="card">
-          <h3 class="section-title">Опыт (XP)</h3>
-          <div class="mb-4 p-4 bg-gray-800 rounded">
-            <div class="text-sm font-medium">Доступно XP: ${this.character.experience - this.character.experienceSpent}/33</div>
+        <div class="text-sm text-gray-400 mb-4">
+          <strong>Совет:</strong> Используйте Freebies для повышения характеристик прямо на предыдущей фазе.
+          Все изменения после базового распределения тратят Freebies автоматически.
+        </div>
+
+        <div class="flex gap-3">
+          <button class="btn btn-secondary" onclick="app.switchPhase('setup')">← Назад к настройке</button>
+          <button class="btn btn-primary flex-1" onclick="app.switchPhase('xp')">Далее: Опыт (XP) →</button>
+        </div>
+      </div>
+    `;
+  }
+
+  renderXPPhase() {
+    const available = this.character.experience - this.character.experienceSpent;
+
+    return `
+      <div class="card">
+        <h3 class="section-title">Распределение опыта (XP)</h3>
+
+        <div class="mb-4 p-4 bg-gray-800 rounded">
+          <div class="text-lg font-bold mb-2">
+            Доступно: <span class="${available >= 0 ? 'text-green-400' : 'text-red-400'}">${available}</span> / 33 XP
           </div>
-
-          <div class="mb-4">
-            <h4 class="subsection-title">Потратить XP</h4>
-            <div class="space-y-4">
-              <!-- XP Purchase Type -->
-              <div>
-                <label class="block text-sm font-medium mb-1">Что покупаем?</label>
-                <select id="xpType" class="input-field">
-                  <option value="">Выберите...</option>
-                  <option value="attribute">Атрибут</option>
-                  <option value="ability">Способность</option>
-                  <option value="discipline">Дисциплина</option>
-                  <option value="virtue">Добродетель</option>
-                  <option value="humanity">Человечность/Путь</option>
-                  <option value="willpower">Сила воли</option>
-                </select>
-              </div>
-
-              <!-- Dynamic selection based on type -->
-              <div id="xpPurchaseOptions"></div>
-
-              <!-- Cost display -->
-              <div id="xpCostDisplay" class="p-3 bg-gray-800 rounded hidden">
-                <div class="text-sm font-medium mb-1">Стоимость: <span id="xpCostAmount">0</span> XP</div>
-                <div class="text-xs text-gray-400" id="xpCostDetails"></div>
-              </div>
-
-              <!-- Purchase button -->
-              <button id="xpPurchaseBtn" class="btn btn-primary w-full hidden">Купить</button>
-            </div>
-          </div>
-
-          <div class="mb-4">
-            <h4 class="subsection-title">Справка: Стоимость в XP</h4>
-            <div class="space-y-1 text-xs text-gray-400">
-              <div>• Новая способность: 3</div>
-              <div>• Новая дисциплина: 10</div>
-              <div>• Новый путь Некромантии/Тауматургии: 7</div>
-              <div>• Атрибут: текущее × 4</div>
-              <div>• Способность: текущее × 2</div>
-              <div>• Физическая дисциплина (клановая): текущее × 5</div>
-              <div>• Ментальная дисциплина (клановая): текущее × 6</div>
-              <div>• Уникальная дисциплина (клановая): текущее × 7</div>
-              <div>• Дисциплина (сторонняя): текущее × 10</div>
-              <div>• Дисциплина Каитифф: текущее × 6</div>
-              <div>• Добродетель: текущее × 2</div>
-              <div>• Человечность/Путь: текущее × 2</div>
-              <div>• Сила воли: текущее</div>
-            </div>
+          <div class="text-sm text-gray-400">
+            Древние начинают с 33 опыта
           </div>
         </div>
+
+        <div class="mb-6">
+          <h4 class="font-semibold mb-3">Потратить XP</h4>
+          <div class="space-y-3">
+            <div>
+              <label class="block text-sm font-medium mb-1">Что повысить?</label>
+              <select id="xpType" class="input-field">
+                <option value="">Выберите...</option>
+                <option value="attribute">Атрибут (текущее × 4)</option>
+                <option value="ability">Способность (новая: 3, повысить: текущее × 2)</option>
+                <option value="discipline">Дисциплина (новая: 10, повысить: зависит от клана)</option>
+                <option value="virtue">Добродетель (текущее × 2)</option>
+                <option value="humanity">Человечность (текущее × 2)</option>
+                <option value="willpower">Сила воли (текущее × 1)</option>
+              </select>
+            </div>
+
+            <div id="xpPurchaseOptions"></div>
+
+            <div id="xpCostDisplay" class="p-3 bg-gray-800 rounded hidden">
+              <div class="text-sm font-medium mb-1">Стоимость: <span id="xpCostAmount" class="text-vtm-red">0</span> XP</div>
+              <div class="text-xs text-gray-400" id="xpCostDetails"></div>
+            </div>
+
+            <button id="xpPurchaseBtn" class="btn btn-primary w-full hidden">Купить</button>
+          </div>
+        </div>
+
+        <details class="mb-4">
+          <summary class="cursor-pointer font-semibold mb-2">Справка: Полная таблица стоимости XP</summary>
+          <div class="space-y-1 text-xs text-gray-400 p-3 bg-gray-800 rounded">
+            <div>• Новая способность: <strong class="text-white">3</strong></div>
+            <div>• Новая дисциплина: <strong class="text-white">10</strong></div>
+            <div>• Новый путь (Некромантия/Тауматургия): <strong class="text-white">7</strong></div>
+            <div>• Атрибут: <strong class="text-white">текущее × 4</strong></div>
+            <div>• Способность: <strong class="text-white">текущее × 2</strong></div>
+            <div>• Дисциплина (физическая, клановая): <strong class="text-white">текущее × 5</strong></div>
+            <div>• Дисциплина (ментальная, клановая): <strong class="text-white">текущее × 6</strong></div>
+            <div>• Дисциплина (уникальная, клановая): <strong class="text-white">текущее × 7</strong></div>
+            <div>• Дисциплина (сторонняя): <strong class="text-white">текущее × 10</strong></div>
+            <div>• Дисциплина (Каитифф): <strong class="text-white">текущее × 6</strong></div>
+            <div>• Добродетель: <strong class="text-white">текущее × 2</strong></div>
+            <div>• Человечность/Путь: <strong class="text-white">текущее × 2</strong></div>
+            <div>• Сила воли: <strong class="text-white">текущее × 1</strong></div>
+          </div>
+        </details>
+
+        <button class="btn btn-secondary w-full" onclick="app.switchPhase('freebies')">← Назад к Freebies</button>
       </div>
     `;
   }
@@ -594,14 +636,20 @@ class CharacterCreatorApp {
     return html;
   }
 
+  switchPhase(phase) {
+    this.currentPhase = phase;
+    this.render();
+    this.attachEventListeners();
+  }
+
   attachEventListeners() {
-    // Tab switching
+    // Phase switching
     document.querySelectorAll('.tab').forEach(tab => {
       tab.addEventListener('click', (e) => {
-        this.currentTab = e.target.dataset.tab;
-        this.render();
-        this.attachEventListeners();
-        this.updateAllDisplays();
+        const phase = e.target.dataset.phase;
+        if (phase) {
+          this.switchPhase(phase);
+        }
       });
     });
 
@@ -704,21 +752,101 @@ class CharacterCreatorApp {
   }
 
   updateAllDisplays() {
-    // Re-render current tab to update point displays
-    const content = document.getElementById('tabContent');
-    if (content) {
-      content.innerHTML = this.renderTabContent();
-      this.attachEventListeners();
-    }
+    // Re-render the entire page to update all displays
+    this.render();
+    this.attachEventListeners();
   }
 
   showAddDisciplineDialog() {
-    const discId = prompt('Введите ID дисциплины (например: potence, auspex)');
-    if (discId && this.allDisciplines.find(d => d.id === discId)) {
-      this.character.disciplines[discId] = 1;
-      this.saveToLocalStorage();
-      this.updateAllDisplays();
-    }
+    // Get already learned disciplines
+    const learnedDisciplines = Object.keys(this.character.disciplines);
+    const availableDisciplines = this.allDisciplines.filter(d => !learnedDisciplines.includes(d.id));
+
+    // Group by category
+    const grouped = {
+      physical: availableDisciplines.filter(d => d.category === 'physical'),
+      mental: availableDisciplines.filter(d => d.category === 'mental'),
+      unique: availableDisciplines.filter(d => d.category === 'unique')
+    };
+
+    const clanDisciplines = this.getClanDisciplines();
+
+    // Create modal
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50';
+    modal.innerHTML = `
+      <div class="bg-vtm-grey rounded-lg p-6 max-w-3xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-2xl font-bold text-vtm-red">Выбрать дисциплину</h3>
+          <button class="text-3xl text-gray-400 hover:text-white" onclick="this.closest('.fixed').remove()">&times;</button>
+        </div>
+
+        <div class="mb-4">
+          <input type="text" id="disciplineSearch" placeholder="Поиск по названию..."
+                 class="input-field" autocomplete="off">
+        </div>
+
+        <div id="disciplineList" class="space-y-4">
+          ${this.renderDisciplineCategory('Физические', grouped.physical, clanDisciplines)}
+          ${this.renderDisciplineCategory('Ментальные', grouped.mental, clanDisciplines)}
+          ${this.renderDisciplineCategory('Уникальные', grouped.unique, clanDisciplines)}
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Add search functionality
+    const searchInput = document.getElementById('disciplineSearch');
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase();
+      const items = document.querySelectorAll('.discipline-item');
+      items.forEach(item => {
+        const name = item.dataset.name.toLowerCase();
+        item.style.display = name.includes(query) ? 'flex' : 'none';
+      });
+    });
+
+    // Focus search input
+    searchInput.focus();
+  }
+
+  renderDisciplineCategory(title, disciplines, clanDisciplines) {
+    if (disciplines.length === 0) return '';
+
+    return `
+      <div>
+        <h4 class="text-lg font-semibold text-gray-300 mb-2">${title}</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+          ${disciplines.map(disc => {
+            const isClan = clanDisciplines.includes(disc.id);
+            return `
+              <div class="discipline-item p-3 bg-gray-800 rounded hover:bg-gray-700 cursor-pointer transition-colors flex justify-between items-center"
+                   data-name="${disc.name}"
+                   onclick="app.selectDiscipline('${disc.id}')">
+                <div>
+                  <div class="font-medium">${disc.name}</div>
+                  <div class="text-xs text-gray-400">${disc.description || ''}</div>
+                </div>
+                ${isClan ? '<span class="text-xs text-green-400 font-semibold">Клановая</span>' : ''}
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  selectDiscipline(discId) {
+    this.character.disciplines[discId] = 1;
+    this.saveToLocalStorage();
+
+    // Close modal
+    const modal = document.querySelector('.fixed.inset-0');
+    if (modal) modal.remove();
+
+    // Refresh display
+    this.updateAllDisplays();
   }
 
   removeDiscipline(discId) {
