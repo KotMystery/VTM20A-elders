@@ -452,11 +452,11 @@ class CharacterCreatorApp {
 
     return `
       <div class="card">
-        <h3 class="section-title">Распределение Freebies</h3>
+        <h3 class="section-title">Распределение бонусных очков</h3>
 
         <div class="mb-4 p-4 bg-gray-800 rounded">
           <div class="text-lg font-bold mb-2">
-            Доступно: <span class="${available >= 0 ? 'text-green-400' : 'text-red-400'}">${available}</span> Freebies
+            Доступно: <span class="${available >= 0 ? 'text-green-400' : 'text-red-400'}">${available}</span> бонусных очков
           </div>
           <div class="text-sm text-gray-400">
             Базовые: 22 (с обязательным недостатком котерии)<br>
@@ -464,48 +464,50 @@ class CharacterCreatorApp {
           </div>
         </div>
 
-        <div class="mb-6 p-4 bg-gray-800 rounded">
-          <h4 class="font-semibold mb-3">Стоимость в Freebies:</h4>
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <div class="p-2 bg-gray-900 rounded">
-              <div class="text-vtm-red font-bold">5</div>
-              <div class="text-gray-400">Атрибут</div>
+        <div class="mb-6">
+          <h4 class="font-semibold mb-3">Потратить бонусные очки</h4>
+          <div class="space-y-3">
+            <div>
+              <label class="block text-sm font-medium mb-1">Что повысить?</label>
+              <select id="freebieType" class="input-field">
+                <option value="">Выберите...</option>
+                <option value="attribute">Атрибут (5 очков)</option>
+                <option value="ability">Способность (2 очка)</option>
+                <option value="discipline">Дисциплина (7 очков)</option>
+                <option value="background">Предыстория (1 очко)</option>
+                <option value="virtue">Добродетель (2 очка)</option>
+                <option value="humanity">Человечность (1 очко)</option>
+                <option value="willpower">Сила воли (1 очко)</option>
+              </select>
             </div>
-            <div class="p-2 bg-gray-900 rounded">
-              <div class="text-vtm-red font-bold">2</div>
-              <div class="text-gray-400">Способность</div>
+
+            <div id="freebiePurchaseOptions"></div>
+
+            <div id="freebieCostDisplay" class="p-3 bg-gray-800 rounded hidden">
+              <div class="text-sm font-medium mb-1">Стоимость: <span id="freebieCostAmount" class="text-vtm-red">0</span> бонусных очков</div>
+              <div class="text-xs text-gray-400" id="freebieCostDetails"></div>
             </div>
-            <div class="p-2 bg-gray-900 rounded">
-              <div class="text-vtm-red font-bold">1</div>
-              <div class="text-gray-400">Предыстория</div>
-            </div>
-            <div class="p-2 bg-gray-900 rounded">
-              <div class="text-vtm-red font-bold">7</div>
-              <div class="text-gray-400">Дисциплина</div>
-            </div>
-            <div class="p-2 bg-gray-900 rounded">
-              <div class="text-vtm-red font-bold">2</div>
-              <div class="text-gray-400">Добродетель</div>
-            </div>
-            <div class="p-2 bg-gray-900 rounded">
-              <div class="text-vtm-red font-bold">1</div>
-              <div class="text-gray-400">Человечность</div>
-            </div>
-            <div class="p-2 bg-gray-900 rounded">
-              <div class="text-vtm-red font-bold">1</div>
-              <div class="text-gray-400">Сила воли</div>
-            </div>
+
+            <button id="freebiePurchaseBtn" class="btn btn-primary w-full hidden">Купить</button>
           </div>
         </div>
 
-        <div class="text-sm text-gray-400 mb-4">
-          <strong>Совет:</strong> Используйте Freebies для повышения характеристик прямо на предыдущей фазе.
-          Все изменения после базового распределения тратят Freebies автоматически.
-        </div>
+        <details class="mb-4">
+          <summary class="cursor-pointer font-semibold mb-2">Справка: Таблица стоимости бонусных очков</summary>
+          <div class="space-y-1 text-xs text-gray-400 p-3 bg-gray-800 rounded">
+            <div>• Атрибут: <strong class="text-white">5</strong></div>
+            <div>• Способность: <strong class="text-white">2</strong></div>
+            <div>• Дисциплина: <strong class="text-white">7</strong></div>
+            <div>• Предыстория: <strong class="text-white">1</strong></div>
+            <div>• Добродетель: <strong class="text-white">2</strong></div>
+            <div>• Человечность: <strong class="text-white">1</strong></div>
+            <div>• Сила воли: <strong class="text-white">1</strong></div>
+          </div>
+        </details>
 
         <div class="flex gap-3">
           <button class="btn btn-secondary" onclick="app.switchPhase('setup')">← Назад к настройке</button>
-          <button class="btn btn-primary flex-1" onclick="app.switchPhase('xp')">Далее: Опыт (XP) →</button>
+          <button class="btn btn-primary flex-1" onclick="app.switchPhase('xp')">Далее: Опыт →</button>
         </div>
       </div>
     `;
@@ -709,6 +711,17 @@ class CharacterCreatorApp {
     const exportBtn = document.getElementById('exportBtn');
     if (exportBtn) {
       exportBtn.addEventListener('click', () => this.exportToPDF());
+    }
+
+    // Freebies spending interface
+    const freebieTypeSelect = document.getElementById('freebieType');
+    if (freebieTypeSelect) {
+      freebieTypeSelect.addEventListener('change', (e) => this.handleFreebieTypeChange(e.target.value));
+    }
+
+    const freebiePurchaseBtn = document.getElementById('freebiePurchaseBtn');
+    if (freebiePurchaseBtn) {
+      freebiePurchaseBtn.addEventListener('click', () => this.handleFreebiePurchase());
     }
 
     // XP spending interface
@@ -1024,6 +1037,341 @@ class CharacterCreatorApp {
       modal.remove();
     }
     this.updateAllDisplays();
+  }
+
+  // Freebies Spending Interface Methods
+  handleFreebieTypeChange(type) {
+    const optionsDiv = document.getElementById('freebiePurchaseOptions');
+    const costDisplay = document.getElementById('freebieCostDisplay');
+    const purchaseBtn = document.getElementById('freebiePurchaseBtn');
+
+    if (!type) {
+      optionsDiv.innerHTML = '';
+      costDisplay.classList.add('hidden');
+      purchaseBtn.classList.add('hidden');
+      return;
+    }
+
+    let optionsHTML = '';
+
+    if (type === 'attribute') {
+      optionsHTML = `
+        <div>
+          <label class="block text-sm font-medium mb-1">Категория</label>
+          <select id="freebieAttrCategory" class="input-field">
+            <option value="">Выберите категорию</option>
+            <option value="physical">Физические</option>
+            <option value="social">Социальные</option>
+            <option value="mental">Ментальные</option>
+          </select>
+        </div>
+        <div id="freebieAttrSelection"></div>
+      `;
+    } else if (type === 'ability') {
+      optionsHTML = `
+        <div>
+          <label class="block text-sm font-medium mb-1">Категория</label>
+          <select id="freebieAbilityCategory" class="input-field">
+            <option value="">Выберите категорию</option>
+            <option value="talents">Таланты</option>
+            <option value="skills">Навыки</option>
+            <option value="knowledges">Познания</option>
+          </select>
+        </div>
+        <div id="freebieAbilitySelection"></div>
+      `;
+    } else if (type === 'discipline') {
+      const disciplinesList = this.allDisciplines.map(disc =>
+        `<option value="${disc.id}">${disc.name}</option>`
+      ).join('');
+      optionsHTML = `
+        <div>
+          <label class="block text-sm font-medium mb-1">Дисциплина</label>
+          <select id="freebieDiscipline" class="input-field">
+            <option value="">Выберите дисциплину</option>
+            ${disciplinesList}
+          </select>
+        </div>
+      `;
+    } else if (type === 'background') {
+      optionsHTML = `
+        <div>
+          <label class="block text-sm font-medium mb-1">Предыстория</label>
+          <select id="freebieBackground" class="input-field">
+            <option value="">Выберите предысторию</option>
+            ${backgroundsData.map(bg => `<option value="${bg.id}">${bg.name}</option>`).join('')}
+          </select>
+        </div>
+      `;
+    } else if (type === 'virtue') {
+      optionsHTML = `
+        <div>
+          <label class="block text-sm font-medium mb-1">Добродетель</label>
+          <select id="freebieVirtue" class="input-field">
+            <option value="">Выберите добродетель</option>
+            <option value="conscience">Совесть</option>
+            <option value="selfControl">Самоконтроль</option>
+            <option value="courage">Храбрость</option>
+          </select>
+        </div>
+      `;
+    } else if (type === 'humanity' || type === 'willpower') {
+      optionsHTML = `<div class="text-sm text-gray-400">Выбрано: ${type === 'humanity' ? 'Человечность' : 'Сила воли'}</div>`;
+    }
+
+    optionsDiv.innerHTML = optionsHTML;
+
+    // Add change listeners
+    if (type === 'attribute') {
+      const catSelect = document.getElementById('freebieAttrCategory');
+      if (catSelect) {
+        catSelect.addEventListener('change', (e) => this.showFreebieAttributeList(e.target.value));
+      }
+    } else if (type === 'ability') {
+      const catSelect = document.getElementById('freebieAbilityCategory');
+      if (catSelect) {
+        catSelect.addEventListener('change', (e) => this.showFreebieAbilityList(e.target.value));
+      }
+    } else if (type === 'discipline') {
+      const discSelect = document.getElementById('freebieDiscipline');
+      if (discSelect) {
+        discSelect.addEventListener('change', () => this.calculateFreebieCost());
+      }
+    } else if (type === 'background') {
+      const bgSelect = document.getElementById('freebieBackground');
+      if (bgSelect) {
+        bgSelect.addEventListener('change', () => this.calculateFreebieCost());
+      }
+    } else if (type === 'virtue') {
+      const virtueSelect = document.getElementById('freebieVirtue');
+      if (virtueSelect) {
+        virtueSelect.addEventListener('change', () => this.calculateFreebieCost());
+      }
+    } else if (type === 'humanity' || type === 'willpower') {
+      this.calculateFreebieCost();
+    }
+  }
+
+  showFreebieAttributeList(category) {
+    const selectionDiv = document.getElementById('freebieAttrSelection');
+    if (!category) {
+      selectionDiv.innerHTML = '';
+      return;
+    }
+
+    const attrs = this.character.attributes[category];
+    const attrNames = {
+      physical: { strength: 'Сила', dexterity: 'Ловкость', stamina: 'Выносливость' },
+      social: { charisma: 'Обаяние', manipulation: 'Манипулирование', appearance: 'Привлекательность' },
+      mental: { perception: 'Восприятие', intelligence: 'Интеллект', wits: 'Смекалка' }
+    };
+
+    const options = Object.keys(attrs).map(attr =>
+      `<option value="${attr}">${attrNames[category][attr]} (${attrs[attr]})</option>`
+    ).join('');
+
+    selectionDiv.innerHTML = `
+      <div>
+        <label class="block text-sm font-medium mb-1">Атрибут</label>
+        <select id="freebieAttribute" class="input-field">
+          <option value="">Выберите атрибут</option>
+          ${options}
+        </select>
+      </div>
+    `;
+
+    const attrSelect = document.getElementById('freebieAttribute');
+    if (attrSelect) {
+      attrSelect.addEventListener('change', () => this.calculateFreebieCost());
+    }
+  }
+
+  showFreebieAbilityList(category) {
+    const selectionDiv = document.getElementById('freebieAbilitySelection');
+    if (!category) {
+      selectionDiv.innerHTML = '';
+      return;
+    }
+
+    const abilities = abilitiesData[category];
+    const options = abilities.map(ability => {
+      const current = this.character.abilities[category][ability.id] || 0;
+      return `<option value="${ability.id}">${ability.name} (${current})</option>`;
+    }).join('');
+
+    selectionDiv.innerHTML = `
+      <div>
+        <label class="block text-sm font-medium mb-1">Способность</label>
+        <select id="freebieAbility" class="input-field">
+          <option value="">Выберите способность</option>
+          ${options}
+        </select>
+      </div>
+    `;
+
+    const abilitySelect = document.getElementById('freebieAbility');
+    if (abilitySelect) {
+      abilitySelect.addEventListener('change', () => this.calculateFreebieCost());
+    }
+  }
+
+  calculateFreebieCost() {
+    const type = document.getElementById('freebieType')?.value;
+    if (!type) return;
+
+    let cost = 0;
+    let details = '';
+    let canPurchase = false;
+
+    if (type === 'attribute') {
+      const category = document.getElementById('freebieAttrCategory')?.value;
+      const attr = document.getElementById('freebieAttribute')?.value;
+      if (category && attr) {
+        const current = this.character.attributes[category][attr];
+        cost = FREEBIE_COSTS.attribute;
+        details = `Текущее значение: ${current}, новое: ${current + 1}`;
+        canPurchase = current < 10;
+      }
+    } else if (type === 'ability') {
+      const category = document.getElementById('freebieAbilityCategory')?.value;
+      const ability = document.getElementById('freebieAbility')?.value;
+      if (category && ability) {
+        const current = this.character.abilities[category][ability] || 0;
+        cost = FREEBIE_COSTS.ability;
+        details = `Текущее значение: ${current}, новое: ${current + 1}`;
+        canPurchase = current < 10;
+      }
+    } else if (type === 'discipline') {
+      const discId = document.getElementById('freebieDiscipline')?.value;
+      if (discId) {
+        const current = this.character.disciplines[discId] || 0;
+        cost = FREEBIE_COSTS.discipline;
+        details = `Текущее значение: ${current}, новое: ${current + 1}`;
+        canPurchase = current < 10;
+      }
+    } else if (type === 'background') {
+      const bgId = document.getElementById('freebieBackground')?.value;
+      if (bgId) {
+        const current = this.character.backgrounds[bgId] || 0;
+        cost = FREEBIE_COSTS.background;
+        details = `Текущее значение: ${current}, новое: ${current + 1}`;
+        canPurchase = current < 5;
+      }
+    } else if (type === 'virtue') {
+      const virtue = document.getElementById('freebieVirtue')?.value;
+      if (virtue) {
+        const current = this.character.virtues[virtue];
+        cost = FREEBIE_COSTS.virtue;
+        details = `Текущее значение: ${current}, новое: ${current + 1}`;
+        canPurchase = current < 10;
+      }
+    } else if (type === 'humanity') {
+      const current = this.character.humanity;
+      cost = FREEBIE_COSTS.humanity;
+      details = `Текущее значение: ${current}, новое: ${current + 1}`;
+      canPurchase = current < 10;
+    } else if (type === 'willpower') {
+      const current = this.character.willpower;
+      cost = FREEBIE_COSTS.willpower;
+      details = `Текущее значение: ${current}, новое: ${current + 1}`;
+      canPurchase = current < 10;
+    }
+
+    // Update display
+    const costDisplay = document.getElementById('freebieCostDisplay');
+    const costAmount = document.getElementById('freebieCostAmount');
+    const costDetailsDiv = document.getElementById('freebieCostDetails');
+    const purchaseBtn = document.getElementById('freebiePurchaseBtn');
+
+    if (cost > 0 && canPurchase) {
+      costAmount.textContent = cost;
+      costDetailsDiv.textContent = details;
+      costDisplay.classList.remove('hidden');
+      purchaseBtn.classList.remove('hidden');
+
+      const available = this.character.freebies - this.character.freebiesSpent;
+      if (cost > available) {
+        purchaseBtn.disabled = true;
+        purchaseBtn.textContent = `Недостаточно бонусных очков (нужно ${cost}, есть ${available})`;
+      } else {
+        purchaseBtn.disabled = false;
+        purchaseBtn.textContent = 'Купить';
+      }
+    } else {
+      costDisplay.classList.add('hidden');
+      purchaseBtn.classList.add('hidden');
+    }
+  }
+
+  handleFreebiePurchase() {
+    const type = document.getElementById('freebieType')?.value;
+    if (!type) return;
+
+    const costAmount = parseInt(document.getElementById('freebieCostAmount')?.textContent || '0');
+    const available = this.character.freebies - this.character.freebiesSpent;
+
+    if (costAmount > available) {
+      alert('Недостаточно бонусных очков!');
+      return;
+    }
+
+    // Make the purchase
+    if (type === 'attribute') {
+      const category = document.getElementById('freebieAttrCategory')?.value;
+      const attr = document.getElementById('freebieAttribute')?.value;
+      if (category && attr) {
+        this.character.attributes[category][attr]++;
+        this.character.freebiesSpent += costAmount;
+      }
+    } else if (type === 'ability') {
+      const category = document.getElementById('freebieAbilityCategory')?.value;
+      const ability = document.getElementById('freebieAbility')?.value;
+      if (category && ability) {
+        if (!this.character.abilities[category][ability]) {
+          this.character.abilities[category][ability] = 0;
+        }
+        this.character.abilities[category][ability]++;
+        this.character.freebiesSpent += costAmount;
+      }
+    } else if (type === 'discipline') {
+      const discId = document.getElementById('freebieDiscipline')?.value;
+      if (discId) {
+        if (!this.character.disciplines[discId]) {
+          this.character.disciplines[discId] = 0;
+        }
+        this.character.disciplines[discId]++;
+        this.character.freebiesSpent += costAmount;
+      }
+    } else if (type === 'background') {
+      const bgId = document.getElementById('freebieBackground')?.value;
+      if (bgId) {
+        if (!this.character.backgrounds[bgId]) {
+          this.character.backgrounds[bgId] = 0;
+        }
+        this.character.backgrounds[bgId]++;
+        this.character.freebiesSpent += costAmount;
+      }
+    } else if (type === 'virtue') {
+      const virtue = document.getElementById('freebieVirtue')?.value;
+      if (virtue) {
+        this.character.virtues[virtue]++;
+        this.character.freebiesSpent += costAmount;
+      }
+    } else if (type === 'humanity') {
+      this.character.humanity++;
+      this.character.freebiesSpent += costAmount;
+    } else if (type === 'willpower') {
+      this.character.willpower++;
+      this.character.freebiesSpent += costAmount;
+    }
+
+    // Save and re-render
+    this.saveToLocalStorage();
+    this.render();
+    this.attachEventListeners();
+    this.updateAllDisplays();
+
+    alert(`Куплено за ${costAmount} бонусных очков!`);
   }
 
   // XP Spending Interface Methods
