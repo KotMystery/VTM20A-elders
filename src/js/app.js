@@ -32,9 +32,9 @@ class CharacterCreatorApp {
   }
 
   init() {
+    this.loadFromLocalStorage();
     this.render();
     this.attachEventListeners();
-    this.updateAllDisplays();
   }
 
   // Main render method
@@ -252,8 +252,8 @@ class CharacterCreatorApp {
         ${attrs.map((attr, idx) => `
           <div class="stat-row">
             <span class="stat-label">${labels[idx]}</span>
-            <div class="dot-tracker" data-category="attributes" data-subcategory="${category}" data-attr="${attr}">
-              ${this.renderDots(this.character.attributes[category][attr], 10)}
+            <div class="dot-tracker">
+              ${this.renderDots(this.character.attributes[category][attr], 10, 'attributes', category, attr)}
             </div>
           </div>
         `).join('')}
@@ -295,8 +295,8 @@ class CharacterCreatorApp {
         ${abilities.map(ability => `
           <div class="stat-row">
             <span class="stat-label">${ability.name}</span>
-            <div class="dot-tracker" data-category="abilities" data-subcategory="${category}" data-attr="${ability.id}">
-              ${this.renderDots(this.character.abilities[category][ability.id] || 0, 10)}
+            <div class="dot-tracker">
+              ${this.renderDots(this.character.abilities[category][ability.id] || 0, 10, 'abilities', category, ability.id)}
             </div>
           </div>
         `).join('')}
@@ -336,8 +336,8 @@ class CharacterCreatorApp {
                 <span class="stat-label">${bg.name}</span>
                 <div class="text-xs text-gray-400">${bg.description}</div>
               </div>
-              <div class="dot-tracker" data-category="backgrounds" data-attr="${bg.id}">
-                ${this.renderDots(this.character.backgrounds[bg.id] || 0, 5)}
+              <div class="dot-tracker">
+                ${this.renderDots(this.character.backgrounds[bg.id] || 0, 5, 'backgrounds', null, bg.id)}
               </div>
             </div>
           `).join('')}
@@ -352,20 +352,20 @@ class CharacterCreatorApp {
           </div>
           <div class="stat-row">
             <span class="stat-label">Совесть/Убеждение</span>
-            <div class="dot-tracker" data-category="virtues" data-attr="conscience">
-              ${this.renderDots(this.character.virtues.conscience, 5)}
+            <div class="dot-tracker">
+              ${this.renderDots(this.character.virtues.conscience, 5, 'virtues', null, 'conscience')}
             </div>
           </div>
           <div class="stat-row">
             <span class="stat-label">Самоконтроль/Инстинкт</span>
-            <div class="dot-tracker" data-category="virtues" data-attr="selfControl">
-              ${this.renderDots(this.character.virtues.selfControl, 5)}
+            <div class="dot-tracker">
+              ${this.renderDots(this.character.virtues.selfControl, 5, 'virtues', null, 'selfControl')}
             </div>
           </div>
           <div class="stat-row">
             <span class="stat-label">Храбрость</span>
-            <div class="dot-tracker" data-category="virtues" data-attr="courage">
-              ${this.renderDots(this.character.virtues.courage, 5)}
+            <div class="dot-tracker">
+              ${this.renderDots(this.character.virtues.courage, 5, 'virtues', null, 'courage')}
             </div>
           </div>
         </div>
@@ -375,14 +375,14 @@ class CharacterCreatorApp {
           <h3 class="section-title">Человечность и Сила воли</h3>
           <div class="stat-row">
             <span class="stat-label">Человечность</span>
-            <div class="dot-tracker" data-category="humanity" data-attr="humanity">
-              ${this.renderDots(this.character.humanity, 10)}
+            <div class="dot-tracker">
+              ${this.renderDots(this.character.humanity, 10, 'humanity', null, 'humanity')}
             </div>
           </div>
           <div class="stat-row">
             <span class="stat-label">Сила воли</span>
-            <div class="dot-tracker" data-category="willpower" data-attr="willpower">
-              ${this.renderDots(this.character.willpower, 10)}
+            <div class="dot-tracker">
+              ${this.renderDots(this.character.willpower, 10, 'willpower', null, 'willpower')}
             </div>
           </div>
         </div>
@@ -435,8 +435,8 @@ class CharacterCreatorApp {
               ${pathsInfo}
             </div>
             <div class="flex items-center gap-2">
-              <div class="dot-tracker" data-category="disciplines" data-attr="${discId}">
-                ${this.renderDots(level, 10)}
+              <div class="dot-tracker">
+                ${this.renderDots(level, 10, 'disciplines', null, discId)}
               </div>
               <button class="text-red-500 hover:text-red-400 text-xl" onclick="app.removeDiscipline('${discId}')">×</button>
             </div>
@@ -624,10 +624,12 @@ class CharacterCreatorApp {
     return clan ? clan.disciplines : [];
   }
 
-  renderDots(current, max) {
+  renderDots(current, max, category, subcategory, attr) {
     let html = '';
     for (let i = 1; i <= max; i++) {
-      html += `<div class="dot ${i <= current ? 'filled' : ''}" data-value="${i}"></div>`;
+      const filled = i <= current ? 'filled' : '';
+      const onclick = `app.updateCharacterValue('${category}', '${subcategory || ''}', '${attr}', ${i})`;
+      html += `<div class="dot ${filled}" onclick="${onclick}"></div>`;
     }
     return html;
   }
@@ -963,40 +965,6 @@ class CharacterCreatorApp {
   }
 
   attachEventListeners() {
-    // Remove old listeners if they exist
-    if (this.globalClickHandler) {
-      document.removeEventListener('click', this.globalClickHandler);
-    }
-
-    // Create global click handler with event delegation
-    this.globalClickHandler = (e) => {
-      // Handle dot clicks
-      if (e.target.classList.contains('dot')) {
-        const tracker = e.target.closest('.dot-tracker');
-        if (tracker) {
-          const category = tracker.dataset.category;
-          const subcategory = tracker.dataset.subcategory;
-          const attr = tracker.dataset.attr;
-          const value = parseInt(e.target.dataset.value);
-
-          this.updateCharacterValue(category, subcategory, attr, value);
-        }
-        return;
-      }
-
-      // Handle tab clicks
-      if (e.target.classList.contains('tab')) {
-        const phase = e.target.dataset.phase;
-        if (phase) {
-          this.switchPhase(phase);
-        }
-        return;
-      }
-    };
-
-    // Attach global handler
-    document.addEventListener('click', this.globalClickHandler);
-
     // Basic info text inputs
     ['name', 'player', 'chronicle', 'nature', 'demeanor', 'concept', 'sire'].forEach(field => {
       const el = document.getElementById(field);
