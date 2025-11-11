@@ -12,7 +12,6 @@ import conceptsData from '../data/concepts.json';
 import archetypesData from '../data/archetypes.json';
 import meritsData from '../data/merits.json';
 import flawsData from '../data/flaws.json';
-import translations from '../locales/ru.json';
 
 class CharacterCreatorApp {
   constructor() {
@@ -20,7 +19,6 @@ class CharacterCreatorApp {
     this.tracker = new PointTracker(this.character);
     this.currentPhase = 'setup';
     this.allDisciplines = this.flattenDisciplines();
-    this.translations = translations;
 
     // Fallback costs in case imports fail
     this.FREEBIE_COSTS = FREEBIE_COSTS || {
@@ -55,17 +53,6 @@ class CharacterCreatorApp {
     this.init();
   }
 
-  // Translation helper - access nested keys like "attributes.physical"
-  t(key) {
-    const keys = key.split('.');
-    let value = this.translations;
-    for (const k of keys) {
-      value = value?.[k];
-      if (value === undefined) return key; // Return key if translation missing
-    }
-    return value;
-  }
-
   flattenDisciplines() {
     const all = [];
     Object.values(disciplinesData).forEach(category => {
@@ -98,10 +85,10 @@ class CharacterCreatorApp {
             <div class="flex-1"></div>
             <div class="flex-1 text-center">
               <h1 class="text-2xl md:text-3xl font-bold text-vtm-red mb-1">
-                ${this.t('app.title')}
+                Vampire: The Masquerade 20A
               </h1>
               <h2 class="text-lg md:text-xl text-gray-400">
-                ${this.t('app.subtitle')}
+                Старейшины
               </h2>
             </div>
             <div class="flex-1 flex justify-end">
@@ -114,13 +101,13 @@ class CharacterCreatorApp {
           <!-- Phase tabs -->
           <div class="flex border-b border-gray-700 mb-4 overflow-x-auto">
             <div class="tab ${this.currentPhase === 'setup' ? 'active' : ''}" data-phase="setup">
-              ${this.t('phases.setup')}
+              1. Базовый персонаж
             </div>
             <div class="tab ${this.currentPhase === 'freebies' ? 'active' : ''}" data-phase="freebies">
-              ${this.t('phases.freebies')}
+              2. Freebie points
             </div>
             <div class="tab ${this.currentPhase === 'xp' ? 'active' : ''}" data-phase="xp">
-              ${this.t('phases.xp')}
+              3. Experience points
             </div>
           </div>
 
@@ -170,22 +157,22 @@ class CharacterCreatorApp {
     return `
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="card">
-          <h3 class="section-title">${this.t('basicInfo.sectionTitle')}</h3>
+          <h3 class="section-title">Основная информация</h3>
           <div class="space-y-3">
             <div>
-              <label class="block text-sm font-medium mb-1">${this.t('basicInfo.name')}</label>
+              <label class="block text-sm font-medium mb-1">Имя</label>
               <input type="text" id="name" class="input-field" value="${this.character.name}">
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">${this.t('basicInfo.player')}</label>
+              <label class="block text-sm font-medium mb-1">Игрок</label>
               <input type="text" id="player" class="input-field" value="${this.character.player}">
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">${this.t('basicInfo.chronicle')}</label>
+              <label class="block text-sm font-medium mb-1">Хроника</label>
               <input type="text" id="chronicle" class="input-field" value="${this.character.chronicle}">
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">${this.t('basicInfo.nature')}</label>
+              <label class="block text-sm font-medium mb-1">Натура</label>
               <input type="text" id="nature" class="input-field"
                      list="nature-list" value="${this.character.nature}">
               <datalist id="nature-list">
@@ -195,7 +182,7 @@ class CharacterCreatorApp {
               </datalist>
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">${this.t('basicInfo.demeanor')}</label>
+              <label class="block text-sm font-medium mb-1">Маска</label>
               <input type="text" id="demeanor" class="input-field"
                      list="demeanor-list" value="${this.character.demeanor}">
               <datalist id="demeanor-list">
@@ -205,7 +192,7 @@ class CharacterCreatorApp {
               </datalist>
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">${this.t('basicInfo.concept')}</label>
+              <label class="block text-sm font-medium mb-1">Концепция</label>
               <input type="text" id="concept" class="input-field"
                      list="concept-list" value="${this.character.concept}">
               <datalist id="concept-list">
@@ -240,7 +227,7 @@ class CharacterCreatorApp {
               <div class="text-xs text-gray-400">
                 Базовое: 9<br>
                 Фон "Поколение": -${this.character.backgrounds.generation || 0}<br>
-                Недостаток "Разбавленная кровь": +${this.character.dilutedVitae}
+                Недостаток "Разбавленное Витэ": +${this.character.dilutedVitae}
               </div>
             </div>
             ${this.renderBloodPoolInfo()}
@@ -328,7 +315,7 @@ class CharacterCreatorApp {
         <h3 class="section-title">Способности</h3>
         ${this.currentPhase === 'setup' ? `
         <div class="mb-4 p-4 bg-gray-800 rounded">
-          <div class="text-sm font-medium mb-2">Правила распределения: 18/12/8</div>
+          <div class="text-sm font-medium mb-2">Распределение: 18/12/8</div>
           <div class="text-xs text-gray-400 mb-2">
             Максимум 5 в одной способности до Freebies.
           </div>
@@ -386,7 +373,7 @@ class CharacterCreatorApp {
 
         <!-- Backgrounds -->
         <div class="card">
-          <h3 class="section-title">Предыстории</h3>
+          <h3 class="section-title">Факты биографии</h3>
           <div class="mb-4 p-4 bg-gray-800 rounded">
             <div class="text-sm font-medium mb-2">Всего очков: <span data-validation="backgrounds-total" class="${bgValidation.total <= 3 ? 'text-green-400' : 'text-red-400'}">${bgValidation.total}/3</span></div>
             <div class="text-xs text-gray-400">Доступны: Поколение, Стадо, Ресурсы, Слуги</div>
@@ -412,7 +399,7 @@ class CharacterCreatorApp {
             <div class="text-xs text-gray-400">Каждая добродетель начинается с 1</div>
           </div>
           <div class="stat-row">
-            <span class="stat-label">Совесть/Убеждение</span>
+            <span class="stat-label">Совесть/Решимость</span>
             <div class="dot-tracker" data-category="virtues" data-subcategory="" data-attr="conscience">
               ${this.renderDots(this.character.virtues.conscience, 5, 'virtues', null, 'conscience')}
             </div>
@@ -424,7 +411,7 @@ class CharacterCreatorApp {
             </div>
           </div>
           <div class="stat-row">
-            <span class="stat-label">Храбрость</span>
+            <span class="stat-label">Смелость</span>
             <div class="dot-tracker" data-category="virtues" data-subcategory="" data-attr="courage">
               ${this.renderDots(this.character.virtues.courage, 5, 'virtues', null, 'courage')}
             </div>
@@ -521,7 +508,7 @@ class CharacterCreatorApp {
     return `
       <div class="space-y-4">
         <div class="card">
-          <h3 class="section-title">Распределение бонусных очков</h3>
+          <h3 class="section-title">Распределение freebie points</h3>
 
           <div class="mb-4 p-4 bg-gray-800 rounded">
             <div class="text-lg font-bold mb-2">
@@ -540,8 +527,8 @@ class CharacterCreatorApp {
           ${this.renderMeritsFlawsSection()}
 
           <div class="flex gap-3">
-            <button class="btn btn-secondary" onclick="app.switchPhase('setup')">← Назад к настройке</button>
-            <button class="btn btn-primary flex-1" onclick="app.switchPhase('xp')">Далее: Опыт →</button>
+            <button class="btn btn-secondary" onclick="app.switchPhase('setup')">← К настройке</button>
+            <button class="btn btn-primary flex-1" onclick="app.switchPhase('xp')">К Experience points →</button>
           </div>
         </div>
 
@@ -621,7 +608,7 @@ class CharacterCreatorApp {
               Кликните на пустую точку справа от текущего значения для повышения. Стоимость: Атрибут (текущее × 4), Способность (новая: 3, текущее × 2), Дисциплина (новая: 10, текущее × 5-10), Добродетель (текущее × 2), Человечность (текущее × 2), Сила воли (текущее)</div>
           </div>
 
-          <button class="btn btn-secondary w-full" onclick="app.switchPhase('freebies')">← Назад к Freebies</button>
+          <button class="btn btn-secondary w-full" onclick="app.switchPhase('freebies')">← К Freebie points</button>
         </div>
 
         ${this.renderAttributes()}
@@ -637,17 +624,15 @@ class CharacterCreatorApp {
 
     return `
       <div class="card">
-        <h3 class="section-title">Итоги персонажа</h3>
+        <h3 class="section-title">Итоги</h3>
 
-        <div class="mb-6 p-4 ${allValid ? 'bg-green-900' : 'bg-yellow-900'} rounded">
-          <div class="font-medium mb-2">${allValid ? '✓ Базовая настройка завершена' : '⚠ Базовая настройка не завершена'}</div>
-          ${!allValid ? `
-            <div class="text-sm space-y-1">
-              ${Object.entries(validation).map(([key, val]) =>
-                !val.valid ? val.errors.map(err => `<div>• ${err}</div>`).join('') : ''
-              ).join('')}
-            </div>
-          ` : ''}
+        <div id="validation-summary" class="mb-6 p-4 ${allValid ? 'bg-green-900' : 'bg-yellow-900'} rounded">
+          <div id="validation-message" class="font-medium mb-2">${allValid ? '✓ Персонаж готов!' : '⚠ Ты что-то забыл при создании персонажа'}</div>
+          <div id="validation-errors" class="text-sm space-y-1">
+            ${!allValid ? Object.entries(validation).map(([key, val]) =>
+              !val.valid ? val.errors.map(err => `<div>• ${err}</div>`).join('') : ''
+            ).join('') : ''}
+          </div>
         </div>
 
         <div class="space-y-4">
@@ -965,6 +950,11 @@ class CharacterCreatorApp {
 
     // Handle thin_blood flaw - increases generation
     if (flawData.id === 'thin_blood') {
+      // Check mutual exclusion with Generation background
+      if (this.character.backgrounds.generation > 0) {
+        alert('Недостаток "Разбавленное Витэ" несовместим с фактом биографии "Поколение". Сначала уберите точки поколения.');
+        return;
+      }
       this.character.dilutedVitae = selectedCost;
     }
 
@@ -1449,6 +1439,14 @@ class CharacterCreatorApp {
         this.character.thaumaturgyPaths[0].level = value;
       }
     } else if (category === 'backgrounds') {
+      // Check mutual exclusion between Generation and Diluted Vitae
+      if (attr === 'generation' && value > 0) {
+        const hasDilutedVitae = this.character.flaws.some(f => f.id === 'thin_blood');
+        if (hasDilutedVitae) {
+          alert('Факт биографии "Поколение" несовместим с недостатком "Разбавленное Витэ". Сначала уберите недостаток.');
+          return false;
+        }
+      }
       this.character.backgrounds[attr] = value;
     } else if (category === 'virtues') {
       this.character.virtues[attr] = value;
@@ -1523,6 +1521,36 @@ class CharacterCreatorApp {
     if (virtEl) {
       virtEl.textContent = `${virtValidation.total}/5`;
       virtEl.className = virtValidation.total <= 5 ? 'text-green-400' : 'text-red-400';
+    }
+
+    // Update overall validation summary (setup phase only)
+    if (this.currentPhase === 'setup') {
+      const validation = this.tracker.validateAll();
+      const allValid = Object.values(validation).every(v => v.valid);
+
+      const summaryEl = document.getElementById('validation-summary');
+      const messageEl = document.getElementById('validation-message');
+      const errorsEl = document.getElementById('validation-errors');
+
+      if (summaryEl && messageEl && errorsEl) {
+        // Update background color
+        summaryEl.className = `mb-6 p-4 ${allValid ? 'bg-green-900' : 'bg-yellow-900'} rounded`;
+
+        // Update message
+        messageEl.textContent = allValid ? '✓ Персонаж готов!' : '⚠ Ты что-то забыл при создании персонажа';
+
+        // Update error list
+        if (!allValid) {
+          const errors = Object.entries(validation)
+            .filter(([_, val]) => !val.valid)
+            .flatMap(([_, val]) => val.errors)
+            .map(err => `<div>• ${err}</div>`)
+            .join('');
+          errorsEl.innerHTML = errors;
+        } else {
+          errorsEl.innerHTML = '';
+        }
+      }
     }
   }
 
@@ -2000,7 +2028,7 @@ class CharacterCreatorApp {
             <option value="">Выберите добродетель</option>
             <option value="conscience">Совесть</option>
             <option value="selfControl">Самоконтроль</option>
-            <option value="courage">Храбрость</option>
+            <option value="courage">Смелость</option>
           </select>
         </div>
       `;
@@ -2325,7 +2353,7 @@ class CharacterCreatorApp {
             <option value="">Выберите добродетель</option>
             <option value="conscience">Совесть</option>
             <option value="selfControl">Самоконтроль</option>
-            <option value="courage">Храбрость</option>
+            <option value="courage">Смелость</option>
           </select>
         </div>
       `;
