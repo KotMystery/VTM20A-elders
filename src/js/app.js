@@ -15,6 +15,10 @@ import flawsData from '../data/flaws.json';
 
 class CharacterCreatorApp {
   constructor() {
+    console.log('\n\n========================================');
+    console.log('=== VTM20A ELDER CHARACTER CREATOR ===');
+    console.log('========================================\n');
+
     this.character = new Character();
     this.tracker = new PointTracker(this.character);
     this.currentPhase = 'setup';
@@ -48,7 +52,37 @@ class CharacterCreatorApp {
       willpower: (current) => current * 1
     };
 
-    console.log('[DEBUG] Freebie costs loaded:', this.FREEBIE_COSTS);
+    console.log('[INIT] ===== FREEBIE COSTS =====');
+    console.log('[INIT] Attribute: 5 per dot');
+    console.log('[INIT] Ability: 2 per dot');
+    console.log('[INIT] Background: 1 per dot');
+    console.log('[INIT] Discipline: 7 per dot');
+    console.log('[INIT] Virtue: 2 per dot');
+    console.log('[INIT] Humanity: 1 per dot');
+    console.log('[INIT] Willpower: 1 per dot\n');
+
+    console.log('[INIT] ===== XP COSTS =====');
+    console.log('[INIT] New Ability: 3 XP');
+    console.log('[INIT] New Discipline: 10 XP');
+    console.log('[INIT] New Path (Necro/Thaum): 7 XP');
+    console.log('[INIT] Attribute: current × 4');
+    console.log('[INIT] Ability: current × 2');
+    console.log('[INIT] Discipline (Physical): clan ×5, non-clan ×6, Caitiff ×5');
+    console.log('[INIT] Discipline (Mental): clan ×5, non-clan ×7, Caitiff ×6');
+    console.log('[INIT] Discipline (Unique): clan ×5, non-clan ×8, Caitiff ×7');
+    console.log('[INIT] Secondary Path: current × 4');
+    console.log('[INIT] Virtue: current × 2');
+    console.log('[INIT] Humanity: current × 2');
+    console.log('[INIT] Willpower: current × 1\n');
+
+    console.log('[INIT] ===== ELDER RULES (SETUP PHASE) =====');
+    console.log('[INIT] Attributes: 9/7/5 distribution, max 6 per attribute');
+    console.log('[INIT] Abilities: 18/12/8 distribution, max 5 per ability');
+    console.log('[INIT] Disciplines: 7 points total');
+    console.log('[INIT] Backgrounds: 3 points total (Generation, Herd, Resources, Retainers only)');
+    console.log('[INIT] Virtues: 5 points total (each starts at 1)');
+    console.log('[INIT] Freebies: 22 base + up to 7 from personal flaws');
+    console.log('[INIT] Experience: 33 XP starting\n');
 
     this.init();
   }
@@ -226,7 +260,7 @@ class CharacterCreatorApp {
               <div class="text-sm font-medium mb-2">Текущее поколение: ${this.character.getEffectiveGeneration()}</div>
               <div class="text-xs text-gray-400">
                 Базовое: 9<br>
-                Фон "Поколение": -${this.character.backgrounds.generation || 0}<br>
+                Факт Биографии "Поколение": -${this.character.backgrounds.generation || 0}<br>
                 Недостаток "Разбавленное Витэ": +${this.character.dilutedVitae}
               </div>
             </div>
@@ -362,9 +396,11 @@ class CharacterCreatorApp {
         <!-- Disciplines -->
         <div class="card">
           <h3 class="section-title">Дисциплины</h3>
+          ${this.currentPhase === 'setup' ? `
           <div class="mb-4 p-4 bg-gray-800 rounded">
             <div class="text-sm font-medium">Всего очков: <span data-validation="disciplines-total" class="${discValidation.total <= 7 ? 'text-green-400' : 'text-red-400'}">${discValidation.total}/7</span></div>
           </div>
+          ` : ''}
           <div id="disciplinesList">
             ${this.renderDisciplinesList()}
           </div>
@@ -374,10 +410,12 @@ class CharacterCreatorApp {
         <!-- Backgrounds -->
         <div class="card">
           <h3 class="section-title">Факты биографии</h3>
+          ${this.currentPhase === 'setup' ? `
           <div class="mb-4 p-4 bg-gray-800 rounded">
             <div class="text-sm font-medium mb-2">Всего очков: <span data-validation="backgrounds-total" class="${bgValidation.total <= 3 ? 'text-green-400' : 'text-red-400'}">${bgValidation.total}/3</span></div>
             <div class="text-xs text-gray-400">Доступны: Поколение, Стадо, Ресурсы, Слуги</div>
           </div>
+          ` : ''}
           ${backgroundsData.map(bg => `
             <div class="stat-row">
               <div>
@@ -394,10 +432,12 @@ class CharacterCreatorApp {
         <!-- Virtues -->
         <div class="card">
           <h3 class="section-title">Добродетели</h3>
+          ${this.currentPhase === 'setup' ? `
           <div class="mb-4 p-4 bg-gray-800 rounded">
             <div class="text-sm font-medium">Всего очков: <span data-validation="virtues-total" class="${virtValidation.total <= 5 ? 'text-green-400' : 'text-red-400'}">${virtValidation.total}/5</span></div>
             <div class="text-xs text-gray-400">Каждая добродетель начинается с 1</div>
           </div>
+          ` : ''}
           <div class="stat-row">
             <span class="stat-label">Совесть/Решимость</span>
             <div class="dot-tracker" data-category="virtues" data-subcategory="" data-attr="conscience">
@@ -675,6 +715,18 @@ class CharacterCreatorApp {
 
     // Determine the allowed limit based on phase and category
     let allowedMax = max;
+    let minValue = 1; // Default minimum (for attributes and virtues)
+
+    // Determine minimum value based on category
+    if (category === 'abilities' || category === 'disciplines' || category === 'backgrounds') {
+      minValue = 0; // These can go to 0
+    } else if (category === 'attributes' || category === 'virtues') {
+      minValue = 1; // These must stay at least 1
+    } else if (category === 'humanity') {
+      minValue = 0; // Can go to 0 in later phases
+    } else if (category === 'willpower') {
+      minValue = 1; // Must stay at least 1
+    }
 
     if (this.currentPhase === 'setup') {
       // In setup phase, enforce limits
@@ -689,6 +741,12 @@ class CharacterCreatorApp {
       } else if (category === 'humanity' || category === 'willpower') {
         allowedMax = 0; // Cannot click these in setup phase - they're derived
       }
+    }
+
+    // Add zero dot for things that can be zero (for easy removal)
+    if (minValue === 0 && this.currentPhase === 'setup' && category !== 'humanity' && category !== 'willpower') {
+      const filledZero = current === 0 ? 'filled' : '';
+      html += `<div class="dot ${filledZero}" data-value="0" title="Убрать все точки">×</div>`;
     }
 
     for (let i = 1; i <= max; i++) {
@@ -730,9 +788,19 @@ class CharacterCreatorApp {
 
     // All flaws from the data file
     Object.entries(flawsData).forEach(([category, items]) => {
-      items.forEach(flaw => {
-        allFlaws.push({ ...flaw, category });
-      });
+      if (category === 'clanSpecific') {
+        // Handle clan-specific flaws
+        Object.entries(items).forEach(([clanId, clanFlaws]) => {
+          clanFlaws.forEach(flaw => {
+            allFlaws.push({ ...flaw, clan: clanId, isClanSpecific: true });
+          });
+        });
+      } else {
+        // Regular category with array of flaws
+        items.forEach(flaw => {
+          allFlaws.push({ ...flaw, category });
+        });
+      }
     });
 
     this.showMeritFlawModal(allFlaws, 'flaws');
@@ -1030,13 +1098,32 @@ class CharacterCreatorApp {
   }
 
   switchPhase(phase) {
+    console.log(`\n[PHASE_SWITCH] ===== SWITCHING PHASE =====`);
+    console.log(`[PHASE_SWITCH] From: ${this.currentPhase} → To: ${phase}`);
+
     // When leaving setup phase, capture baseline to prevent stat reduction later
     if (this.currentPhase === 'setup' && phase !== 'setup') {
+      console.log(`[PHASE_SWITCH] Leaving setup phase - capturing baseline`);
       this.character.captureSetupBaseline();
+      console.log(`[PHASE_SWITCH] Setup baseline captured`);
+      console.log(`[PHASE_SWITCH] Phase hierarchy now enabled: Setup → Freebies → XP`);
       this.saveToLocalStorage();
     }
 
     this.currentPhase = phase;
+
+    // Log current state
+    if (phase === 'freebies') {
+      const available = this.character.freebies - (this.character.freebiesSpent || 0);
+      console.log(`[PHASE_SWITCH] Entering Freebies Phase`);
+      console.log(`[PHASE_SWITCH] Available freebies: ${available}/${this.character.freebies}`);
+    } else if (phase === 'xp') {
+      const available = this.character.experience - (this.character.experienceSpent || 0);
+      console.log(`[PHASE_SWITCH] Entering XP Phase`);
+      console.log(`[PHASE_SWITCH] Available XP: ${available}/${this.character.experience}`);
+    }
+
+    console.log(`[PHASE_SWITCH] ==============================\n`);
     this.render();
     this.attachEventListeners();
   }
@@ -1101,7 +1188,13 @@ class CharacterCreatorApp {
       }
       const changeListener = (e) => {
         const oldClan = this.character.clan;
-        this.character.clan = e.target.value;
+        const newClanId = e.target.value;
+
+        console.log(`\n[CHARACTER_CHANGE] ===== CLAN CHANGED =====`);
+        console.log(`[CHARACTER_CHANGE] Old Clan: ${oldClan || '(none)'}`);
+        console.log(`[CHARACTER_CHANGE] New Clan: ${newClanId}`);
+
+        this.character.clan = newClanId;
 
         // Get old and new clan disciplines
         const oldClanData = clansData.find(c => c.id === oldClan);
@@ -1109,6 +1202,8 @@ class CharacterCreatorApp {
 
         const newClanData = clansData.find(c => c.id === this.character.clan);
         const newClanDiscs = newClanData?.disciplines || [];
+
+        console.log(`[CHARACTER_CHANGE] New Clan Disciplines: ${newClanDiscs.join(', ')}`);
 
         // Remove disciplines that were clan-specific to old clan but not new clan
         // Keep disciplines with dots > 0 (already learned), remove only those at 0
@@ -1119,6 +1214,7 @@ class CharacterCreatorApp {
 
           // Remove if it was auto-added from old clan and not in new clan and no progress
           if (wasOldClan && !isNewClan && !hasProgress) {
+            console.log(`[CHARACTER_CHANGE] Removing old clan discipline: ${discId}`);
             delete this.character.disciplines[discId];
           }
         });
@@ -1128,11 +1224,13 @@ class CharacterCreatorApp {
           newClanDiscs.forEach(discId => {
             // Add clan disciplines if not already present
             if (!(discId in this.character.disciplines)) {
+              console.log(`[CHARACTER_CHANGE] Adding clan discipline: ${discId}`);
               this.character.disciplines[discId] = 0;
             }
           });
         }
 
+        console.log(`[CHARACTER_CHANGE] ===========================\n`);
         this.saveToLocalStorage();
         this.render();
         this.attachEventListeners();
@@ -1290,8 +1388,8 @@ class CharacterCreatorApp {
     if (genBreakdown && genBreakdown.classList.contains('text-xs')) {
       genBreakdown.innerHTML = `
         Базовое: 9<br>
-        Фон "Поколение": -${this.character.backgrounds.generation || 0}<br>
-        Недостаток "Разбавленная кровь": +${this.character.dilutedVitae}
+        Факт Биографии "Поколение": -${this.character.backgrounds.generation || 0}<br>
+        Недостаток "Разбавленное Витэ": +${this.character.dilutedVitae}
       `;
     }
 
@@ -1313,36 +1411,52 @@ class CharacterCreatorApp {
 
   // Get current effective value at current phase
   getCurrentValue(category, subcategory, attr) {
+    let value = 0;
+    const phase = this.currentPhase;
+    const hasBaseline = !!this.character.setupBaseline;
+
+    console.log(`[GET_CURRENT_VALUE] Phase: ${phase}, Category: ${category}, Subcategory: ${subcategory || 'none'}, Attr: ${attr}, Has Baseline: ${hasBaseline}`);
+
     if (this.currentPhase === 'setup' || !this.character.setupBaseline) {
       // In setup phase or no baseline yet, read directly from character
       if (category === 'attributes') {
-        return this.character.attributes[subcategory][attr];
+        value = this.character.attributes[subcategory][attr];
       } else if (category === 'abilities') {
-        return this.character.abilities[subcategory][attr] || 0;
+        value = this.character.abilities[subcategory][attr] || 0;
       } else if (category === 'disciplines') {
-        return this.character.disciplines[attr] || 0;
+        value = this.character.disciplines[attr] || 0;
       } else if (category === 'backgrounds') {
-        return this.character.backgrounds[attr] || 0;
+        value = this.character.backgrounds[attr] || 0;
       } else if (category === 'virtues') {
-        return this.character.virtues[attr];
+        value = this.character.virtues[attr];
       } else if (category === 'humanity') {
-        return this.character.humanity;
+        value = this.character.humanity;
       } else if (category === 'willpower') {
-        return this.character.willpower;
+        value = this.character.willpower;
       }
+      console.log(`[GET_CURRENT_VALUE] Direct from character: ${value}`);
     } else {
       // Use hierarchical value calculation
-      return this.character.getValueAtPhase(category, subcategory, attr, this.currentPhase);
+      value = this.character.getValueAtPhase(category, subcategory, attr, this.currentPhase);
+      console.log(`[GET_CURRENT_VALUE] From getValueAtPhase: ${value}`);
     }
-    return 0;
+
+    return value;
   }
 
   updateCharacterValue(category, subcategory, attr, value) {
+    console.log(`\n\n[UPDATE_VALUE_START] ========================================`);
+    console.log(`[UPDATE_VALUE] Phase: ${this.currentPhase}`);
+    console.log(`[UPDATE_VALUE] Category: ${category}, Subcategory: ${subcategory || 'none'}, Attr: ${attr}`);
+    console.log(`[UPDATE_VALUE] Requested New Value: ${value}`);
+
     // Get current effective value
     const currentValue = this.getCurrentValue(category, subcategory, attr);
+    console.log(`[UPDATE_VALUE] Current Effective Value: ${currentValue}`);
 
     // Setup phase: enforce limits and directly modify character
     if (this.currentPhase === 'setup') {
+      console.log(`[UPDATE_VALUE] ===== SETUP PHASE MODE =====`);
       if (category === 'attributes') {
         // Attributes: max 6 in setup phase
         if (value > 6) {
@@ -1398,28 +1512,36 @@ class CharacterCreatorApp {
       }
 
       // Wipe later phase deltas for this stat since setup value changed
+      console.log(`[UPDATE_VALUE] Wiping later phase deltas for ${category}.${attr}`);
       this.character.wipeLaterPhaseDeltas(category, subcategory, attr, 'setup');
 
       this.saveToLocalStorage();
+      console.log(`[UPDATE_VALUE_END] Setup phase update complete: ${value}`);
+      console.log(`========================================\n\n`);
       return true;
     }
 
     // Freebies/XP phases: use delta tracking
     if (this.currentPhase === 'freebies' || this.currentPhase === 'xp') {
+      console.log(`[UPDATE_VALUE] ===== DELTA TRACKING MODE (${this.currentPhase.toUpperCase()}) =====`);
+
       // Ensure we have a baseline
       if (!this.character.setupBaseline) {
-        console.error('[ERROR] No setup baseline exists!');
+        console.error('[UPDATE_VALUE_ERROR] No setup baseline exists!');
         return false;
       }
 
       // Get baseline value from setup phase
       const baselineValue = this.character.getValueAtPhase(category, subcategory, attr, 'setup');
+      console.log(`[UPDATE_VALUE] Baseline (Setup) Value: ${baselineValue}`);
 
       // Prevent reducing below baseline from previous phase
       const previousPhase = this.currentPhase === 'freebies' ? 'setup' : 'freebies';
       const previousPhaseValue = this.character.getValueAtPhase(category, subcategory, attr, previousPhase);
+      console.log(`[UPDATE_VALUE] Previous Phase (${previousPhase}) Value: ${previousPhaseValue}`);
 
       if (value < previousPhaseValue) {
+        console.log(`[UPDATE_VALUE_REJECT] Cannot reduce below previous phase value (${previousPhaseValue})`);
         return false; // Can't reduce below previous phase
       }
 
@@ -1428,54 +1550,78 @@ class CharacterCreatorApp {
       const increasing = value > currentValue;
       const decreasing = value < currentValue;
 
+      console.log(`[UPDATE_VALUE] Change Direction: ${increasing ? 'INCREASING' : decreasing ? 'DECREASING' : 'NO CHANGE'}`);
+
       if (increasing) {
+        console.log(`[UPDATE_VALUE] ===== CALCULATING COST FOR INCREASE =====`);
         // Calculate cost for increase
         if (this.currentPhase === 'freebies') {
           // Ensure freebiesSpent is initialized
           if (this.character.freebiesSpent == null) {
+            console.log(`[UPDATE_VALUE] Initializing freebiesSpent to 0`);
             this.character.freebiesSpent = 0;
           }
+
+          console.log(`[UPDATE_VALUE] Before spending: freebiesSpent = ${this.character.freebiesSpent}, total freebies = ${this.character.freebies}`);
 
           costDelta = this.calculateFreebieCost(category, subcategory, attr, currentValue, value);
           const available = this.character.freebies - this.character.freebiesSpent;
 
+          console.log(`[UPDATE_VALUE] Available freebies: ${available}, Cost needed: ${costDelta}`);
+
           if (costDelta > available) {
+            console.log(`[UPDATE_VALUE_REJECT] Not enough freebies! Need: ${costDelta}, Have: ${available}`);
             alert(`Недостаточно бонусных очков. Нужно: ${costDelta}, доступно: ${available}`);
             return false;
           }
 
           this.character.freebiesSpent += costDelta;
+          console.log(`[UPDATE_VALUE] After spending: freebiesSpent = ${this.character.freebiesSpent}`);
         } else if (this.currentPhase === 'xp') {
           // Ensure experienceSpent is initialized
           if (this.character.experienceSpent == null) {
+            console.log(`[UPDATE_VALUE] Initializing experienceSpent to 0`);
             this.character.experienceSpent = 0;
           }
+
+          console.log(`[UPDATE_VALUE] Before spending: experienceSpent = ${this.character.experienceSpent}, total XP = ${this.character.experience}`);
 
           costDelta = this.calculateXPCost(category, subcategory, attr, currentValue, value);
           const available = this.character.experience - this.character.experienceSpent;
 
+          console.log(`[UPDATE_VALUE] Available XP: ${available}, Cost needed: ${costDelta}`);
+
           if (costDelta > available) {
+            console.log(`[UPDATE_VALUE_REJECT] Not enough XP! Need: ${costDelta}, Have: ${available}`);
             alert(`Недостаточно XP. Нужно: ${costDelta}, доступно: ${available}`);
             return false;
           }
 
           this.character.experienceSpent += costDelta;
+          console.log(`[UPDATE_VALUE] After spending: experienceSpent = ${this.character.experienceSpent}`);
         }
       } else if (decreasing) {
+        console.log(`[UPDATE_VALUE] ===== CALCULATING REFUND FOR DECREASE =====`);
         // Calculate refund for decrease (within current phase only)
         if (this.currentPhase === 'freebies') {
+          console.log(`[UPDATE_VALUE] Before refund: freebiesSpent = ${this.character.freebiesSpent}`);
           const refund = this.calculateFreebieCost(category, subcategory, attr, value, currentValue);
           this.character.freebiesSpent -= refund;
           console.log(`[REFUND] Refunded ${refund} freebies for ${category}.${attr} from ${currentValue} to ${value}`);
+          console.log(`[UPDATE_VALUE] After refund: freebiesSpent = ${this.character.freebiesSpent}`);
         } else if (this.currentPhase === 'xp') {
+          console.log(`[UPDATE_VALUE] Before refund: experienceSpent = ${this.character.experienceSpent}`);
           const refund = this.calculateXPCost(category, subcategory, attr, value, currentValue);
           this.character.experienceSpent -= refund;
           console.log(`[REFUND] Refunded ${refund} XP for ${category}.${attr} from ${currentValue} to ${value}`);
+          console.log(`[UPDATE_VALUE] After refund: experienceSpent = ${this.character.experienceSpent}`);
         }
       }
 
       // Update the delta for current phase
+      console.log(`[UPDATE_VALUE] ===== UPDATING DELTAS =====`);
       const newDelta = value - previousPhaseValue;
+      console.log(`[UPDATE_VALUE] New Delta: ${newDelta} (new value ${value} - previous phase value ${previousPhaseValue})`);
 
       if (this.currentPhase === 'freebies') {
         // Update freebies delta
@@ -1663,7 +1809,13 @@ class CharacterCreatorApp {
   }
 
   calculateFreebieCost(category, subcategory, attr, currentValue, newValue) {
+    console.log(`[FREEBIE_COST_START] ========== Calculating Freebie Cost ==========`);
+    console.log(`[FREEBIE_COST] Category: ${category}, Subcategory: ${subcategory || 'none'}, Attr: ${attr}`);
+    console.log(`[FREEBIE_COST] Current Value: ${currentValue}, New Value: ${newValue}`);
+
     const diff = newValue - currentValue;
+    console.log(`[FREEBIE_COST] Difference: ${diff} (${diff > 0 ? 'INCREASE' : diff < 0 ? 'DECREASE' : 'NO CHANGE'})`);
+
     let costPerPoint = 0;
 
     if (category === 'attributes') {
@@ -1680,32 +1832,48 @@ class CharacterCreatorApp {
       costPerPoint = this.FREEBIE_COSTS.humanity;
     } else if (category === 'willpower') {
       costPerPoint = this.FREEBIE_COSTS.willpower;
+    } else {
+      console.error(`[FREEBIE_COST_ERROR] Unknown category: ${category}`);
+      return 0;
     }
 
-    console.log(`[DEBUG] costPerPoint = ${costPerPoint}, diff = ${diff}`);
-    return diff * costPerPoint;
+    console.log(`[FREEBIE_COST] Cost Per Point for ${category}: ${costPerPoint}`);
+    const totalCost = diff * costPerPoint;
+    console.log(`[FREEBIE_COST] Formula: ${diff} × ${costPerPoint} = ${totalCost}`);
+    console.log(`[FREEBIE_COST_END] ========== Total Cost: ${totalCost} ==========`);
+    return totalCost;
   }
 
   calculateXPCost(category, subcategory, attr, currentValue, newValue) {
+    console.log(`[XP_COST_START] ========== Calculating XP Cost ==========`);
+    console.log(`[XP_COST] Category: ${category}, Subcategory: ${subcategory || 'none'}, Attr: ${attr}`);
+    console.log(`[XP_COST] Current Value: ${currentValue}, New Value: ${newValue}`);
+
     let totalCost = 0;
 
     // Sum up costs for each level
     for (let level = currentValue + 1; level <= newValue; level++) {
       let costForLevel = 0;
 
+      console.log(`[XP_COST] Calculating for level: ${level}`);
+
       if (category === 'attributes') {
         costForLevel = XP_COSTS.attribute(level);
+        console.log(`[XP_COST] Attribute formula: ${level} * 4 = ${costForLevel}`);
       } else if (category === 'abilities') {
         if (currentValue === 0) {
           // New ability
           costForLevel = XP_COSTS.newAbility;
+          console.log(`[XP_COST] New ability: ${costForLevel}`);
         } else {
           costForLevel = XP_COSTS.ability(level);
+          console.log(`[XP_COST] Ability formula: ${level} * 2 = ${costForLevel}`);
         }
       } else if (category === 'disciplines') {
         if (currentValue === 0) {
           // New discipline
           costForLevel = XP_COSTS.newDiscipline;
+          console.log(`[XP_COST] New discipline: ${costForLevel}`);
         } else {
           // Get discipline category and clan affiliation
           const disc = this.allDisciplines.find(d => d.id === attr);
@@ -1713,28 +1881,40 @@ class CharacterCreatorApp {
           const isClan = clanDiscs.includes(attr);
           const isCaitiff = this.character.clan === 'caitiff';
 
+          console.log(`[XP_COST] Discipline: ${attr}, Category: ${disc?.category}, IsClan: ${isClan}, IsCaitiff: ${isCaitiff}`);
+
           if (isCaitiff) {
             costForLevel = XP_COSTS.discipline[disc.category].caitiff(level);
+            console.log(`[XP_COST] Caitiff discipline formula: ${level} * X = ${costForLevel}`);
           } else if (isClan) {
             costForLevel = XP_COSTS.discipline[disc.category].clan(level);
+            console.log(`[XP_COST] Clan discipline formula: ${level} * X = ${costForLevel}`);
           } else {
             costForLevel = XP_COSTS.discipline[disc.category].nonClan(level);
+            console.log(`[XP_COST] Non-clan discipline formula: ${level} * X = ${costForLevel}`);
           }
         }
       } else if (category === 'virtues') {
         costForLevel = XP_COSTS.virtue(level);
+        console.log(`[XP_COST] Virtue formula: ${level} * 2 = ${costForLevel}`);
       } else if (category === 'humanity') {
         costForLevel = XP_COSTS.humanity(level);
+        console.log(`[XP_COST] Humanity formula: ${level} * 2 = ${costForLevel}`);
       } else if (category === 'willpower') {
         costForLevel = XP_COSTS.willpower(level);
+        console.log(`[XP_COST] Willpower formula: ${level} * 1 = ${costForLevel}`);
       } else if (category === 'backgrounds') {
         // Backgrounds can't be raised with XP in standard rules
+        console.log(`[XP_COST_ERROR] Backgrounds cannot be raised with XP`);
         return 999;
       }
 
+      console.log(`[XP_COST] Cost for level ${level}: ${costForLevel}`);
       totalCost += costForLevel;
+      console.log(`[XP_COST] Running total: ${totalCost}`);
     }
 
+    console.log(`[XP_COST_END] ========== Total XP Cost: ${totalCost} ==========`);
     return totalCost;
   }
 
@@ -2738,8 +2918,47 @@ class CharacterCreatorApp {
   loadFromLocalStorage() {
     const saved = localStorage.getItem('vtm_character');
     if (saved) {
+      console.log('[INIT] ===== LOADING EXISTING CHARACTER =====');
       this.character = Character.fromJSON(saved);
       this.tracker = new PointTracker(this.character);
+
+      console.log(`[INIT] Name: ${this.character.name || '(not set)'}`);
+      console.log(`[INIT] Clan: ${this.character.clan || '(not set)'}`);
+      console.log(`[INIT] Concept: ${this.character.concept || '(not set)'}`);
+      console.log(`[INIT] Generation: ${this.character.getEffectiveGeneration()}`);
+      console.log(`[INIT] Has Setup Baseline: ${!!this.character.setupBaseline}`);
+
+      if (this.character.setupBaseline) {
+        console.log('[INIT] Phase tracking enabled (setup completed)');
+      }
+
+      console.log(`\n[INIT] ===== CHARACTER POINTS =====`);
+      console.log(`[INIT] Freebies: ${this.character.freebiesSpent || 0}/${this.character.freebies} spent`);
+      console.log(`[INIT] Experience: ${this.character.experienceSpent || 0}/${this.character.experience} spent`);
+
+      const attrTotal = Object.values(this.character.attributes).reduce((sum, cat) =>
+        sum + Object.values(cat).reduce((s, v) => s + v, 0), 0) - 9;
+      console.log(`[INIT] Attributes Total: ${attrTotal}`);
+
+      const abilTotal = Object.values(this.character.abilities).reduce((sum, cat) =>
+        sum + Object.values(cat).reduce((s, v) => s + v, 0), 0);
+      console.log(`[INIT] Abilities Total: ${abilTotal}`);
+
+      const discTotal = Object.values(this.character.disciplines).reduce((s, v) => s + v, 0);
+      console.log(`[INIT] Disciplines Total: ${discTotal}`);
+
+      const bgTotal = Object.values(this.character.backgrounds).reduce((s, v) => s + v, 0);
+      console.log(`[INIT] Backgrounds Total: ${bgTotal}`);
+
+      const virtTotal = Object.values(this.character.virtues).reduce((s, v) => s + v, 0) - 3;
+      console.log(`[INIT] Virtues Total: ${virtTotal}`);
+
+      console.log(`\n[INIT] Merits: ${this.character.merits.length}`);
+      console.log(`[INIT] Flaws: ${this.character.flaws.length}`);
+      console.log('========================================\n');
+    } else {
+      console.log('[INIT] No existing character found. Starting fresh.');
+      console.log('========================================\n');
     }
   }
 

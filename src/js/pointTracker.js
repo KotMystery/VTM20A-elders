@@ -148,6 +148,8 @@ export class PointTracker {
 
     if (total > ELDER_RULES.disciplines.total) {
       errors.push(`Дисциплины: использовано ${total}/${ELDER_RULES.disciplines.total}`);
+    } else if (total < ELDER_RULES.disciplines.total) {
+      errors.push(`Дисциплины: нужно распределить ${ELDER_RULES.disciplines.total} очков (распределено: ${total})`);
     }
 
     return { valid: errors.length === 0, errors, total };
@@ -167,7 +169,9 @@ export class PointTracker {
     });
 
     if (total > ELDER_RULES.backgrounds.total) {
-      errors.push(`Предыстории: использовано ${total}/${ELDER_RULES.backgrounds.total}`);
+      errors.push(`Факты биографии: использовано ${total}/${ELDER_RULES.backgrounds.total}`);
+    } else if (total < ELDER_RULES.backgrounds.total) {
+      errors.push(`Факты биографии: нужно распределить ${ELDER_RULES.backgrounds.total} очка (распределено: ${total})`);
     }
 
     return { valid: errors.length === 0, errors, total };
@@ -181,6 +185,8 @@ export class PointTracker {
 
     if (total > ELDER_RULES.virtues.total) {
       errors.push(`Добродетели: использовано ${total}/${ELDER_RULES.virtues.total}`);
+    } else if (total < ELDER_RULES.virtues.total) {
+      errors.push(`Добродетели: нужно распределить ${ELDER_RULES.virtues.total} очков (распределено: ${total})`);
     }
 
     return { valid: errors.length === 0, errors, total };
@@ -208,9 +214,30 @@ export class PointTracker {
     return spent;
   }
 
+  // Validate required character fields
+  validateRequiredFields() {
+    const errors = [];
+
+    if (!this.character.clan || this.character.clan === '') {
+      errors.push('Необходимо выбрать клан');
+    }
+
+    if (!this.character.name || this.character.name.trim() === '') {
+      errors.push('Необходимо указать имя персонажа');
+    }
+
+    // Check if coterie flaw is selected (mandatory 7-point flaw)
+    if (!this.character.coterieFlaw) {
+      errors.push('Необходимо выбрать обязательный недостаток Котерии (7 очков)');
+    }
+
+    return { valid: errors.length === 0, errors };
+  }
+
   // Get all validation results
   validateAll() {
     return {
+      required: this.validateRequiredFields(),
       attributes: this.validateAttributes(),
       abilities: this.validateAbilities(),
       disciplines: this.validateDisciplines(),
