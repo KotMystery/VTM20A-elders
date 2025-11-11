@@ -148,6 +148,9 @@ class CharacterCreatorApp {
             <div class="tab ${this.currentPhase === 'xp' ? 'active' : ''}" data-phase="xp">
               3. Experience points
             </div>
+            <div class="tab ${this.currentPhase === 'summary' ? 'active' : ''}" data-phase="summary">
+              4. Итоги
+            </div>
           </div>
 
           <!-- Phase content -->
@@ -174,6 +177,8 @@ class CharacterCreatorApp {
         return this.renderFreebiesPhase();
       case 'xp':
         return this.renderXPPhase();
+      case 'summary':
+        return this.renderSummaryTab();
       default:
         return '';
     }
@@ -720,6 +725,318 @@ class CharacterCreatorApp {
   getClanDisciplines() {
     const clan = clansData.find(c => c.id === this.character.clan);
     return clan ? clan.disciplines : [];
+  }
+
+  renderSummaryTab() {
+    const clan = clansData.find(c => c.id === this.character.clan);
+    const clanName = clan ? clan.name : '—';
+    const bloodStats = this.character.getBloodPoolStats();
+
+    return `
+      <div class="character-sheet-summary space-y-6">
+        <!-- Print Button -->
+        <div class="no-print flex justify-end mb-4">
+          <button class="btn btn-primary" onclick="window.print()">
+            🖨️ Печать / Сохранить в PDF
+          </button>
+        </div>
+
+        <!-- Header Section -->
+        <div class="card print-section">
+          <div class="border-4 border-vtm-red p-6">
+            <div class="text-center mb-6">
+              <h1 class="text-4xl font-bold text-vtm-red mb-2">VAMPIRE: THE MASQUERADE</h1>
+              <h2 class="text-2xl text-gray-300">20th Anniversary Edition</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <div class="mb-2"><span class="font-bold">Имя:</span> ${this.character.name || '—'}</div>
+                <div class="mb-2"><span class="font-bold">Игрок:</span> ${this.character.player || '—'}</div>
+                <div class="mb-2"><span class="font-bold">Хроника:</span> ${this.character.chronicle || '—'}</div>
+              </div>
+              <div>
+                <div class="mb-2"><span class="font-bold">Натура:</span> ${this.character.nature || '—'}</div>
+                <div class="mb-2"><span class="font-bold">Маска:</span> ${this.character.demeanor || '—'}</div>
+                <div class="mb-2"><span class="font-bold">Концепция:</span> ${this.character.concept || '—'}</div>
+              </div>
+              <div>
+                <div class="mb-2"><span class="font-bold">Клан:</span> ${clanName}</div>
+                <div class="mb-2"><span class="font-bold">Поколение:</span> ${this.character.getEffectiveGeneration()}</div>
+                <div class="mb-2"><span class="font-bold">Сир:</span> ${this.character.sire || '—'}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Attributes Section -->
+        <div class="card print-section">
+          <h3 class="section-title">Атрибуты</h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            ${this.renderSummaryAttributeColumn('physical', 'Физические', ['strength', 'dexterity', 'stamina'], ['Сила', 'Ловкость', 'Выносливость'])}
+            ${this.renderSummaryAttributeColumn('social', 'Социальные', ['charisma', 'manipulation', 'appearance'], ['Обаяние', 'Манипулирование', 'Привлекательность'])}
+            ${this.renderSummaryAttributeColumn('mental', 'Ментальные', ['perception', 'intelligence', 'wits'], ['Восприятие', 'Интеллект', 'Смекалка'])}
+          </div>
+        </div>
+
+        <!-- Abilities Section -->
+        <div class="card print-section">
+          <h3 class="section-title">Способности</h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            ${this.renderSummaryAbilityColumn('talents', 'Таланты', abilitiesData.talents)}
+            ${this.renderSummaryAbilityColumn('skills', 'Навыки', abilitiesData.skills)}
+            ${this.renderSummaryAbilityColumn('knowledges', 'Познания', abilitiesData.knowledges)}
+          </div>
+        </div>
+
+        <!-- Advantages Section -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Disciplines -->
+          <div class="card print-section">
+            <h3 class="section-title">Дисциплины</h3>
+            ${this.renderSummaryDisciplines()}
+          </div>
+
+          <!-- Backgrounds -->
+          <div class="card print-section">
+            <h3 class="section-title">Факты биографии</h3>
+            ${this.renderSummaryBackgrounds()}
+          </div>
+
+          <!-- Virtues -->
+          <div class="card print-section">
+            <h3 class="section-title">Добродетели</h3>
+            <div class="space-y-2">
+              <div class="flex justify-between items-center">
+                <span>Совесть/Решимость</span>
+                <span>${this.renderStaticDots(this.character.virtues.conscience, 5)}</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span>Самоконтроль/Инстинкт</span>
+                <span>${this.renderStaticDots(this.character.virtues.selfControl, 5)}</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span>Смелость</span>
+                <span>${this.renderStaticDots(this.character.virtues.courage, 5)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Other Traits Section -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Humanity/Path & Willpower -->
+          <div class="card print-section">
+            <h3 class="section-title">Человечность и Сила воли</h3>
+            <div class="space-y-3">
+              <div>
+                <div class="font-bold mb-1">Человечность / Путь</div>
+                <div class="text-sm text-gray-400 mb-1">${this.character.path || 'Humanity'}</div>
+                <div>${this.renderStaticDots(this.character.humanity, 10)}</div>
+              </div>
+              <div>
+                <div class="font-bold mb-1">Сила воли</div>
+                <div>${this.renderStaticDots(this.character.willpower, 10)}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Blood Pool -->
+          <div class="card print-section">
+            <h3 class="section-title">Запас крови</h3>
+            <div class="space-y-2">
+              <div><span class="font-bold">Максимум:</span> ${bloodStats.max}</div>
+              <div><span class="font-bold">За ход:</span> ${bloodStats.perTurn}</div>
+              <div class="mt-3">
+                ${this.renderBloodPoolTrack(bloodStats.max)}
+              </div>
+            </div>
+          </div>
+
+          <!-- Health -->
+          <div class="card print-section">
+            <h3 class="section-title">Здоровье</h3>
+            <div class="space-y-1 text-sm">
+              <div class="flex justify-between"><span>Невредим</span><span>☐</span></div>
+              <div class="flex justify-between"><span>Поцарапан (-1)</span><span>☐</span></div>
+              <div class="flex justify-between"><span>Лёгкое ранение (-1)</span><span>☐</span></div>
+              <div class="flex justify-between"><span>Средне ранен (-2)</span><span>☐</span></div>
+              <div class="flex justify-between"><span>Тяжело ранен (-2)</span><span>☐</span></div>
+              <div class="flex justify-between"><span>Покалечен (-5)</span><span>☐</span></div>
+              <div class="flex justify-between"><span>При смерти</span><span>☐</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Merits & Flaws -->
+        ${this.character.merits.length > 0 || this.character.flaws.length > 0 ? `
+        <div class="card print-section">
+          <h3 class="section-title">Достоинства и Недостатки</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h4 class="font-bold text-lg mb-2">Достоинства</h4>
+              ${this.character.merits.length > 0 ? this.character.merits.map(merit => `
+                <div class="mb-1">• ${merit.name} (${merit.selectedCost || merit.cost})</div>
+              `).join('') : '<div class="text-gray-400">Нет достоинств</div>'}
+            </div>
+            <div>
+              <h4 class="font-bold text-lg mb-2">Недостатки</h4>
+              ${this.character.coterieFlaw ? `<div class="mb-1 text-yellow-400">• ${this.character.coterieFlaw.name} (Котерия, 7)</div>` : ''}
+              ${this.character.flaws.length > 0 ? this.character.flaws.map(flaw => `
+                <div class="mb-1">• ${flaw.name} (${flaw.selectedCost || flaw.cost})</div>
+              `).join('') : ''}
+              ${!this.character.coterieFlaw && this.character.flaws.length === 0 ? '<div class="text-gray-400">Нет недостатков</div>' : ''}
+            </div>
+          </div>
+        </div>
+        ` : ''}
+
+        <!-- Clan Weakness -->
+        ${clan ? `
+        <div class="card print-section">
+          <h3 class="section-title">Слабость клана</h3>
+          <p class="text-gray-300">${clan.weakness}</p>
+        </div>
+        ` : ''}
+
+        <!-- Experience & Freebies -->
+        <div class="card print-section no-print">
+          <h3 class="section-title">Прогресс создания персонажа</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <div class="font-bold mb-2">Freebie Points</div>
+              <div class="text-lg">
+                Потрачено: <span class="text-vtm-red font-bold">${this.character.freebiesSpent}</span> / ${this.character.freebies}
+              </div>
+              <div class="text-sm text-gray-400 mt-1">
+                Осталось: ${this.character.freebies - this.character.freebiesSpent}
+              </div>
+            </div>
+            <div>
+              <div class="font-bold mb-2">Experience Points</div>
+              <div class="text-lg">
+                Потрачено: <span class="text-vtm-red font-bold">${this.character.experienceSpent}</span> / ${this.character.experience}
+              </div>
+              <div class="text-sm text-gray-400 mt-1">
+                Осталось: ${this.character.experience - this.character.experienceSpent}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  renderSummaryAttributeColumn(category, title, attrs, labels) {
+    return `
+      <div>
+        <h4 class="font-bold text-lg mb-3 text-center">${title}</h4>
+        ${attrs.map((attr, idx) => `
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-gray-300">${labels[idx]}</span>
+            <span>${this.renderStaticDots(this.character.attributes[category][attr], 5)}</span>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  renderSummaryAbilityColumn(category, title, abilities) {
+    const filteredAbilities = abilities.filter(ability => {
+      return (this.character.abilities[category][ability.id] || 0) > 0;
+    });
+
+    return `
+      <div>
+        <h4 class="font-bold text-lg mb-3 text-center">${title}</h4>
+        ${filteredAbilities.length > 0 ? filteredAbilities.map(ability => `
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-gray-300">${ability.name}</span>
+            <span>${this.renderStaticDots(this.character.abilities[category][ability.id], 5)}</span>
+          </div>
+        `).join('') : '<div class="text-gray-400 text-sm text-center">Нет способностей</div>'}
+      </div>
+    `;
+  }
+
+  renderSummaryDisciplines() {
+    const entries = Object.entries(this.character.disciplines).filter(([_, level]) => level > 0);
+    const clanDisciplines = this.getClanDisciplines();
+
+    if (entries.length === 0) {
+      return '<div class="text-gray-400 text-sm text-center">Нет дисциплин</div>';
+    }
+
+    return `
+      <div class="space-y-2">
+        ${entries.map(([discId, level]) => {
+          const disc = this.allDisciplines.find(d => d.id === discId);
+          const isClan = clanDisciplines.includes(discId);
+          return `
+            <div class="flex justify-between items-center">
+              <span class="text-gray-300">
+                ${disc ? disc.name : discId}
+                ${isClan ? '<span class="text-xs text-vtm-red">★</span>' : ''}
+              </span>
+              <span>${this.renderStaticDots(level, 10)}</span>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }
+
+  renderSummaryBackgrounds() {
+    const entries = Object.entries(this.character.backgrounds).filter(([_, level]) => level > 0);
+
+    if (entries.length === 0) {
+      return '<div class="text-gray-400 text-sm text-center">Нет фактов биографии</div>';
+    }
+
+    return `
+      <div class="space-y-2">
+        ${entries.map(([bgId, level]) => {
+          const bg = backgroundsData.find(b => b.id === bgId);
+          return `
+            <div class="flex justify-between items-center">
+              <span class="text-gray-300">${bg ? bg.name : bgId}</span>
+              <span>${this.renderStaticDots(level, 5)}</span>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }
+
+  renderStaticDots(current, max) {
+    let html = '';
+    for (let i = 1; i <= max; i++) {
+      if (i <= current) {
+        html += '<span class="text-vtm-red">●</span>';
+      } else {
+        html += '<span class="text-gray-600">○</span>';
+      }
+    }
+    return html;
+  }
+
+  renderBloodPoolTrack(max) {
+    const rows = Math.ceil(max / 10);
+    let html = '<div class="space-y-1">';
+
+    for (let row = 0; row < rows; row++) {
+      html += '<div class="flex gap-1">';
+      const start = row * 10;
+      const end = Math.min(start + 10, max);
+
+      for (let i = start; i < end; i++) {
+        html += '<span class="text-gray-600">☐</span>';
+      }
+      html += '</div>';
+    }
+
+    html += '</div>';
+    return html;
   }
 
   renderDots(current, max, category, subcategory, attr) {
