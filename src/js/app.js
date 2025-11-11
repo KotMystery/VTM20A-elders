@@ -22,6 +22,36 @@ class CharacterCreatorApp {
     this.allDisciplines = this.flattenDisciplines();
     this.translations = translations;
 
+    // Fallback costs in case imports fail
+    this.FREEBIE_COSTS = FREEBIE_COSTS || {
+      attribute: 5,
+      ability: 2,
+      background: 1,
+      discipline: 7,
+      virtue: 2,
+      humanity: 1,
+      willpower: 1
+    };
+
+    this.XP_COSTS = XP_COSTS || {
+      newAbility: 3,
+      newDiscipline: 10,
+      newPath: 7,
+      attribute: (current) => current * 4,
+      ability: (current) => current * 2,
+      discipline: {
+        physical: { clan: (c) => c * 5, nonClan: (c) => c * 6, caitiff: (c) => c * 5 },
+        mental: { clan: (c) => c * 5, nonClan: (c) => c * 7, caitiff: (c) => c * 6 },
+        unique: { clan: (c) => c * 5, nonClan: (c) => c * 8, caitiff: (c) => c * 7 }
+      },
+      secondaryPath: (current) => current * 4,
+      virtue: (current) => current * 2,
+      humanity: (current) => current * 2,
+      willpower: (current) => current * 1
+    };
+
+    console.log('[DEBUG] Freebie costs loaded:', this.FREEBIE_COSTS);
+
     this.init();
   }
 
@@ -1501,21 +1531,22 @@ class CharacterCreatorApp {
     let costPerPoint = 0;
 
     if (category === 'attributes') {
-      costPerPoint = FREEBIE_COSTS.attribute;
+      costPerPoint = this.FREEBIE_COSTS.attribute;
     } else if (category === 'abilities') {
-      costPerPoint = FREEBIE_COSTS.ability;
+      costPerPoint = this.FREEBIE_COSTS.ability;
     } else if (category === 'disciplines') {
-      costPerPoint = FREEBIE_COSTS.discipline;
+      costPerPoint = this.FREEBIE_COSTS.discipline;
     } else if (category === 'backgrounds') {
-      costPerPoint = FREEBIE_COSTS.background;
+      costPerPoint = this.FREEBIE_COSTS.background;
     } else if (category === 'virtues') {
-      costPerPoint = FREEBIE_COSTS.virtue;
+      costPerPoint = this.FREEBIE_COSTS.virtue;
     } else if (category === 'humanity') {
-      costPerPoint = FREEBIE_COSTS.humanity;
+      costPerPoint = this.FREEBIE_COSTS.humanity;
     } else if (category === 'willpower') {
-      costPerPoint = FREEBIE_COSTS.willpower;
+      costPerPoint = this.FREEBIE_COSTS.willpower;
     }
 
+    console.log(`[DEBUG] costPerPoint = ${costPerPoint}, diff = ${diff}`);
     return diff * costPerPoint;
   }
 
