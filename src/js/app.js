@@ -64,12 +64,20 @@ class CharacterCreatorApp {
     app.innerHTML = `
       <div class="min-h-screen p-4 md:p-6">
         <header class="mb-4">
-          <h1 class="text-2xl md:text-3xl font-bold text-center text-vtm-red mb-1">
-            ${this.t('app.title')}
-          </h1>
-          <h2 class="text-lg md:text-xl text-center text-gray-400">
-            ${this.t('app.subtitle')}
-          </h2>
+          <div class="flex justify-between items-center mb-2">
+            <div class="flex-1"></div>
+            <div class="flex-1 text-center">
+              <h1 class="text-2xl md:text-3xl font-bold text-vtm-red mb-1">
+                ${this.t('app.title')}
+              </h1>
+              <h2 class="text-lg md:text-xl text-gray-400">
+                ${this.t('app.subtitle')}
+              </h2>
+            </div>
+            <div class="flex-1 flex justify-end">
+              <button class="btn btn-secondary text-sm" id="newCharacterBtn">Новый персонаж</button>
+            </div>
+          </div>
         </header>
 
         <div class="max-w-5xl mx-auto">
@@ -243,6 +251,7 @@ class CharacterCreatorApp {
     return `
       <div class="card">
         <h3 class="section-title">Атрибуты</h3>
+        ${this.currentPhase === 'setup' ? `
         <div class="mb-4 p-4 bg-gray-800 rounded">
           <div class="text-sm font-medium mb-2">Правила распределения: 9/7/5</div>
           <div class="text-xs text-gray-400 mb-2">
@@ -254,6 +263,7 @@ class CharacterCreatorApp {
             <div>Ментальные: <span data-validation="attributes-mental" class="${validation.totals?.mental === 9 || validation.totals?.mental === 7 || validation.totals?.mental === 5 ? 'text-green-400' : 'text-red-400'}">${validation.totals?.mental || 0}</span></div>
           </div>
         </div>
+        ` : ''}
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           ${this.renderAttributeCategory('physical', 'Физические', ['strength', 'dexterity', 'stamina'], ['Сила', 'Ловкость', 'Выносливость'])}
@@ -286,6 +296,7 @@ class CharacterCreatorApp {
     return `
       <div class="card">
         <h3 class="section-title">Способности</h3>
+        ${this.currentPhase === 'setup' ? `
         <div class="mb-4 p-4 bg-gray-800 rounded">
           <div class="text-sm font-medium mb-2">Правила распределения: 18/12/8</div>
           <div class="text-xs text-gray-400 mb-2">
@@ -297,6 +308,7 @@ class CharacterCreatorApp {
             <div>Познания: <span data-validation="abilities-knowledges" class="${validation.totals?.knowledges === 18 || validation.totals?.knowledges === 12 || validation.totals?.knowledges === 8 ? 'text-green-400' : 'text-red-400'}">${validation.totals?.knowledges || 0}</span></div>
           </div>
         </div>
+        ` : ''}
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           ${this.renderAbilityCategory('talents', 'Таланты', abilitiesData.talents)}
@@ -1150,6 +1162,23 @@ class CharacterCreatorApp {
       exportBtn.addEventListener('click', clickListener);
       exportBtn._clickListener = clickListener;
     }
+
+    const newCharacterBtn = document.getElementById('newCharacterBtn');
+    if (newCharacterBtn) {
+      if (newCharacterBtn._clickListener) {
+        newCharacterBtn.removeEventListener('click', newCharacterBtn._clickListener);
+      }
+      const clickListener = () => this.newCharacter();
+      newCharacterBtn.addEventListener('click', clickListener);
+      newCharacterBtn._clickListener = clickListener;
+    }
+  }
+
+  newCharacter() {
+    if (confirm('Создать нового персонажа? Все несохранённые изменения будут потеряны.')) {
+      localStorage.removeItem('vtm_character');
+      location.reload();
+    }
   }
 
   handleDotClick(category, subcategory, attr, value, tracker) {
@@ -1340,10 +1369,13 @@ class CharacterCreatorApp {
         if (this.currentPhase === 'freebies') {
           // Ensure freebiesSpent is initialized (handle legacy saves)
           if (this.character.freebiesSpent == null) {
+            console.log('[DEBUG] freebiesSpent was null, initializing to 0');
             this.character.freebiesSpent = 0;
           }
 
+          console.log(`[DEBUG] Before spending: freebiesSpent = ${this.character.freebiesSpent}`);
           const cost = this.calculateFreebieCost(category, subcategory, attr, currentValue, value);
+          console.log(`[DEBUG] Calculated cost: ${cost} for ${category}.${attr} from ${currentValue} to ${value}`);
           const available = this.character.freebies - this.character.freebiesSpent;
 
           if (cost > available) {
@@ -1352,6 +1384,7 @@ class CharacterCreatorApp {
           }
 
           this.character.freebiesSpent += cost;
+          console.log(`[DEBUG] After spending: freebiesSpent = ${this.character.freebiesSpent}`);
         } else if (this.currentPhase === 'xp') {
           // Ensure experienceSpent is initialized (handle legacy saves)
           if (this.character.experienceSpent == null) {
