@@ -12,6 +12,7 @@ import conceptsData from '../data/concepts.json';
 import archetypesData from '../data/archetypes.json';
 import meritsData from '../data/merits.json';
 import flawsData from '../data/flaws.json';
+import translations from '../locales/ru.json';
 
 class CharacterCreatorApp {
   constructor() {
@@ -19,8 +20,20 @@ class CharacterCreatorApp {
     this.tracker = new PointTracker(this.character);
     this.currentPhase = 'setup';
     this.allDisciplines = this.flattenDisciplines();
+    this.translations = translations;
 
     this.init();
+  }
+
+  // Translation helper - access nested keys like "attributes.physical"
+  t(key) {
+    const keys = key.split('.');
+    let value = this.translations;
+    for (const k of keys) {
+      value = value?.[k];
+      if (value === undefined) return key; // Return key if translation missing
+    }
+    return value;
   }
 
   flattenDisciplines() {
@@ -33,6 +46,12 @@ class CharacterCreatorApp {
 
   init() {
     this.loadFromLocalStorage();
+
+    // Calculate derived stats from virtues
+    this.character.humanity = this.character.virtues.conscience + this.character.virtues.selfControl;
+    this.character.willpower = this.character.virtues.courage;
+    this.character.willpowerCurrent = this.character.willpower;
+
     this.render();
     this.attachEventListeners();
   }
@@ -46,10 +65,10 @@ class CharacterCreatorApp {
       <div class="min-h-screen p-4 md:p-6">
         <header class="mb-4">
           <h1 class="text-2xl md:text-3xl font-bold text-center text-vtm-red mb-1">
-            Vampire: The Masquerade 20A
+            ${this.t('app.title')}
           </h1>
           <h2 class="text-lg md:text-xl text-center text-gray-400">
-            Создание персонажа - Древний
+            ${this.t('app.subtitle')}
           </h2>
         </header>
 
@@ -57,13 +76,13 @@ class CharacterCreatorApp {
           <!-- Phase tabs -->
           <div class="flex border-b border-gray-700 mb-4 overflow-x-auto">
             <div class="tab ${this.currentPhase === 'setup' ? 'active' : ''}" data-phase="setup">
-              1. Базовая настройка
+              ${this.t('phases.setup')}
             </div>
             <div class="tab ${this.currentPhase === 'freebies' ? 'active' : ''}" data-phase="freebies">
-              2. Freebies
+              ${this.t('phases.freebies')}
             </div>
             <div class="tab ${this.currentPhase === 'xp' ? 'active' : ''}" data-phase="xp">
-              3. Опыт (XP)
+              ${this.t('phases.xp')}
             </div>
           </div>
 
@@ -113,22 +132,22 @@ class CharacterCreatorApp {
     return `
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="card">
-          <h3 class="section-title">Основная информация</h3>
+          <h3 class="section-title">${this.t('basicInfo.sectionTitle')}</h3>
           <div class="space-y-3">
             <div>
-              <label class="block text-sm font-medium mb-1">Имя</label>
+              <label class="block text-sm font-medium mb-1">${this.t('basicInfo.name')}</label>
               <input type="text" id="name" class="input-field" value="${this.character.name}">
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">Игрок</label>
+              <label class="block text-sm font-medium mb-1">${this.t('basicInfo.player')}</label>
               <input type="text" id="player" class="input-field" value="${this.character.player}">
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">Хроника</label>
+              <label class="block text-sm font-medium mb-1">${this.t('basicInfo.chronicle')}</label>
               <input type="text" id="chronicle" class="input-field" value="${this.character.chronicle}">
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">Натура</label>
+              <label class="block text-sm font-medium mb-1">${this.t('basicInfo.nature')}</label>
               <input type="text" id="nature" class="input-field"
                      list="nature-list" value="${this.character.nature}">
               <datalist id="nature-list">
@@ -138,7 +157,7 @@ class CharacterCreatorApp {
               </datalist>
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">Маска</label>
+              <label class="block text-sm font-medium mb-1">${this.t('basicInfo.demeanor')}</label>
               <input type="text" id="demeanor" class="input-field"
                      list="demeanor-list" value="${this.character.demeanor}">
               <datalist id="demeanor-list">
@@ -148,7 +167,7 @@ class CharacterCreatorApp {
               </datalist>
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">Концепция</label>
+              <label class="block text-sm font-medium mb-1">${this.t('basicInfo.concept')}</label>
               <input type="text" id="concept" class="input-field"
                      list="concept-list" value="${this.character.concept}">
               <datalist id="concept-list">
@@ -626,10 +645,30 @@ class CharacterCreatorApp {
 
   renderDots(current, max, category, subcategory, attr) {
     let html = '';
+
+    // Determine the allowed limit based on phase and category
+    let allowedMax = max;
+
+    if (this.currentPhase === 'setup') {
+      // In setup phase, enforce limits
+      if (category === 'attributes') {
+        allowedMax = 6; // Max 6 for attributes in setup
+      } else if (category === 'abilities') {
+        allowedMax = 5; // Max 5 for abilities in setup
+      } else if (category === 'virtues') {
+        allowedMax = 5; // Max 5 for virtues
+      } else if (category === 'backgrounds') {
+        allowedMax = 5; // Max 5 for backgrounds
+      } else if (category === 'humanity' || category === 'willpower') {
+        allowedMax = 0; // Cannot click these in setup phase - they're derived
+      }
+    }
+
     for (let i = 1; i <= max; i++) {
       const filled = i <= current ? 'filled' : '';
+      const disabled = i > allowedMax ? 'opacity-50 cursor-not-allowed' : '';
       // No onclick - handled by global event delegation
-      html += `<div class="dot ${filled}" data-value="${i}"></div>`;
+      html += `<div class="dot ${filled} ${disabled}" data-value="${i}"></div>`;
     }
     return html;
   }
@@ -959,6 +998,12 @@ class CharacterCreatorApp {
   }
 
   switchPhase(phase) {
+    // When leaving setup phase, capture baseline to prevent stat reduction later
+    if (this.currentPhase === 'setup' && phase !== 'setup') {
+      this.character.captureSetupBaseline();
+      this.saveToLocalStorage();
+    }
+
     this.currentPhase = phase;
     this.render();
     this.attachEventListeners();
@@ -1023,19 +1068,37 @@ class CharacterCreatorApp {
         clanSelect.removeEventListener('change', clanSelect._changeListener);
       }
       const changeListener = (e) => {
+        const oldClan = this.character.clan;
         this.character.clan = e.target.value;
 
-        // Auto-add clan disciplines
-        if (this.character.clan) {
-          const clan = clansData.find(c => c.id === this.character.clan);
-          if (clan && clan.disciplines) {
-            clan.disciplines.forEach(discId => {
-              // Only add if not already present
-              if (!(discId in this.character.disciplines)) {
-                this.character.disciplines[discId] = 0;
-              }
-            });
+        // Get old and new clan disciplines
+        const oldClanData = clansData.find(c => c.id === oldClan);
+        const oldClanDiscs = oldClanData?.disciplines || [];
+
+        const newClanData = clansData.find(c => c.id === this.character.clan);
+        const newClanDiscs = newClanData?.disciplines || [];
+
+        // Remove disciplines that were clan-specific to old clan but not new clan
+        // Keep disciplines with dots > 0 (already learned), remove only those at 0
+        Object.keys(this.character.disciplines).forEach(discId => {
+          const wasOldClan = oldClanDiscs.includes(discId);
+          const isNewClan = newClanDiscs.includes(discId);
+          const hasProgress = this.character.disciplines[discId] > 0;
+
+          // Remove if it was auto-added from old clan and not in new clan and no progress
+          if (wasOldClan && !isNewClan && !hasProgress) {
+            delete this.character.disciplines[discId];
           }
+        });
+
+        // Auto-add new clan disciplines
+        if (this.character.clan) {
+          newClanDiscs.forEach(discId => {
+            // Add clan disciplines if not already present
+            if (!(discId in this.character.disciplines)) {
+              this.character.disciplines[discId] = 0;
+            }
+          });
         }
 
         this.saveToLocalStorage();
@@ -1090,8 +1153,16 @@ class CharacterCreatorApp {
   }
 
   handleDotClick(category, subcategory, attr, value, tracker) {
+    // In setup phase, humanity and willpower are derived - can't be clicked directly
+    if (this.currentPhase === 'setup' && (category === 'humanity' || category === 'willpower')) {
+      return;
+    }
+
     // Update character data using existing updateCharacterValue logic
-    this.updateCharacterValue(category, subcategory, attr, value);
+    const updated = this.updateCharacterValue(category, subcategory, attr, value);
+    if (!updated) {
+      return; // Update was rejected
+    }
 
     // Update the dots visually WITHOUT re-rendering
     const dots = tracker.querySelectorAll('.dot');
@@ -1104,8 +1175,91 @@ class CharacterCreatorApp {
       }
     });
 
+    // If virtues changed IN SETUP PHASE, update derived stats (humanity, willpower)
+    // In later phases, virtues can be raised independently without affecting humanity/willpower
+    if (category === 'virtues' && this.currentPhase === 'setup') {
+      this.updateDerivedStats();
+    }
+
+    // If generation background changed, update generation displays
+    if (category === 'backgrounds' && attr === 'generation') {
+      this.updateGenerationDisplays();
+    }
+
     // Update validation displays
     this.updateValidationDisplays();
+  }
+
+  updateDerivedStats() {
+    // Humanity = Conscience + Self-Control
+    this.character.humanity = this.character.virtues.conscience + this.character.virtues.selfControl;
+
+    // Willpower = Courage
+    this.character.willpower = this.character.virtues.courage;
+    this.character.willpowerCurrent = this.character.willpower;
+
+    // Update humanity display
+    const humanityTracker = document.querySelector('[data-category="humanity"]');
+    if (humanityTracker) {
+      const dots = humanityTracker.querySelectorAll('.dot');
+      dots.forEach((dot, index) => {
+        const dotValue = index + 1;
+        if (dotValue <= this.character.humanity) {
+          dot.classList.add('filled');
+        } else {
+          dot.classList.remove('filled');
+        }
+      });
+    }
+
+    // Update willpower display
+    const willpowerTracker = document.querySelector('[data-category="willpower"]');
+    if (willpowerTracker) {
+      const dots = willpowerTracker.querySelectorAll('.dot');
+      dots.forEach((dot, index) => {
+        const dotValue = index + 1;
+        if (dotValue <= this.character.willpower) {
+          dot.classList.add('filled');
+        } else {
+          dot.classList.remove('filled');
+        }
+      });
+    }
+
+    this.saveToLocalStorage();
+  }
+
+  updateGenerationDisplays() {
+    // Update effective generation display in clan section (only exists in setup phase)
+    const generationDisplay = document.querySelector('.p-4.bg-gray-800.rounded .text-sm.font-medium');
+    if (generationDisplay && generationDisplay.textContent.includes('Текущее поколение')) {
+      generationDisplay.textContent = `Текущее поколение: ${this.character.getEffectiveGeneration()}`;
+    }
+
+    // Update generation breakdown
+    const genBreakdown = generationDisplay?.nextElementSibling;
+    if (genBreakdown && genBreakdown.classList.contains('text-xs')) {
+      genBreakdown.innerHTML = `
+        Базовое: 9<br>
+        Фон "Поколение": -${this.character.backgrounds.generation || 0}<br>
+        Недостаток "Разбавленная кровь": +${this.character.dilutedVitae}
+      `;
+    }
+
+    // Update blood pool stats
+    const stats = this.character.getBloodPoolStats();
+    const bloodPoolDiv = document.querySelector('.text-sm.font-medium.mb-2');
+    if (bloodPoolDiv && bloodPoolDiv.textContent.includes('Запас крови')) {
+      const bloodPoolDetails = bloodPoolDiv.nextElementSibling;
+      if (bloodPoolDetails) {
+        bloodPoolDetails.innerHTML = `
+          Максимум: ${stats.max}<br>
+          За ход: ${stats.perTurn}
+        `;
+      }
+    }
+
+    this.saveToLocalStorage();
   }
 
   updateCharacterValue(category, subcategory, attr, value) {
@@ -1127,34 +1281,83 @@ class CharacterCreatorApp {
       currentValue = this.character.willpower;
     }
 
-    // In freebies/xp phases, only allow increases and spend points
+    // Setup phase: enforce limits
+    if (this.currentPhase === 'setup') {
+      if (category === 'attributes') {
+        // Attributes: max 6 in setup phase
+        if (value > 6) {
+          return false;
+        }
+      } else if (category === 'abilities') {
+        // Abilities: max 5 in setup phase
+        if (value > 5) {
+          return false;
+        }
+      } else if (category === 'virtues') {
+        // Virtues: max 5
+        if (value > 5) {
+          return false;
+        }
+      } else if (category === 'backgrounds') {
+        // Backgrounds: max 5
+        if (value > 5) {
+          return false;
+        }
+      }
+    }
+
+    // In freebies/xp phases, prevent reducing below setup baseline and spend points for increases
     if (this.currentPhase === 'freebies' || this.currentPhase === 'xp') {
-      // Only allow increases
-      if (value <= currentValue) {
-        return;
+      // Check if we have a baseline (should exist after leaving setup)
+      if (this.character.setupBaseline) {
+        let baselineValue = 0;
+
+        // Get baseline value for this stat
+        if (category === 'attributes') {
+          baselineValue = this.character.setupBaseline.attributes[subcategory][attr] || 0;
+        } else if (category === 'abilities') {
+          baselineValue = this.character.setupBaseline.abilities[subcategory][attr] || 0;
+        } else if (category === 'disciplines') {
+          baselineValue = this.character.setupBaseline.disciplines[attr] || 0;
+        } else if (category === 'backgrounds') {
+          baselineValue = this.character.setupBaseline.backgrounds[attr] || 0;
+        } else if (category === 'virtues') {
+          baselineValue = this.character.setupBaseline.virtues[attr] || 0;
+        } else if (category === 'humanity') {
+          baselineValue = this.character.setupBaseline.humanity || 0;
+        } else if (category === 'willpower') {
+          baselineValue = this.character.setupBaseline.willpower || 0;
+        }
+
+        // Prevent reducing below baseline
+        if (value < baselineValue) {
+          return false;
+        }
       }
 
-      // Calculate cost and spend points
-      if (this.currentPhase === 'freebies') {
-        const cost = this.calculateFreebieCost(category, subcategory, attr, currentValue, value);
-        const available = this.character.freebies - this.character.freebiesSpent;
+      // If increasing (above current value), calculate cost and spend points
+      if (value > currentValue) {
+        if (this.currentPhase === 'freebies') {
+          const cost = this.calculateFreebieCost(category, subcategory, attr, currentValue, value);
+          const available = this.character.freebies - this.character.freebiesSpent;
 
-        if (cost > available) {
-          alert(`Недостаточно бонусных очков. Нужно: ${cost}, доступно: ${available}`);
-          return;
+          if (cost > available) {
+            alert(`Недостаточно бонусных очков. Нужно: ${cost}, доступно: ${available}`);
+            return false;
+          }
+
+          this.character.freebiesSpent += cost;
+        } else if (this.currentPhase === 'xp') {
+          const cost = this.calculateXPCost(category, subcategory, attr, currentValue, value);
+          const available = this.character.experience - this.character.experienceSpent;
+
+          if (cost > available) {
+            alert(`Недостаточно XP. Нужно: ${cost}, доступно: ${available}`);
+            return false;
+          }
+
+          this.character.experienceSpent += cost;
         }
-
-        this.character.freebiesSpent += cost;
-      } else if (this.currentPhase === 'xp') {
-        const cost = this.calculateXPCost(category, subcategory, attr, currentValue, value);
-        const available = this.character.experience - this.character.experienceSpent;
-
-        if (cost > available) {
-          alert(`Недостаточно XP. Нужно: ${cost}, доступно: ${available}`);
-          return;
-        }
-
-        this.character.experienceSpent += cost;
       }
     }
 
@@ -1184,6 +1387,7 @@ class CharacterCreatorApp {
 
     this.saveToLocalStorage();
     // Don't call updateAllDisplays() here - caller will update UI as needed
+    return true; // Update successful
   }
 
   updateValidationDisplays() {
