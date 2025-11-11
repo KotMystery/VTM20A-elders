@@ -98,10 +98,15 @@ class CharacterCreatorApp {
   init() {
     this.loadFromLocalStorage();
 
-    // Calculate derived stats from virtues
-    this.character.humanity = this.character.virtues.conscience + this.character.virtues.selfControl;
-    this.character.willpower = this.character.virtues.courage;
-    this.character.willpowerCurrent = this.character.willpower;
+    // Restore values to match loaded phase
+    this.restoreValuesForPhase(this.currentPhase);
+
+    // Calculate derived stats from virtues (only if in setup without baseline)
+    if (this.currentPhase === 'setup' && !this.character.setupBaseline) {
+      this.character.humanity = this.character.virtues.conscience + this.character.virtues.selfControl;
+      this.character.willpower = this.character.virtues.courage;
+      this.character.willpowerCurrent = this.character.willpower;
+    }
 
     this.render();
     this.attachEventListeners();
@@ -1099,6 +1104,73 @@ class CharacterCreatorApp {
     return clan ? clan.name : '';
   }
 
+  // Restore character values to match the target phase
+  restoreValuesForPhase(phase) {
+    console.log(`[RESTORE] Restoring values for phase: ${phase}`);
+
+    if (!this.character.setupBaseline) {
+      // No baseline yet - we're still in initial setup
+      console.log(`[RESTORE] No baseline captured yet, keeping current values`);
+      return;
+    }
+
+    // Helper to restore a single value
+    const restoreValue = (category, subcategory, attr) => {
+      const value = this.character.getValueAtPhase(category, subcategory, attr, phase);
+
+      if (category === 'attributes') {
+        this.character.attributes[subcategory][attr] = value;
+      } else if (category === 'abilities') {
+        this.character.abilities[subcategory][attr] = value;
+      } else if (category === 'disciplines') {
+        this.character.disciplines[attr] = value;
+      } else if (category === 'backgrounds') {
+        this.character.backgrounds[attr] = value;
+      } else if (category === 'virtues') {
+        this.character.virtues[attr] = value;
+      } else if (category === 'humanity') {
+        this.character.humanity = value;
+      } else if (category === 'willpower') {
+        this.character.willpower = value;
+      }
+    };
+
+    // Restore all attributes
+    ['physical', 'social', 'mental'].forEach(subcat => {
+      Object.keys(this.character.attributes[subcat]).forEach(attr => {
+        restoreValue('attributes', subcat, attr);
+      });
+    });
+
+    // Restore all abilities
+    ['talents', 'skills', 'knowledges'].forEach(subcat => {
+      Object.keys(this.character.abilities[subcat]).forEach(attr => {
+        restoreValue('abilities', subcat, attr);
+      });
+    });
+
+    // Restore disciplines
+    Object.keys(this.character.disciplines).forEach(attr => {
+      restoreValue('disciplines', null, attr);
+    });
+
+    // Restore backgrounds
+    Object.keys(this.character.backgrounds).forEach(attr => {
+      restoreValue('backgrounds', null, attr);
+    });
+
+    // Restore virtues
+    Object.keys(this.character.virtues).forEach(attr => {
+      restoreValue('virtues', null, attr);
+    });
+
+    // Restore humanity and willpower
+    restoreValue('humanity', null, null);
+    restoreValue('willpower', null, null);
+
+    console.log(`[RESTORE] Values restored for phase: ${phase}`);
+  }
+
   switchPhase(phase) {
     console.log(`\n[PHASE_SWITCH] ===== SWITCHING PHASE =====`);
     console.log(`[PHASE_SWITCH] From: ${this.currentPhase} → To: ${phase}`);
@@ -1113,6 +1185,9 @@ class CharacterCreatorApp {
     }
 
     this.currentPhase = phase;
+
+    // Restore character values to match the target phase
+    this.restoreValuesForPhase(phase);
 
     // Log current state
     if (phase === 'freebies') {
@@ -2958,6 +3033,7 @@ class CharacterCreatorApp {
 
   saveToLocalStorage() {
     localStorage.setItem('vtm_character', this.character.serialize());
+    localStorage.setItem('vtm_currentPhase', this.currentPhase);
   }
 
   loadFromLocalStorage() {
@@ -2966,6 +3042,13 @@ class CharacterCreatorApp {
       console.log('[INIT] ===== LOADING EXISTING CHARACTER =====');
       this.character = Character.fromJSON(saved);
       this.tracker = new PointTracker(this.character);
+
+      // Restore currentPhase
+      const savedPhase = localStorage.getItem('vtm_currentPhase');
+      if (savedPhase) {
+        this.currentPhase = savedPhase;
+        console.log(`[INIT] Restored phase: ${savedPhase}`);
+      }
 
       console.log(`[INIT] Name: ${this.character.name || '(not set)'}`);
       console.log(`[INIT] Clan: ${this.character.clan || '(not set)'}`);
