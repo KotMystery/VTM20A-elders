@@ -776,9 +776,22 @@ class CharacterCreatorApp {
       xpValue = current;
     }
 
+    // Determine how many dots to fill: show future phase dots when in earlier phases
+    let displayValue = current;
+    if (this.character.setupBaseline) {
+      // In earlier phases, show all dots including future phases
+      if (currentPhaseIndex === 0) { // Setup phase
+        displayValue = xpValue; // Show all dots through XP
+      } else if (currentPhaseIndex === 1) { // Freebies phase
+        displayValue = xpValue; // Show XP dots too
+      } else { // XP phase
+        displayValue = xpValue; // Only show up to XP
+      }
+    }
+
     // Always render dots from 1 to max (standard dot notation)
     for (let i = 1; i <= max; i++) {
-      const filled = i <= current ? 'filled' : '';
+      const filled = i <= displayValue ? 'filled' : '';
       const disabled = (allowedMax > 0 && i > allowedMax) ? 'opacity-50 cursor-not-allowed' : '';
 
       // Determine which phase this dot was bought in
@@ -1464,13 +1477,28 @@ class CharacterCreatorApp {
 
     let setupValue = 0;
     let freebiesValue = 0;
+    let xpValue = newValue;
 
     if (this.character.setupBaseline) {
       setupValue = this.character.getValueAtPhase(category, subcategory, attr, 'setup');
       freebiesValue = this.character.getValueAtPhase(category, subcategory, attr, 'freebies');
+      xpValue = this.character.getValueAtPhase(category, subcategory, attr, 'xp');
     } else {
       setupValue = newValue;
       freebiesValue = newValue;
+      xpValue = newValue;
+    }
+
+    // Determine how many dots to show filled (including future phases)
+    let displayValue = newValue;
+    if (this.character.setupBaseline) {
+      if (currentPhaseIndex === 0) { // Setup phase
+        displayValue = xpValue;
+      } else if (currentPhaseIndex === 1) { // Freebies phase
+        displayValue = xpValue;
+      } else { // XP phase
+        displayValue = xpValue;
+      }
     }
 
     const dots = tracker.querySelectorAll('.dot');
@@ -1480,7 +1508,7 @@ class CharacterCreatorApp {
       // Remove all phase classes first
       dot.classList.remove('filled', 'locked-1', 'locked-2', 'future-1', 'future-2');
 
-      if (dotValue <= newValue) {
+      if (dotValue <= displayValue) {
         dot.classList.add('filled');
 
         // Determine which phase this dot was bought in
@@ -1540,13 +1568,22 @@ class CharacterCreatorApp {
     if (humanityTracker) {
       let setupValue = 0;
       let freebiesValue = 0;
+      let xpValue = this.character.humanity;
 
       if (this.character.setupBaseline) {
         setupValue = this.character.getValueAtPhase('humanity', null, null, 'setup');
         freebiesValue = this.character.getValueAtPhase('humanity', null, null, 'freebies');
+        xpValue = this.character.getValueAtPhase('humanity', null, null, 'xp');
       } else {
         setupValue = this.character.humanity;
         freebiesValue = this.character.humanity;
+        xpValue = this.character.humanity;
+      }
+
+      // Show future phase dots when in earlier phases
+      let displayValue = this.character.humanity;
+      if (this.character.setupBaseline) {
+        displayValue = xpValue; // Always show max value across all phases
       }
 
       const dots = humanityTracker.querySelectorAll('.dot');
@@ -1556,7 +1593,7 @@ class CharacterCreatorApp {
         // Remove all phase classes
         dot.classList.remove('filled', 'locked-1', 'locked-2', 'future-1', 'future-2');
 
-        if (dotValue <= this.character.humanity) {
+        if (dotValue <= displayValue) {
           dot.classList.add('filled');
 
           // Determine phase and add class
@@ -1588,13 +1625,22 @@ class CharacterCreatorApp {
     if (willpowerTracker) {
       let setupValue = 0;
       let freebiesValue = 0;
+      let xpValue = this.character.willpower;
 
       if (this.character.setupBaseline) {
         setupValue = this.character.getValueAtPhase('willpower', null, null, 'setup');
         freebiesValue = this.character.getValueAtPhase('willpower', null, null, 'freebies');
+        xpValue = this.character.getValueAtPhase('willpower', null, null, 'xp');
       } else {
         setupValue = this.character.willpower;
         freebiesValue = this.character.willpower;
+        xpValue = this.character.willpower;
+      }
+
+      // Show future phase dots when in earlier phases
+      let displayValue = this.character.willpower;
+      if (this.character.setupBaseline) {
+        displayValue = xpValue; // Always show max value across all phases
       }
 
       const dots = willpowerTracker.querySelectorAll('.dot');
@@ -1604,7 +1650,7 @@ class CharacterCreatorApp {
         // Remove all phase classes
         dot.classList.remove('filled', 'locked-1', 'locked-2', 'future-1', 'future-2');
 
-        if (dotValue <= this.character.willpower) {
+        if (dotValue <= displayValue) {
           dot.classList.add('filled');
 
           // Determine phase and add class
