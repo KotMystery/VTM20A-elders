@@ -92,7 +92,7 @@ export class Character {
     this.bloodPerTurn = 0;
 
     // Experience
-    this.experience = 103; // Elders start with 103 XP
+    this.experience = 78; // Elders start with 78 XP
     this.experienceSpent = 0;
 
     // Freebies (15 base + 7 coterie flaw + 0-7 personal flaws = 22-29)

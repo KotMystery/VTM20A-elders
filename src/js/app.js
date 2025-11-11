@@ -645,10 +645,10 @@ class CharacterCreatorApp {
 
           <div class="mb-4 p-4 bg-gray-800 rounded">
             <div class="text-lg font-bold mb-2">
-              Доступно: <span id="xp-available" class="${available >= 0 ? 'text-green-400' : 'text-red-400'}">${available}</span> / <span id="xp-total">103</span> XP
+              Доступно: <span id="xp-available" class="${available >= 0 ? 'text-green-400' : 'text-red-400'}">${available}</span> / <span id="xp-total">78</span> XP
             </div>
             <div class="text-sm text-gray-400 mb-2">
-              Старейшины начинают с 103 опыта<br>
+              Старейшины начинают с 78 опыта<br>
               Использовано: <span id="xp-counter">${this.character.experienceSpent}/${this.character.experience}</span>
             </div>
             <div class="text-sm text-yellow-400">
