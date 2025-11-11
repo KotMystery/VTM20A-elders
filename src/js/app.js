@@ -2370,20 +2370,20 @@ class CharacterCreatorApp {
     } else if (type === 'discipline') {
       const discSelect = document.getElementById('freebieDiscipline');
       if (discSelect) {
-        discSelect.addEventListener('change', () => this.calculateFreebieCost());
+        discSelect.addEventListener('change', () => this.updateFreebieCalculatorUI());
       }
     } else if (type === 'background') {
       const bgSelect = document.getElementById('freebieBackground');
       if (bgSelect) {
-        bgSelect.addEventListener('change', () => this.calculateFreebieCost());
+        bgSelect.addEventListener('change', () => this.updateFreebieCalculatorUI());
       }
     } else if (type === 'virtue') {
       const virtueSelect = document.getElementById('freebieVirtue');
       if (virtueSelect) {
-        virtueSelect.addEventListener('change', () => this.calculateFreebieCost());
+        virtueSelect.addEventListener('change', () => this.updateFreebieCalculatorUI());
       }
     } else if (type === 'humanity' || type === 'willpower') {
-      this.calculateFreebieCost();
+      this.updateFreebieCalculatorUI();
     }
   }
 
@@ -2417,7 +2417,7 @@ class CharacterCreatorApp {
 
     const attrSelect = document.getElementById('freebieAttribute');
     if (attrSelect) {
-      attrSelect.addEventListener('change', () => this.calculateFreebieCost());
+      attrSelect.addEventListener('change', () => this.updateFreebieCalculatorUI());
     }
   }
 
@@ -2446,11 +2446,11 @@ class CharacterCreatorApp {
 
     const abilitySelect = document.getElementById('freebieAbility');
     if (abilitySelect) {
-      abilitySelect.addEventListener('change', () => this.calculateFreebieCost());
+      abilitySelect.addEventListener('change', () => this.updateFreebieCalculatorUI());
     }
   }
 
-  calculateFreebieCost() {
+  updateFreebieCalculatorUI() {
     const type = document.getElementById('freebieType')?.value;
     if (!type) return;
 
