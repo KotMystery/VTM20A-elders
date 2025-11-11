@@ -687,8 +687,8 @@ class CharacterCreatorApp {
           </div>
 
           <div>
-            <strong>Freebies:</strong> ${this.character.freebiesSpent}/${this.character.freebies}<br>
-            <strong>Опыт:</strong> ${this.character.experienceSpent}/${this.character.experience}
+            <strong>Freebies:</strong> <span id="freebies-counter">${this.character.freebiesSpent}/${this.character.freebies}</span><br>
+            <strong>Опыт:</strong> <span id="xp-counter">${this.character.experienceSpent}/${this.character.experience}</span>
           </div>
 
           ${showFinalizeButton ? `
@@ -1731,6 +1731,7 @@ class CharacterCreatorApp {
       }
 
       this.saveToLocalStorage();
+      this.updatePointCounters();
       return true;
     }
 
@@ -1828,6 +1829,20 @@ class CharacterCreatorApp {
           errorsEl.innerHTML = '';
         }
       }
+    }
+  }
+
+  updatePointCounters() {
+    // Update freebies counter
+    const freebiesCounter = document.getElementById('freebies-counter');
+    if (freebiesCounter) {
+      freebiesCounter.textContent = `${this.character.freebiesSpent || 0}/${this.character.freebies}`;
+    }
+
+    // Update XP counter
+    const xpCounter = document.getElementById('xp-counter');
+    if (xpCounter) {
+      xpCounter.textContent = `${this.character.experienceSpent || 0}/${this.character.experience}`;
     }
   }
 
@@ -2695,15 +2710,15 @@ class CharacterCreatorApp {
     } else if (type === 'discipline') {
       const discSelect = document.getElementById('xpDiscipline');
       if (discSelect) {
-        discSelect.addEventListener('change', () => this.calculateXPCost());
+        discSelect.addEventListener('change', () => this.updateXPCalculatorUI());
       }
     } else if (type === 'virtue') {
       const virtueSelect = document.getElementById('xpVirtue');
       if (virtueSelect) {
-        virtueSelect.addEventListener('change', () => this.calculateXPCost());
+        virtueSelect.addEventListener('change', () => this.updateXPCalculatorUI());
       }
     } else if (type === 'humanity' || type === 'willpower') {
-      this.calculateXPCost();
+      this.updateXPCalculatorUI();
     }
   }
 
@@ -2737,7 +2752,7 @@ class CharacterCreatorApp {
 
     const attrSelect = document.getElementById('xpAttribute');
     if (attrSelect) {
-      attrSelect.addEventListener('change', () => this.calculateXPCost());
+      attrSelect.addEventListener('change', () => this.updateXPCalculatorUI());
     }
   }
 
@@ -2766,11 +2781,11 @@ class CharacterCreatorApp {
 
     const abilitySelect = document.getElementById('xpAbility');
     if (abilitySelect) {
-      abilitySelect.addEventListener('change', () => this.calculateXPCost());
+      abilitySelect.addEventListener('change', () => this.updateXPCalculatorUI());
     }
   }
 
-  calculateXPCost() {
+  updateXPCalculatorUI() {
     const type = document.getElementById('xpType')?.value;
     if (!type) return;
 
