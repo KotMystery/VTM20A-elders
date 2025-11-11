@@ -10,12 +10,14 @@ import necromancyData from '../data/necromancy.json';
 import thaumaturgyData from '../data/thaumaturgy.json';
 import conceptsData from '../data/concepts.json';
 import archetypesData from '../data/archetypes.json';
+import meritsData from '../data/merits.json';
+import flawsData from '../data/flaws.json';
 
 class CharacterCreatorApp {
   constructor() {
     this.character = new Character();
     this.tracker = new PointTracker(this.character);
-    this.currentTab = 'basic';
+    this.currentPhase = 'setup';
     this.allDisciplines = this.flattenDisciplines();
 
     this.init();
@@ -39,80 +41,78 @@ class CharacterCreatorApp {
   render() {
     const app = document.getElementById('app');
     app.innerHTML = `
-      <div class="min-h-screen p-6">
-        <header class="mb-8">
-          <h1 class="text-4xl font-bold text-center text-vtm-red mb-2">
+      <div class="min-h-screen p-4 md:p-6">
+        <header class="mb-4">
+          <h1 class="text-2xl md:text-3xl font-bold text-center text-vtm-red mb-1">
             Vampire: The Masquerade 20A
           </h1>
-          <h2 class="text-2xl text-center text-gray-400">
+          <h2 class="text-lg md:text-xl text-center text-gray-400">
             Создание персонажа - Древний
           </h2>
         </header>
 
-        <div class="max-w-7xl mx-auto">
-          <!-- Tabs -->
-          <div class="flex border-b border-gray-700 mb-6">
-            <div class="tab ${this.currentTab === 'basic' ? 'active' : ''}" data-tab="basic">
-              Основное
+        <div class="max-w-5xl mx-auto">
+          <!-- Phase tabs -->
+          <div class="flex border-b border-gray-700 mb-4 overflow-x-auto">
+            <div class="tab ${this.currentPhase === 'setup' ? 'active' : ''}" data-phase="setup">
+              1. Базовая настройка
             </div>
-            <div class="tab ${this.currentTab === 'attributes' ? 'active' : ''}" data-tab="attributes">
-              Атрибуты
+            <div class="tab ${this.currentPhase === 'freebies' ? 'active' : ''}" data-phase="freebies">
+              2. Freebies
             </div>
-            <div class="tab ${this.currentTab === 'abilities' ? 'active' : ''}" data-tab="abilities">
-              Способности
-            </div>
-            <div class="tab ${this.currentTab === 'advantages' ? 'active' : ''}" data-tab="advantages">
-              Преимущества
-            </div>
-            <div class="tab ${this.currentTab === 'freebies' ? 'active' : ''}" data-tab="freebies">
-              Freebies & XP
-            </div>
-            <div class="tab ${this.currentTab === 'summary' ? 'active' : ''}" data-tab="summary">
-              Итоги
+            <div class="tab ${this.currentPhase === 'xp' ? 'active' : ''}" data-phase="xp">
+              3. Опыт (XP)
             </div>
           </div>
 
-          <!-- Tab Content -->
-          <div id="tabContent">
-            ${this.renderTabContent()}
+          <!-- Phase content -->
+          <div id="phaseContent">
+            ${this.renderPhaseContent()}
           </div>
 
           <!-- Action buttons -->
-          <div class="mt-8 flex gap-4 justify-center">
-            <button class="btn btn-secondary" id="saveBtn">💾 Сохранить</button>
-            <button class="btn btn-secondary" id="loadBtn">📂 Загрузить</button>
-            <button class="btn btn-primary" id="exportBtn">📄 Экспорт в PDF</button>
+          <div class="mt-6 flex gap-3 justify-center flex-wrap sticky bottom-2 bg-vtm-dark p-3 rounded-lg shadow-lg">
+            <button class="btn btn-secondary text-sm" id="saveBtn">💾 Сохранить</button>
+            <button class="btn btn-secondary text-sm" id="loadBtn">📂 Загрузить</button>
+            <button class="btn btn-primary text-sm" id="exportBtn">📄 PDF</button>
           </div>
         </div>
       </div>
     `;
   }
 
-  renderTabContent() {
-    switch (this.currentTab) {
-      case 'basic':
-        return this.renderBasicInfo();
-      case 'attributes':
-        return this.renderAttributes();
-      case 'abilities':
-        return this.renderAbilities();
-      case 'advantages':
-        return this.renderAdvantages();
+  renderPhaseContent() {
+    switch (this.currentPhase) {
+      case 'setup':
+        return this.renderSetupPhase();
       case 'freebies':
-        return this.renderFreebiesXP();
-      case 'summary':
-        return this.renderSummary();
+        return this.renderFreebiesPhase();
+      case 'xp':
+        return this.renderXPPhase();
       default:
         return '';
     }
   }
 
+  renderSetupPhase() {
+    return `
+      <div class="space-y-4">
+        ${this.renderBasicInfo()}
+        ${this.renderAttributes()}
+        ${this.renderAbilities()}
+        ${this.renderAdvantages()}
+        ${this.renderSummary()}
+      </div>
+    `;
+  }
+
+
   renderBasicInfo() {
     return `
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="card">
           <h3 class="section-title">Основная информация</h3>
-          <div class="space-y-4">
+          <div class="space-y-3">
             <div>
               <label class="block text-sm font-medium mb-1">Имя</label>
               <input type="text" id="name" class="input-field" value="${this.character.name}">
@@ -160,7 +160,7 @@ class CharacterCreatorApp {
 
         <div class="card">
           <h3 class="section-title">Клан и Поколение</h3>
-          <div class="space-y-4">
+          <div class="space-y-3">
             <div>
               <label class="block text-sm font-medium mb-1">Клан</label>
               <select id="clan" class="input-field">
@@ -234,7 +234,7 @@ class CharacterCreatorApp {
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           ${this.renderAttributeCategory('physical', 'Физические', ['strength', 'dexterity', 'stamina'], ['Сила', 'Ловкость', 'Выносливость'])}
           ${this.renderAttributeCategory('social', 'Социальные', ['charisma', 'manipulation', 'appearance'], ['Обаяние', 'Манипулирование', 'Привлекательность'])}
           ${this.renderAttributeCategory('mental', 'Ментальные', ['perception', 'intelligence', 'wits'], ['Восприятие', 'Интеллект', 'Смекалка'])}
@@ -251,7 +251,7 @@ class CharacterCreatorApp {
           <div class="stat-row">
             <span class="stat-label">${labels[idx]}</span>
             <div class="dot-tracker" data-category="attributes" data-subcategory="${category}" data-attr="${attr}">
-              ${this.renderDots(this.character.attributes[category][attr], 9)}
+              ${this.renderDots(this.character.attributes[category][attr], 10)}
             </div>
           </div>
         `).join('')}
@@ -277,7 +277,7 @@ class CharacterCreatorApp {
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           ${this.renderAbilityCategory('talents', 'Таланты', abilitiesData.talents)}
           ${this.renderAbilityCategory('skills', 'Навыки', abilitiesData.skills)}
           ${this.renderAbilityCategory('knowledges', 'Познания', abilitiesData.knowledges)}
@@ -294,7 +294,7 @@ class CharacterCreatorApp {
           <div class="stat-row">
             <span class="stat-label">${ability.name}</span>
             <div class="dot-tracker" data-category="abilities" data-subcategory="${category}" data-attr="${ability.id}">
-              ${this.renderDots(this.character.abilities[category][ability.id] || 0, 9)}
+              ${this.renderDots(this.character.abilities[category][ability.id] || 0, 10)}
             </div>
           </div>
         `).join('')}
@@ -434,7 +434,7 @@ class CharacterCreatorApp {
             </div>
             <div class="flex items-center gap-2">
               <div class="dot-tracker" data-category="disciplines" data-attr="${discId}">
-                ${this.renderDots(level, 9)}
+                ${this.renderDots(level, 10)}
               </div>
               <button class="text-red-500 hover:text-red-400 text-xl" onclick="app.removeDiscipline('${discId}')">×</button>
             </div>
@@ -449,89 +449,202 @@ class CharacterCreatorApp {
     }).join('');
   }
 
-  renderFreebiesXP() {
+  renderFreebiesPhase() {
+    const available = this.character.freebies - this.character.freebiesSpent;
+    const totalFlawPoints = this.character.flaws.reduce((sum, f) => sum + (f.selectedCost || f.cost), 0);
+    const totalMeritCosts = this.character.merits.reduce((sum, m) => sum + (m.selectedCost || m.cost), 0);
+    const baseFreebies = 15 + 7 + Math.min(totalFlawPoints, 7) - totalMeritCosts;
+
     return `
-      <div class="space-y-6">
-        <div class="card">
-          <h3 class="section-title">Freebies</h3>
-          <div class="mb-4 p-4 bg-gray-800 rounded">
-            <div class="text-sm font-medium mb-2">Доступно Freebies: ${this.character.freebies - this.character.freebiesSpent}</div>
-            <div class="text-xs text-gray-400">
-              Базовые (с обязательным недостатком котерии): 22<br>
-              Личные недостатки: +${Math.min(this.character.flaws.reduce((sum, f) => sum + f.cost, 0), 7)}<br>
-              Достоинства: -${this.character.merits.reduce((sum, m) => sum + m.cost, 0)}
-            </div>
+      <div class="card">
+        <h3 class="section-title">Распределение бонусных очков</h3>
+
+        <div class="mb-4 p-4 bg-gray-800 rounded">
+          <div class="text-lg font-bold mb-2">
+            Доступно: <span class="${available >= 0 ? 'text-green-400' : 'text-red-400'}">${available}</span> бонусных очков
           </div>
-          <div class="mb-4">
-            <h4 class="subsection-title">Стоимость в Freebies</h4>
-            <div class="grid grid-cols-2 gap-2 text-sm">
-              <div>Атрибут: 5</div>
-              <div>Способность: 2</div>
-              <div>Предыстория: 1</div>
-              <div>Дисциплина: 7</div>
-              <div>Добродетель: 2</div>
-              <div>Человечность: 1</div>
-              <div>Сила воли: 1</div>
-            </div>
+          <div class="text-sm text-gray-400">
+            Базовые: 15<br>
+            Котерия (обязательный недостаток): +7<br>
+            Личные недостатки: +${Math.min(totalFlawPoints, 7)} (макс. 7)<br>
+            Достоинства: -${totalMeritCosts}<br>
+            Использовано на улучшения: ${this.character.freebiesSpent}<br>
+            <span class="text-yellow-400 mt-1 block">Бонусные очки используются для улучшения характеристик сверх базового распределения.</span>
           </div>
         </div>
 
-        <div class="card">
-          <h3 class="section-title">Опыт (XP)</h3>
-          <div class="mb-4 p-4 bg-gray-800 rounded">
-            <div class="text-sm font-medium">Доступно XP: ${this.character.experience - this.character.experienceSpent}/33</div>
-          </div>
+        ${this.renderMeritsFlawsSection()}
 
-          <div class="mb-4">
-            <h4 class="subsection-title">Потратить XP</h4>
-            <div class="space-y-4">
-              <!-- XP Purchase Type -->
-              <div>
-                <label class="block text-sm font-medium mb-1">Что покупаем?</label>
-                <select id="xpType" class="input-field">
-                  <option value="">Выберите...</option>
-                  <option value="attribute">Атрибут</option>
-                  <option value="ability">Способность</option>
-                  <option value="discipline">Дисциплина</option>
-                  <option value="virtue">Добродетель</option>
-                  <option value="humanity">Человечность/Путь</option>
-                  <option value="willpower">Сила воли</option>
-                </select>
-              </div>
-
-              <!-- Dynamic selection based on type -->
-              <div id="xpPurchaseOptions"></div>
-
-              <!-- Cost display -->
-              <div id="xpCostDisplay" class="p-3 bg-gray-800 rounded hidden">
-                <div class="text-sm font-medium mb-1">Стоимость: <span id="xpCostAmount">0</span> XP</div>
-                <div class="text-xs text-gray-400" id="xpCostDetails"></div>
-              </div>
-
-              <!-- Purchase button -->
-              <button id="xpPurchaseBtn" class="btn btn-primary w-full hidden">Купить</button>
+        <div class="mb-6">
+          <h4 class="font-semibold mb-3">Потратить бонусные очки</h4>
+          <div class="space-y-3">
+            <div>
+              <label class="block text-sm font-medium mb-1">Что повысить?</label>
+              <select id="freebieType" class="input-field">
+                <option value="">Выберите...</option>
+                <option value="attribute">Атрибут (5 очков)</option>
+                <option value="ability">Способность (2 очка)</option>
+                <option value="discipline">Дисциплина (7 очков)</option>
+                <option value="background">Предыстория (1 очко)</option>
+                <option value="virtue">Добродетель (2 очка)</option>
+                <option value="humanity">Человечность (1 очко)</option>
+                <option value="willpower">Сила воли (1 очко)</option>
+              </select>
             </div>
-          </div>
 
-          <div class="mb-4">
-            <h4 class="subsection-title">Справка: Стоимость в XP</h4>
-            <div class="space-y-1 text-xs text-gray-400">
-              <div>• Новая способность: 3</div>
-              <div>• Новая дисциплина: 10</div>
-              <div>• Новый путь Некромантии/Тауматургии: 7</div>
-              <div>• Атрибут: текущее × 4</div>
-              <div>• Способность: текущее × 2</div>
-              <div>• Физическая дисциплина (клановая): текущее × 5</div>
-              <div>• Ментальная дисциплина (клановая): текущее × 6</div>
-              <div>• Уникальная дисциплина (клановая): текущее × 7</div>
-              <div>• Дисциплина (сторонняя): текущее × 10</div>
-              <div>• Дисциплина Каитифф: текущее × 6</div>
-              <div>• Добродетель: текущее × 2</div>
-              <div>• Человечность/Путь: текущее × 2</div>
-              <div>• Сила воли: текущее</div>
+            <div id="freebiePurchaseOptions"></div>
+
+            <div id="freebieCostDisplay" class="p-3 bg-gray-800 rounded hidden">
+              <div class="text-sm font-medium mb-1">Стоимость: <span id="freebieCostAmount" class="text-vtm-red">0</span> бонусных очков</div>
+              <div class="text-xs text-gray-400" id="freebieCostDetails"></div>
             </div>
+
+            <button id="freebiePurchaseBtn" class="btn btn-primary w-full hidden">Купить</button>
           </div>
         </div>
+
+        <details class="mb-4">
+          <summary class="cursor-pointer font-semibold mb-2">Справка: Таблица стоимости бонусных очков</summary>
+          <div class="space-y-1 text-xs text-gray-400 p-3 bg-gray-800 rounded">
+            <div>• Атрибут: <strong class="text-white">5</strong></div>
+            <div>• Способность: <strong class="text-white">2</strong></div>
+            <div>• Дисциплина: <strong class="text-white">7</strong></div>
+            <div>• Предыстория: <strong class="text-white">1</strong></div>
+            <div>• Добродетель: <strong class="text-white">2</strong></div>
+            <div>• Человечность: <strong class="text-white">1</strong></div>
+            <div>• Сила воли: <strong class="text-white">1</strong></div>
+          </div>
+        </details>
+
+        <div class="flex gap-3">
+          <button class="btn btn-secondary" onclick="app.switchPhase('setup')">← Назад к настройке</button>
+          <button class="btn btn-primary flex-1" onclick="app.switchPhase('xp')">Далее: Опыт →</button>
+        </div>
+      </div>
+    `;
+  }
+
+  renderMeritsFlawsSection() {
+    return `
+      <div class="mb-6 p-4 bg-gray-900 rounded">
+        <h4 class="font-semibold mb-3">Достоинства и Недостатки</h4>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <!-- Current Merits -->
+          <div>
+            <div class="text-sm font-medium mb-2">Достоинства (стоят бонусные очки):</div>
+            <div class="space-y-2">
+              ${this.character.merits.length === 0 ?
+                '<div class="text-xs text-gray-500">Нет выбранных достоинств</div>' :
+                this.character.merits.map(merit => `
+                  <div class="p-2 bg-gray-800 rounded flex justify-between items-start">
+                    <div class="flex-1">
+                      <div class="font-medium text-sm">${merit.name}</div>
+                      ${merit.description ? `<div class="text-xs text-gray-400 mt-1">${merit.description}</div>` : ''}
+                      ${merit.elderNote ? `<div class="text-xs text-yellow-400 mt-1">⚠️ ${merit.elderNote}</div>` : ''}
+                    </div>
+                    <div class="ml-2 text-nowrap">
+                      <span class="text-vtm-red font-medium">${merit.selectedCost || merit.cost}</span>
+                      <button class="ml-2 text-red-400 hover:text-red-300" onclick="app.removeMerit('${merit.id}')">✕</button>
+                    </div>
+                  </div>
+                `).join('')
+              }
+            </div>
+            <button class="btn btn-secondary w-full mt-2 text-sm" onclick="app.showMeritsModal()">+ Добавить достоинство</button>
+          </div>
+
+          <!-- Current Flaws -->
+          <div>
+            <div class="text-sm font-medium mb-2">Недостатки (дают бонусные очки, макс. 7):</div>
+            <div class="space-y-2">
+              ${this.character.flaws.length === 0 ?
+                '<div class="text-xs text-gray-500">Нет выбранных недостатков</div>' :
+                this.character.flaws.map(flaw => `
+                  <div class="p-2 bg-gray-800 rounded flex justify-between items-start">
+                    <div class="flex-1">
+                      <div class="font-medium text-sm">${flaw.name}</div>
+                      ${flaw.description ? `<div class="text-xs text-gray-400 mt-1">${flaw.description}</div>` : ''}
+                      ${flaw.elderNote ? `<div class="text-xs text-yellow-400 mt-1">⚠️ ${flaw.elderNote}</div>` : ''}
+                    </div>
+                    <div class="ml-2 text-nowrap">
+                      <span class="text-green-400 font-medium">+${flaw.selectedCost || flaw.cost}</span>
+                      <button class="ml-2 text-red-400 hover:text-red-300" onclick="app.removeFlaw('${flaw.id}')">✕</button>
+                    </div>
+                  </div>
+                `).join('')
+              }
+            </div>
+            <button class="btn btn-secondary w-full mt-2 text-sm" onclick="app.showFlawsModal()">+ Добавить недостаток</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  renderXPPhase() {
+    const available = this.character.experience - this.character.experienceSpent;
+
+    return `
+      <div class="card">
+        <h3 class="section-title">Распределение опыта (XP)</h3>
+
+        <div class="mb-4 p-4 bg-gray-800 rounded">
+          <div class="text-lg font-bold mb-2">
+            Доступно: <span class="${available >= 0 ? 'text-green-400' : 'text-red-400'}">${available}</span> / 33 XP
+          </div>
+          <div class="text-sm text-gray-400">
+            Древние начинают с 33 опыта
+          </div>
+        </div>
+
+        <div class="mb-6">
+          <h4 class="font-semibold mb-3">Потратить XP</h4>
+          <div class="space-y-3">
+            <div>
+              <label class="block text-sm font-medium mb-1">Что повысить?</label>
+              <select id="xpType" class="input-field">
+                <option value="">Выберите...</option>
+                <option value="attribute">Атрибут (текущее × 4)</option>
+                <option value="ability">Способность (новая: 3, повысить: текущее × 2)</option>
+                <option value="discipline">Дисциплина (новая: 10, повысить: зависит от клана)</option>
+                <option value="virtue">Добродетель (текущее × 2)</option>
+                <option value="humanity">Человечность (текущее × 2)</option>
+                <option value="willpower">Сила воли (текущее × 1)</option>
+              </select>
+            </div>
+
+            <div id="xpPurchaseOptions"></div>
+
+            <div id="xpCostDisplay" class="p-3 bg-gray-800 rounded hidden">
+              <div class="text-sm font-medium mb-1">Стоимость: <span id="xpCostAmount" class="text-vtm-red">0</span> XP</div>
+              <div class="text-xs text-gray-400" id="xpCostDetails"></div>
+            </div>
+
+            <button id="xpPurchaseBtn" class="btn btn-primary w-full hidden">Купить</button>
+          </div>
+        </div>
+
+        <details class="mb-4">
+          <summary class="cursor-pointer font-semibold mb-2">Справка: Полная таблица стоимости XP</summary>
+          <div class="space-y-1 text-xs text-gray-400 p-3 bg-gray-800 rounded">
+            <div>• Новая способность: <strong class="text-white">3</strong></div>
+            <div>• Новая дисциплина: <strong class="text-white">10</strong></div>
+            <div>• Новый путь (Некромантия/Тауматургия): <strong class="text-white">7</strong></div>
+            <div>• Атрибут: <strong class="text-white">текущее × 4</strong></div>
+            <div>• Способность: <strong class="text-white">текущее × 2</strong></div>
+            <div>• Дисциплина (физическая, клановая): <strong class="text-white">текущее × 5</strong></div>
+            <div>• Дисциплина (ментальная, клановая): <strong class="text-white">текущее × 6</strong></div>
+            <div>• Дисциплина (уникальная, клановая): <strong class="text-white">текущее × 7</strong></div>
+            <div>• Дисциплина (сторонняя): <strong class="text-white">текущее × 10</strong></div>
+            <div>• Дисциплина (Каитифф): <strong class="text-white">текущее × 6</strong></div>
+            <div>• Добродетель: <strong class="text-white">текущее × 2</strong></div>
+            <div>• Человечность/Путь: <strong class="text-white">текущее × 2</strong></div>
+            <div>• Сила воли: <strong class="text-white">текущее × 1</strong></div>
+          </div>
+        </details>
+
+        <button class="btn btn-secondary w-full" onclick="app.switchPhase('freebies')">← Назад к Freebies</button>
       </div>
     `;
   }
@@ -544,8 +657,8 @@ class CharacterCreatorApp {
       <div class="card">
         <h3 class="section-title">Итоги персонажа</h3>
 
-        <div class="mb-6 p-4 ${allValid ? 'bg-green-900' : 'bg-red-900'} rounded">
-          <div class="font-medium mb-2">${allValid ? '✓ Персонаж завершён' : '⚠ Персонаж не завершён'}</div>
+        <div class="mb-6 p-4 ${allValid ? 'bg-green-900' : 'bg-yellow-900'} rounded">
+          <div class="font-medium mb-2">${allValid ? '✓ Базовая настройка завершена' : '⚠ Базовая настройка не завершена'}</div>
           ${!allValid ? `
             <div class="text-sm space-y-1">
               ${Object.entries(validation).map(([key, val]) =>
@@ -568,7 +681,11 @@ class CharacterCreatorApp {
             <strong>Опыт:</strong> ${this.character.experienceSpent}/${this.character.experience}
           </div>
 
-          <button class="btn btn-primary w-full" ${allValid ? '' : 'disabled'} id="finalizeBtn">
+          <div class="text-sm text-gray-400 mb-2">
+            Вы можете завершить создание персонажа даже если не потратили все бонусные очки или опыт.
+          </div>
+
+          <button class="btn btn-primary w-full" id="finalizeBtn">
             Завершить создание персонажа
           </button>
         </div>
@@ -594,14 +711,333 @@ class CharacterCreatorApp {
     return html;
   }
 
+  showMeritsModal() {
+    const allMerits = [];
+
+    // Core merits
+    Object.entries(meritsData).forEach(([category, items]) => {
+      if (category !== 'clanSpecific') {
+        items.forEach(merit => {
+          allMerits.push({ ...merit, category, isClanSpecific: false });
+        });
+      }
+    });
+
+    // Clan-specific merits (available to all)
+    const clanMerits = meritsData.clanSpecific;
+    if (clanMerits && this.character.clan) {
+      Object.entries(clanMerits).forEach(([clanId, items]) => {
+        items.forEach(merit => {
+          allMerits.push({ ...merit, clan: clanId, isClanSpecific: true });
+        });
+      });
+    }
+
+    this.showMeritFlawModal(allMerits, 'merits');
+  }
+
+  showFlawsModal() {
+    const allFlaws = [];
+
+    // All flaws from the data file
+    Object.entries(flawsData).forEach(([category, items]) => {
+      items.forEach(flaw => {
+        allFlaws.push({ ...flaw, category });
+      });
+    });
+
+    this.showMeritFlawModal(allFlaws, 'flaws');
+  }
+
+  showMeritFlawModal(items, type) {
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4';
+    modal.id = 'meritFlawModal';
+
+    const categories = [...new Set(items.map(i => i.category))];
+
+    modal.innerHTML = `
+      <div class="bg-vtm-grey rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-4 sticky top-0 bg-vtm-grey pb-2">
+          <h3 class="text-2xl font-bold text-vtm-red">${type === 'merits' ? 'Выбрать Достоинство' : 'Выбрать Недостаток'}</h3>
+          <button class="text-3xl text-gray-400 hover:text-white" onclick="document.getElementById('meritFlawModal').remove()">&times;</button>
+        </div>
+
+        <div class="mb-4">
+          <input type="text" id="meritFlawSearch" placeholder="Поиск..." class="input-field">
+        </div>
+
+        <div class="space-y-4">
+          ${categories.map(category => {
+            const categoryItems = items.filter(i => i.category === category);
+            const categoryName = {
+              'physical': 'Физические',
+              'mental': 'Ментальные',
+              'social': 'Социальные',
+              'supernatural': 'Сверхъестественные'
+            }[category] || category;
+
+            return `
+              <details open class="category-section">
+                <summary class="cursor-pointer font-semibold text-lg mb-2 text-vtm-red">${categoryName} (${categoryItems.length})</summary>
+                <div class="space-y-2 pl-2">
+                  ${categoryItems.map(item => {
+                    const isVariable = item.cost === 'variable' || (item.minCost && item.maxCost);
+                    const costDisplay = isVariable ?
+                      `${item.minCost}-${item.maxCost}` :
+                      item.cost;
+
+                    // Check if item should be disabled
+                    const isDisabled = this.isMeritFlawDisabled(item);
+                    const disabledClass = isDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-700 cursor-pointer';
+                    const disabledAttr = isDisabled ? 'data-disabled="true"' : '';
+
+                    return `
+                      <div class="merit-flaw-item p-3 bg-gray-800 rounded ${disabledClass} transition-colors"
+                           data-id="${item.id}"
+                           data-name="${item.name}"
+                           data-cost="${item.cost}"
+                           data-min-cost="${item.minCost || item.cost}"
+                           data-max-cost="${item.maxCost || item.cost}"
+                           data-is-variable="${isVariable}"
+                           ${disabledAttr}
+                           onclick="app.selectMeritFlaw(this, '${type}')">
+                        <div class="flex justify-between items-start mb-1">
+                          <div class="font-medium">${item.name}</div>
+                          <div class="text-${type === 'merits' ? 'vtm-red' : 'green-400'} font-medium ml-2">${type === 'merits' ? '-' : '+'}${costDisplay}</div>
+                        </div>
+                        ${item.description ? `<div class="text-xs text-gray-400">${item.description}</div>` : ''}
+                        ${item.elderNote ? `<div class="text-xs text-yellow-400 mt-1">⚠️ ${item.elderNote}</div>` : ''}
+                        ${isDisabled ? `<div class="text-xs text-red-400 mt-1">❌ ${this.getMeritFlawDisabledReason(item)}</div>` : ''}
+                        ${item.isClanSpecific ? `<div class="text-xs text-blue-400 mt-1">🔹 Связано с кланом ${this.getClanName(item.clan)}</div>` : ''}
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              </details>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Add search functionality
+    const searchInput = document.getElementById('meritFlawSearch');
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase();
+      document.querySelectorAll('.merit-flaw-item').forEach(item => {
+        const name = item.dataset.name.toLowerCase();
+        item.style.display = name.includes(query) ? 'block' : 'none';
+      });
+    });
+
+    searchInput.focus();
+  }
+
+  selectMeritFlaw(element, type) {
+    if (element.dataset.disabled === 'true') return;
+
+    const itemData = {
+      id: element.dataset.id,
+      name: element.dataset.name,
+      cost: element.dataset.cost === 'variable' ? parseInt(element.dataset.minCost) : parseInt(element.dataset.cost),
+      description: element.querySelector('.text-gray-400')?.textContent || '',
+      elderNote: element.querySelector('.text-yellow-400')?.textContent.replace('⚠️ ', '') || ''
+    };
+
+    const isVariable = element.dataset.isVariable === 'true';
+
+    if (isVariable) {
+      const minCost = parseInt(element.dataset.minCost);
+      const maxCost = parseInt(element.dataset.maxCost);
+      this.showDotSelectionModal(itemData, minCost, maxCost, type);
+    } else {
+      if (type === 'merits') {
+        this.addMerit(itemData, itemData.cost);
+      } else {
+        this.addFlaw(itemData, itemData.cost);
+      }
+      document.getElementById('meritFlawModal').remove();
+    }
+  }
+
+  showDotSelectionModal(itemData, minCost, maxCost, type) {
+    const existingDotModal = document.getElementById('dotSelectionModal');
+    if (existingDotModal) existingDotModal.remove();
+
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[60]';
+    modal.id = 'dotSelectionModal';
+
+    modal.innerHTML = `
+      <div class="bg-vtm-grey rounded-lg p-6 max-w-md w-full mx-4">
+        <h3 class="text-xl font-bold text-vtm-red mb-4">${itemData.name}</h3>
+        <p class="text-sm text-gray-400 mb-4">Выберите стоимость (${minCost}-${maxCost} ${type === 'merits' ? 'очков' : 'очков'}):</p>
+
+        <div class="flex gap-2 justify-center mb-6">
+          ${Array.from({ length: maxCost - minCost + 1 }, (_, i) => minCost + i).map(cost => `
+            <button class="dot-selector w-12 h-12 rounded-full border-2 border-gray-600 hover:border-vtm-red flex items-center justify-center font-bold transition-colors"
+                    data-cost="${cost}"
+                    onclick="app.selectDotCost(${cost})">
+              ${cost}
+            </button>
+          `).join('')}
+        </div>
+
+        <div class="flex gap-2">
+          <button class="btn btn-secondary flex-1" onclick="document.getElementById('dotSelectionModal').remove()">Отмена</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Store the item data and type for the callback
+    modal.dataset.itemData = JSON.stringify(itemData);
+    modal.dataset.type = type;
+  }
+
+  selectDotCost(cost) {
+    const modal = document.getElementById('dotSelectionModal');
+    const itemData = JSON.parse(modal.dataset.itemData);
+    const type = modal.dataset.type;
+
+    if (type === 'merits') {
+      this.addMerit(itemData, cost);
+    } else {
+      this.addFlaw(itemData, cost);
+    }
+
+    modal.remove();
+    document.getElementById('meritFlawModal').remove();
+  }
+
+  addMerit(meritData, selectedCost) {
+    // Check if already has this merit
+    if (this.character.merits.some(m => m.id === meritData.id)) {
+      alert('У вас уже есть это достоинство');
+      return;
+    }
+
+    this.character.merits.push({
+      ...meritData,
+      selectedCost: selectedCost
+    });
+
+    this.character.freebies = this.character.calculateFreebies();
+    this.saveToLocalStorage();
+    this.render();
+    this.attachEventListeners();
+  }
+
+  removeMerit(meritId) {
+    this.character.merits = this.character.merits.filter(m => m.id !== meritId);
+    this.character.freebies = this.character.calculateFreebies();
+    this.saveToLocalStorage();
+    this.render();
+    this.attachEventListeners();
+  }
+
+  addFlaw(flawData, selectedCost) {
+    // Check if already has this flaw
+    if (this.character.flaws.some(f => f.id === flawData.id)) {
+      alert('У вас уже есть этот недостаток');
+      return;
+    }
+
+    // Check max 7 points from flaws
+    const currentFlawPoints = this.character.flaws.reduce((sum, f) => sum + (f.selectedCost || f.cost), 0);
+    if (currentFlawPoints + selectedCost > 7) {
+      alert(`Максимум 7 очков от недостатков. У вас уже ${currentFlawPoints} очков.`);
+      return;
+    }
+
+    this.character.flaws.push({
+      ...flawData,
+      selectedCost: selectedCost
+    });
+
+    this.character.freebies = this.character.calculateFreebies();
+    this.saveToLocalStorage();
+    this.render();
+    this.attachEventListeners();
+  }
+
+  removeFlaw(flawId) {
+    this.character.flaws = this.character.flaws.filter(f => f.id !== flawId);
+    this.character.freebies = this.character.calculateFreebies();
+    this.saveToLocalStorage();
+    this.render();
+    this.attachEventListeners();
+  }
+
+  isMeritFlawDisabled(item) {
+    // Check clan exclusions
+    if (item.excludedClans && item.excludedClans.includes(this.character.clan)) {
+      return true;
+    }
+
+    // Check minimum requirements
+    if (item.minWillpower && this.character.willpower < item.minWillpower) {
+      return true;
+    }
+
+    if (item.minCharisma && this.character.attributes.social.charisma < item.minCharisma) {
+      return true;
+    }
+
+    // Check incompatible merits/flaws
+    if (item.incompatibleWith) {
+      const hasIncompatible = this.character.merits.some(m => item.incompatibleWith.includes(m.id)) ||
+                              this.character.flaws.some(f => item.incompatibleWith.includes(f.id));
+      if (hasIncompatible) return true;
+    }
+
+    return false;
+  }
+
+  getMeritFlawDisabledReason(item) {
+    if (item.excludedClans && item.excludedClans.includes(this.character.clan)) {
+      return `Недоступно для ${this.getClanName()}`;
+    }
+
+    if (item.minWillpower && this.character.willpower < item.minWillpower) {
+      return `Требуется Сила Воли ${item.minWillpower}+`;
+    }
+
+    if (item.minCharisma && this.character.attributes.social.charisma < item.minCharisma) {
+      return `Требуется Харизма ${item.minCharisma}+`;
+    }
+
+    if (item.incompatibleWith) {
+      return 'Несовместимо с другими выбранными опциями';
+    }
+
+    return 'Недоступно';
+  }
+
+  getClanName(clanId = null) {
+    const id = clanId || this.character.clan;
+    const clan = clansData.find(c => c.id === id);
+    return clan ? clan.name : '';
+  }
+
+  switchPhase(phase) {
+    this.currentPhase = phase;
+    this.render();
+    this.attachEventListeners();
+  }
+
   attachEventListeners() {
-    // Tab switching
+    // Phase switching
     document.querySelectorAll('.tab').forEach(tab => {
       tab.addEventListener('click', (e) => {
-        this.currentTab = e.target.dataset.tab;
-        this.render();
-        this.attachEventListeners();
-        this.updateAllDisplays();
+        const phase = e.target.dataset.phase;
+        if (phase) {
+          this.switchPhase(phase);
+        }
       });
     });
 
@@ -621,6 +1057,20 @@ class CharacterCreatorApp {
     if (clanSelect) {
       clanSelect.addEventListener('change', (e) => {
         this.character.clan = e.target.value;
+
+        // Auto-add clan disciplines
+        if (this.character.clan) {
+          const clan = clansData.find(c => c.id === this.character.clan);
+          if (clan && clan.disciplines) {
+            clan.disciplines.forEach(discId => {
+              // Only add if not already present
+              if (!(discId in this.character.disciplines)) {
+                this.character.disciplines[discId] = 0;
+              }
+            });
+          }
+        }
+
         this.saveToLocalStorage();
         this.render();
         this.attachEventListeners();
@@ -661,6 +1111,17 @@ class CharacterCreatorApp {
     const exportBtn = document.getElementById('exportBtn');
     if (exportBtn) {
       exportBtn.addEventListener('click', () => this.exportToPDF());
+    }
+
+    // Freebies spending interface
+    const freebieTypeSelect = document.getElementById('freebieType');
+    if (freebieTypeSelect) {
+      freebieTypeSelect.addEventListener('change', (e) => this.handleFreebieTypeChange(e.target.value));
+    }
+
+    const freebiePurchaseBtn = document.getElementById('freebiePurchaseBtn');
+    if (freebiePurchaseBtn) {
+      freebiePurchaseBtn.addEventListener('click', () => this.handleFreebiePurchase());
     }
 
     // XP spending interface
@@ -704,21 +1165,101 @@ class CharacterCreatorApp {
   }
 
   updateAllDisplays() {
-    // Re-render current tab to update point displays
-    const content = document.getElementById('tabContent');
-    if (content) {
-      content.innerHTML = this.renderTabContent();
-      this.attachEventListeners();
-    }
+    // Re-render the entire page to update all displays
+    this.render();
+    this.attachEventListeners();
   }
 
   showAddDisciplineDialog() {
-    const discId = prompt('Введите ID дисциплины (например: potence, auspex)');
-    if (discId && this.allDisciplines.find(d => d.id === discId)) {
-      this.character.disciplines[discId] = 1;
-      this.saveToLocalStorage();
-      this.updateAllDisplays();
-    }
+    // Get already learned disciplines
+    const learnedDisciplines = Object.keys(this.character.disciplines);
+    const availableDisciplines = this.allDisciplines.filter(d => !learnedDisciplines.includes(d.id));
+
+    // Group by category
+    const grouped = {
+      physical: availableDisciplines.filter(d => d.category === 'physical'),
+      mental: availableDisciplines.filter(d => d.category === 'mental'),
+      unique: availableDisciplines.filter(d => d.category === 'unique')
+    };
+
+    const clanDisciplines = this.getClanDisciplines();
+
+    // Create modal
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50';
+    modal.innerHTML = `
+      <div class="bg-vtm-grey rounded-lg p-6 max-w-3xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-2xl font-bold text-vtm-red">Выбрать дисциплину</h3>
+          <button class="text-3xl text-gray-400 hover:text-white" onclick="this.closest('.fixed').remove()">&times;</button>
+        </div>
+
+        <div class="mb-4">
+          <input type="text" id="disciplineSearch" placeholder="Поиск по названию..."
+                 class="input-field" autocomplete="off">
+        </div>
+
+        <div id="disciplineList" class="space-y-4">
+          ${this.renderDisciplineCategory('Физические', grouped.physical, clanDisciplines)}
+          ${this.renderDisciplineCategory('Ментальные', grouped.mental, clanDisciplines)}
+          ${this.renderDisciplineCategory('Уникальные', grouped.unique, clanDisciplines)}
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Add search functionality
+    const searchInput = document.getElementById('disciplineSearch');
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase();
+      const items = document.querySelectorAll('.discipline-item');
+      items.forEach(item => {
+        const name = item.dataset.name.toLowerCase();
+        item.style.display = name.includes(query) ? 'flex' : 'none';
+      });
+    });
+
+    // Focus search input
+    searchInput.focus();
+  }
+
+  renderDisciplineCategory(title, disciplines, clanDisciplines) {
+    if (disciplines.length === 0) return '';
+
+    return `
+      <div>
+        <h4 class="text-lg font-semibold text-gray-300 mb-2">${title}</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+          ${disciplines.map(disc => {
+            const isClan = clanDisciplines.includes(disc.id);
+            return `
+              <div class="discipline-item p-3 bg-gray-800 rounded hover:bg-gray-700 cursor-pointer transition-colors flex justify-between items-center"
+                   data-name="${disc.name}"
+                   onclick="app.selectDiscipline('${disc.id}')">
+                <div>
+                  <div class="font-medium">${disc.name}</div>
+                  <div class="text-xs text-gray-400">${disc.description || ''}</div>
+                </div>
+                ${isClan ? '<span class="text-xs text-green-400 font-semibold">Клановая</span>' : ''}
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  selectDiscipline(discId) {
+    this.character.disciplines[discId] = 1;
+    this.saveToLocalStorage();
+
+    // Close modal
+    const modal = document.querySelector('.fixed.inset-0');
+    if (modal) modal.remove();
+
+    // Refresh display
+    this.updateAllDisplays();
   }
 
   removeDiscipline(discId) {
@@ -840,6 +1381,7 @@ class CharacterCreatorApp {
     const paths = isNecromancy ? this.character.necromancyPaths : this.character.thaumaturgyPaths;
     const availablePaths = isNecromancy ? necromancyData.paths : thaumaturgyData.paths;
     const disciplineLevel = this.character.disciplines[discId] || 0;
+    const title = isNecromancy ? 'Некромантии' : 'Тауматургии';
 
     // Filter out already learned paths
     const usedPathIds = paths.map(p => p.pathId);
@@ -850,31 +1392,81 @@ class CharacterCreatorApp {
       return;
     }
 
-    let message = 'Выберите путь для изучения:\n\n';
-    unusedPaths.forEach((p, idx) => {
-      message += `${idx + 1}. ${p.name}\n`;
+    const isPrimary = paths.length === 0;
+
+    // Create modal
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50';
+    modal.id = 'pathSelectionModal';
+    modal.innerHTML = `
+      <div class="bg-vtm-grey rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-2xl font-bold text-vtm-red">Выбрать путь ${title}</h3>
+          <button class="text-3xl text-gray-400 hover:text-white" onclick="document.getElementById('pathSelectionModal').remove()">&times;</button>
+        </div>
+
+        <div class="mb-4 p-3 bg-gray-800 rounded">
+          <div class="text-sm text-gray-400">
+            ${isPrimary ? '<strong>Основной путь:</strong> Уровень будет равен уровню дисциплины' : '<strong>Вторичный путь:</strong> Начнётся с уровня 1'}
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <input type="text" id="pathSearch" placeholder="Поиск по названию..."
+                 class="input-field" autocomplete="off">
+        </div>
+
+        <div id="pathList" class="space-y-2">
+          ${unusedPaths.map(path => `
+            <div class="path-item p-3 bg-gray-800 rounded hover:bg-gray-700 cursor-pointer transition-colors"
+                 data-name="${path.name}"
+                 onclick="app.selectPath('${discId}', '${path.id}')">
+              <div class="font-medium">${path.name}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Add search functionality
+    const searchInput = document.getElementById('pathSearch');
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase();
+      const items = document.querySelectorAll('.path-item');
+      items.forEach(item => {
+        const name = item.dataset.name.toLowerCase();
+        item.style.display = name.includes(query) ? 'block' : 'none';
+      });
     });
-    message += '\nВведите номер пути:';
 
-    const choice = prompt(message);
-    if (choice && !isNaN(choice)) {
-      const idx = parseInt(choice) - 1;
-      if (idx >= 0 && idx < unusedPaths.length) {
-        const pathId = unusedPaths[idx].id;
-        const isPrimary = paths.length === 0;
-        const startLevel = isPrimary ? disciplineLevel : 1;
+    // Focus search input
+    searchInput.focus();
+  }
 
-        if (isNecromancy) {
-          this.character.addNecromancyPath(pathId, startLevel);
-        } else {
-          this.character.addThaumaturgyPath(pathId, startLevel);
-        }
+  selectPath(discId, pathId) {
+    const isNecromancy = discId === 'necromancy';
+    const paths = isNecromancy ? this.character.necromancyPaths : this.character.thaumaturgyPaths;
+    const disciplineLevel = this.character.disciplines[discId] || 0;
+    const isPrimary = paths.length === 0;
+    const startLevel = isPrimary ? disciplineLevel : 1;
 
-        this.saveToLocalStorage();
-        this.closePathModal();
-        this.managePaths(discId); // Reopen modal
-      }
+    if (isNecromancy) {
+      this.character.addNecromancyPath(pathId, startLevel);
+    } else {
+      this.character.addThaumaturgyPath(pathId, startLevel);
     }
+
+    this.saveToLocalStorage();
+
+    // Close path selection modal
+    const selectionModal = document.getElementById('pathSelectionModal');
+    if (selectionModal) selectionModal.remove();
+
+    // Close and reopen main path management modal
+    this.closePathModal();
+    this.managePaths(discId);
   }
 
   removePath(discId, pathId) {
@@ -896,6 +1488,341 @@ class CharacterCreatorApp {
       modal.remove();
     }
     this.updateAllDisplays();
+  }
+
+  // Freebies Spending Interface Methods
+  handleFreebieTypeChange(type) {
+    const optionsDiv = document.getElementById('freebiePurchaseOptions');
+    const costDisplay = document.getElementById('freebieCostDisplay');
+    const purchaseBtn = document.getElementById('freebiePurchaseBtn');
+
+    if (!type) {
+      optionsDiv.innerHTML = '';
+      costDisplay.classList.add('hidden');
+      purchaseBtn.classList.add('hidden');
+      return;
+    }
+
+    let optionsHTML = '';
+
+    if (type === 'attribute') {
+      optionsHTML = `
+        <div>
+          <label class="block text-sm font-medium mb-1">Категория</label>
+          <select id="freebieAttrCategory" class="input-field">
+            <option value="">Выберите категорию</option>
+            <option value="physical">Физические</option>
+            <option value="social">Социальные</option>
+            <option value="mental">Ментальные</option>
+          </select>
+        </div>
+        <div id="freebieAttrSelection"></div>
+      `;
+    } else if (type === 'ability') {
+      optionsHTML = `
+        <div>
+          <label class="block text-sm font-medium mb-1">Категория</label>
+          <select id="freebieAbilityCategory" class="input-field">
+            <option value="">Выберите категорию</option>
+            <option value="talents">Таланты</option>
+            <option value="skills">Навыки</option>
+            <option value="knowledges">Познания</option>
+          </select>
+        </div>
+        <div id="freebieAbilitySelection"></div>
+      `;
+    } else if (type === 'discipline') {
+      const disciplinesList = this.allDisciplines.map(disc =>
+        `<option value="${disc.id}">${disc.name}</option>`
+      ).join('');
+      optionsHTML = `
+        <div>
+          <label class="block text-sm font-medium mb-1">Дисциплина</label>
+          <select id="freebieDiscipline" class="input-field">
+            <option value="">Выберите дисциплину</option>
+            ${disciplinesList}
+          </select>
+        </div>
+      `;
+    } else if (type === 'background') {
+      optionsHTML = `
+        <div>
+          <label class="block text-sm font-medium mb-1">Предыстория</label>
+          <select id="freebieBackground" class="input-field">
+            <option value="">Выберите предысторию</option>
+            ${backgroundsData.map(bg => `<option value="${bg.id}">${bg.name}</option>`).join('')}
+          </select>
+        </div>
+      `;
+    } else if (type === 'virtue') {
+      optionsHTML = `
+        <div>
+          <label class="block text-sm font-medium mb-1">Добродетель</label>
+          <select id="freebieVirtue" class="input-field">
+            <option value="">Выберите добродетель</option>
+            <option value="conscience">Совесть</option>
+            <option value="selfControl">Самоконтроль</option>
+            <option value="courage">Храбрость</option>
+          </select>
+        </div>
+      `;
+    } else if (type === 'humanity' || type === 'willpower') {
+      optionsHTML = `<div class="text-sm text-gray-400">Выбрано: ${type === 'humanity' ? 'Человечность' : 'Сила воли'}</div>`;
+    }
+
+    optionsDiv.innerHTML = optionsHTML;
+
+    // Add change listeners
+    if (type === 'attribute') {
+      const catSelect = document.getElementById('freebieAttrCategory');
+      if (catSelect) {
+        catSelect.addEventListener('change', (e) => this.showFreebieAttributeList(e.target.value));
+      }
+    } else if (type === 'ability') {
+      const catSelect = document.getElementById('freebieAbilityCategory');
+      if (catSelect) {
+        catSelect.addEventListener('change', (e) => this.showFreebieAbilityList(e.target.value));
+      }
+    } else if (type === 'discipline') {
+      const discSelect = document.getElementById('freebieDiscipline');
+      if (discSelect) {
+        discSelect.addEventListener('change', () => this.calculateFreebieCost());
+      }
+    } else if (type === 'background') {
+      const bgSelect = document.getElementById('freebieBackground');
+      if (bgSelect) {
+        bgSelect.addEventListener('change', () => this.calculateFreebieCost());
+      }
+    } else if (type === 'virtue') {
+      const virtueSelect = document.getElementById('freebieVirtue');
+      if (virtueSelect) {
+        virtueSelect.addEventListener('change', () => this.calculateFreebieCost());
+      }
+    } else if (type === 'humanity' || type === 'willpower') {
+      this.calculateFreebieCost();
+    }
+  }
+
+  showFreebieAttributeList(category) {
+    const selectionDiv = document.getElementById('freebieAttrSelection');
+    if (!category) {
+      selectionDiv.innerHTML = '';
+      return;
+    }
+
+    const attrs = this.character.attributes[category];
+    const attrNames = {
+      physical: { strength: 'Сила', dexterity: 'Ловкость', stamina: 'Выносливость' },
+      social: { charisma: 'Обаяние', manipulation: 'Манипулирование', appearance: 'Привлекательность' },
+      mental: { perception: 'Восприятие', intelligence: 'Интеллект', wits: 'Смекалка' }
+    };
+
+    const options = Object.keys(attrs).map(attr =>
+      `<option value="${attr}">${attrNames[category][attr]} (${attrs[attr]})</option>`
+    ).join('');
+
+    selectionDiv.innerHTML = `
+      <div>
+        <label class="block text-sm font-medium mb-1">Атрибут</label>
+        <select id="freebieAttribute" class="input-field">
+          <option value="">Выберите атрибут</option>
+          ${options}
+        </select>
+      </div>
+    `;
+
+    const attrSelect = document.getElementById('freebieAttribute');
+    if (attrSelect) {
+      attrSelect.addEventListener('change', () => this.calculateFreebieCost());
+    }
+  }
+
+  showFreebieAbilityList(category) {
+    const selectionDiv = document.getElementById('freebieAbilitySelection');
+    if (!category) {
+      selectionDiv.innerHTML = '';
+      return;
+    }
+
+    const abilities = abilitiesData[category];
+    const options = abilities.map(ability => {
+      const current = this.character.abilities[category][ability.id] || 0;
+      return `<option value="${ability.id}">${ability.name} (${current})</option>`;
+    }).join('');
+
+    selectionDiv.innerHTML = `
+      <div>
+        <label class="block text-sm font-medium mb-1">Способность</label>
+        <select id="freebieAbility" class="input-field">
+          <option value="">Выберите способность</option>
+          ${options}
+        </select>
+      </div>
+    `;
+
+    const abilitySelect = document.getElementById('freebieAbility');
+    if (abilitySelect) {
+      abilitySelect.addEventListener('change', () => this.calculateFreebieCost());
+    }
+  }
+
+  calculateFreebieCost() {
+    const type = document.getElementById('freebieType')?.value;
+    if (!type) return;
+
+    let cost = 0;
+    let details = '';
+    let canPurchase = false;
+
+    if (type === 'attribute') {
+      const category = document.getElementById('freebieAttrCategory')?.value;
+      const attr = document.getElementById('freebieAttribute')?.value;
+      if (category && attr) {
+        const current = this.character.attributes[category][attr];
+        cost = FREEBIE_COSTS.attribute;
+        details = `Текущее значение: ${current}, новое: ${current + 1}`;
+        canPurchase = current < 10;
+      }
+    } else if (type === 'ability') {
+      const category = document.getElementById('freebieAbilityCategory')?.value;
+      const ability = document.getElementById('freebieAbility')?.value;
+      if (category && ability) {
+        const current = this.character.abilities[category][ability] || 0;
+        cost = FREEBIE_COSTS.ability;
+        details = `Текущее значение: ${current}, новое: ${current + 1}`;
+        canPurchase = current < 10;
+      }
+    } else if (type === 'discipline') {
+      const discId = document.getElementById('freebieDiscipline')?.value;
+      if (discId) {
+        const current = this.character.disciplines[discId] || 0;
+        cost = FREEBIE_COSTS.discipline;
+        details = `Текущее значение: ${current}, новое: ${current + 1}`;
+        canPurchase = current < 10;
+      }
+    } else if (type === 'background') {
+      const bgId = document.getElementById('freebieBackground')?.value;
+      if (bgId) {
+        const current = this.character.backgrounds[bgId] || 0;
+        cost = FREEBIE_COSTS.background;
+        details = `Текущее значение: ${current}, новое: ${current + 1}`;
+        canPurchase = current < 5;
+      }
+    } else if (type === 'virtue') {
+      const virtue = document.getElementById('freebieVirtue')?.value;
+      if (virtue) {
+        const current = this.character.virtues[virtue];
+        cost = FREEBIE_COSTS.virtue;
+        details = `Текущее значение: ${current}, новое: ${current + 1}`;
+        canPurchase = current < 10;
+      }
+    } else if (type === 'humanity') {
+      const current = this.character.humanity;
+      cost = FREEBIE_COSTS.humanity;
+      details = `Текущее значение: ${current}, новое: ${current + 1}`;
+      canPurchase = current < 10;
+    } else if (type === 'willpower') {
+      const current = this.character.willpower;
+      cost = FREEBIE_COSTS.willpower;
+      details = `Текущее значение: ${current}, новое: ${current + 1}`;
+      canPurchase = current < 10;
+    }
+
+    // Update display
+    const costDisplay = document.getElementById('freebieCostDisplay');
+    const costAmount = document.getElementById('freebieCostAmount');
+    const costDetailsDiv = document.getElementById('freebieCostDetails');
+    const purchaseBtn = document.getElementById('freebiePurchaseBtn');
+
+    if (cost > 0 && canPurchase) {
+      costAmount.textContent = cost;
+      costDetailsDiv.textContent = details;
+      costDisplay.classList.remove('hidden');
+      purchaseBtn.classList.remove('hidden');
+
+      const available = this.character.freebies - this.character.freebiesSpent;
+      if (cost > available) {
+        purchaseBtn.disabled = true;
+        purchaseBtn.textContent = `Недостаточно бонусных очков (нужно ${cost}, есть ${available})`;
+      } else {
+        purchaseBtn.disabled = false;
+        purchaseBtn.textContent = 'Купить';
+      }
+    } else {
+      costDisplay.classList.add('hidden');
+      purchaseBtn.classList.add('hidden');
+    }
+  }
+
+  handleFreebiePurchase() {
+    const type = document.getElementById('freebieType')?.value;
+    if (!type) return;
+
+    const costAmount = parseInt(document.getElementById('freebieCostAmount')?.textContent || '0');
+    const available = this.character.freebies - this.character.freebiesSpent;
+
+    if (costAmount > available) {
+      alert('Недостаточно бонусных очков!');
+      return;
+    }
+
+    // Make the purchase
+    if (type === 'attribute') {
+      const category = document.getElementById('freebieAttrCategory')?.value;
+      const attr = document.getElementById('freebieAttribute')?.value;
+      if (category && attr) {
+        this.character.attributes[category][attr]++;
+        this.character.freebiesSpent += costAmount;
+      }
+    } else if (type === 'ability') {
+      const category = document.getElementById('freebieAbilityCategory')?.value;
+      const ability = document.getElementById('freebieAbility')?.value;
+      if (category && ability) {
+        if (!this.character.abilities[category][ability]) {
+          this.character.abilities[category][ability] = 0;
+        }
+        this.character.abilities[category][ability]++;
+        this.character.freebiesSpent += costAmount;
+      }
+    } else if (type === 'discipline') {
+      const discId = document.getElementById('freebieDiscipline')?.value;
+      if (discId) {
+        if (!this.character.disciplines[discId]) {
+          this.character.disciplines[discId] = 0;
+        }
+        this.character.disciplines[discId]++;
+        this.character.freebiesSpent += costAmount;
+      }
+    } else if (type === 'background') {
+      const bgId = document.getElementById('freebieBackground')?.value;
+      if (bgId) {
+        if (!this.character.backgrounds[bgId]) {
+          this.character.backgrounds[bgId] = 0;
+        }
+        this.character.backgrounds[bgId]++;
+        this.character.freebiesSpent += costAmount;
+      }
+    } else if (type === 'virtue') {
+      const virtue = document.getElementById('freebieVirtue')?.value;
+      if (virtue) {
+        this.character.virtues[virtue]++;
+        this.character.freebiesSpent += costAmount;
+      }
+    } else if (type === 'humanity') {
+      this.character.humanity++;
+      this.character.freebiesSpent += costAmount;
+    } else if (type === 'willpower') {
+      this.character.willpower++;
+      this.character.freebiesSpent += costAmount;
+    }
+
+    // Save and re-render
+    this.saveToLocalStorage();
+    this.render();
+    this.attachEventListeners();
+    this.updateAllDisplays();
+
+    alert(`Куплено за ${costAmount} бонусных очков!`);
   }
 
   // XP Spending Interface Methods
