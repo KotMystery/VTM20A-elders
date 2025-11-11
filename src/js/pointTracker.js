@@ -226,8 +226,6 @@ export class PointTracker {
       errors.push('Необходимо указать имя персонажа');
     }
 
-    // Coterie flaw validation removed - ST provides this, not players
-
     return { valid: errors.length === 0, errors };
   }
 
