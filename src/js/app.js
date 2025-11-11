@@ -824,11 +824,14 @@ class CharacterCreatorApp {
       const dotPhaseIndex = phases.indexOf(dotPhase);
       const phaseDistance = dotPhaseIndex - currentPhaseIndex;
 
-      // Only disable dots that exceed allowedMax AND are not from future phases
-      // Future phase dots should show with full opacity as visual indicators
+      // Disable dots that exceed allowedMax
+      // For filled dots: only disable if from current or past phase (not future)
+      // For empty dots: always disable if beyond allowedMax
       let disabled = '';
-      if (allowedMax > 0 && i > allowedMax && phaseDistance <= 0) {
-        disabled = 'cursor-not-allowed';
+      if (allowedMax > 0 && i > allowedMax) {
+        if (!filled || phaseDistance <= 0) {
+          disabled = 'cursor-not-allowed';
+        }
       }
 
       // Add phase-specific class
