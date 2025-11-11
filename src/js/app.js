@@ -751,14 +751,11 @@ class CharacterCreatorApp {
       }
     }
 
-    // Render dots starting from minValue to max
-    // If minValue is 0, we render a dot for 0
-    const startValue = minValue;
-    for (let i = startValue; i <= max; i++) {
+    // Always render dots from 1 to max (standard dot notation)
+    for (let i = 1; i <= max; i++) {
       const filled = i <= current ? 'filled' : '';
       const disabled = (allowedMax > 0 && i > allowedMax) ? 'opacity-50 cursor-not-allowed' : '';
-      const displayValue = i === 0 ? '×' : '';
-      html += `<div class="dot ${filled} ${disabled}" data-value="${i}" data-min="${minValue}">${displayValue}</div>`;
+      html += `<div class="dot ${filled} ${disabled}" data-value="${i}" data-min="${minValue}"></div>`;
     }
     return html;
   }
@@ -2373,20 +2370,20 @@ class CharacterCreatorApp {
     } else if (type === 'discipline') {
       const discSelect = document.getElementById('freebieDiscipline');
       if (discSelect) {
-        discSelect.addEventListener('change', () => this.calculateFreebieCost());
+        discSelect.addEventListener('change', () => this.updateFreebieCalculatorUI());
       }
     } else if (type === 'background') {
       const bgSelect = document.getElementById('freebieBackground');
       if (bgSelect) {
-        bgSelect.addEventListener('change', () => this.calculateFreebieCost());
+        bgSelect.addEventListener('change', () => this.updateFreebieCalculatorUI());
       }
     } else if (type === 'virtue') {
       const virtueSelect = document.getElementById('freebieVirtue');
       if (virtueSelect) {
-        virtueSelect.addEventListener('change', () => this.calculateFreebieCost());
+        virtueSelect.addEventListener('change', () => this.updateFreebieCalculatorUI());
       }
     } else if (type === 'humanity' || type === 'willpower') {
-      this.calculateFreebieCost();
+      this.updateFreebieCalculatorUI();
     }
   }
 
@@ -2420,7 +2417,7 @@ class CharacterCreatorApp {
 
     const attrSelect = document.getElementById('freebieAttribute');
     if (attrSelect) {
-      attrSelect.addEventListener('change', () => this.calculateFreebieCost());
+      attrSelect.addEventListener('change', () => this.updateFreebieCalculatorUI());
     }
   }
 
@@ -2449,11 +2446,11 @@ class CharacterCreatorApp {
 
     const abilitySelect = document.getElementById('freebieAbility');
     if (abilitySelect) {
-      abilitySelect.addEventListener('change', () => this.calculateFreebieCost());
+      abilitySelect.addEventListener('change', () => this.updateFreebieCalculatorUI());
     }
   }
 
-  calculateFreebieCost() {
+  updateFreebieCalculatorUI() {
     const type = document.getElementById('freebieType')?.value;
     if (!type) return;
 
