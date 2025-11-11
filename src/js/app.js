@@ -792,7 +792,6 @@ class CharacterCreatorApp {
     // Always render dots from 1 to max (standard dot notation)
     for (let i = 1; i <= max; i++) {
       const filled = i <= displayValue ? 'filled' : '';
-      const disabled = (allowedMax > 0 && i > allowedMax) ? 'opacity-50 cursor-not-allowed' : '';
 
       // Determine which phase this dot was bought in
       let dotPhase = 'setup';
@@ -805,6 +804,13 @@ class CharacterCreatorApp {
       // Calculate phase distance (negative = past, 0 = current, positive = future)
       const dotPhaseIndex = phases.indexOf(dotPhase);
       const phaseDistance = dotPhaseIndex - currentPhaseIndex;
+
+      // Only disable dots that exceed allowedMax AND are not from future phases
+      // Future phase dots should show with full opacity as visual indicators
+      let disabled = '';
+      if (allowedMax > 0 && i > allowedMax && phaseDistance <= 0) {
+        disabled = 'opacity-50 cursor-not-allowed';
+      }
 
       // Add phase-specific class
       let phaseClass = '';
@@ -1787,10 +1793,20 @@ class CharacterCreatorApp {
       // In setup phase, directly modify character properties
       if (category === 'attributes') {
         this.character.attributes[subcategory][attr] = value;
+        // Also update baseline if it exists (after revisiting setup phase)
+        if (this.character.setupBaseline) {
+          this.character.setupBaseline.attributes[subcategory][attr] = value;
+        }
       } else if (category === 'abilities') {
         this.character.abilities[subcategory][attr] = value;
+        if (this.character.setupBaseline) {
+          this.character.setupBaseline.abilities[subcategory][attr] = value;
+        }
       } else if (category === 'disciplines') {
         this.character.disciplines[attr] = value;
+        if (this.character.setupBaseline) {
+          this.character.setupBaseline.disciplines[attr] = value;
+        }
 
         // Sync primary path level with discipline level
         if (attr === 'necromancy' && this.character.necromancyPaths.length > 0) {
@@ -1808,12 +1824,24 @@ class CharacterCreatorApp {
           }
         }
         this.character.backgrounds[attr] = value;
+        if (this.character.setupBaseline) {
+          this.character.setupBaseline.backgrounds[attr] = value;
+        }
       } else if (category === 'virtues') {
         this.character.virtues[attr] = value;
+        if (this.character.setupBaseline) {
+          this.character.setupBaseline.virtues[attr] = value;
+        }
       } else if (category === 'humanity') {
         this.character.humanity = value;
+        if (this.character.setupBaseline) {
+          this.character.setupBaseline.humanity = value;
+        }
       } else if (category === 'willpower') {
         this.character.willpower = value;
+        if (this.character.setupBaseline) {
+          this.character.setupBaseline.willpower = value;
+        }
       }
 
       // Wipe later phase deltas for this stat since setup value changed

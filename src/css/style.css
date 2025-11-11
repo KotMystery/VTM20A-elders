@@ -46,12 +46,12 @@
   }
 
   .dot.filled {
-    @apply bg-vtm-red border-vtm-red;
+    @apply bg-red-600 border-red-600; /* Current phase - bright red */
   }
 
   /* Phase-based dot coloring */
   .dot.filled.locked-1 {
-    @apply bg-red-900 border-red-900; /* 1 phase back - darker red */
+    @apply bg-red-800 border-red-800; /* 1 phase back - darker red */
   }
 
   .dot.filled.locked-2 {
