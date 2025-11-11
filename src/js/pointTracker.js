@@ -89,7 +89,11 @@ export class PointTracker {
 
     categories.forEach(category => {
       const attrs = this.character.attributes[category];
-      const total = Object.values(attrs).reduce((sum, val) => sum + val, 0) - 3;
+      let total = Object.values(attrs).reduce((sum, val) => sum + val, 0) - 3;
+      // Appearance can be 0 (Nosferatu/flaws), don't count as -1
+      if (attrs.appearance === 0) {
+        total += 1;
+      }
       totals[category] = total;
 
       // Check max dots before freebies
