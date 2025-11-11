@@ -758,6 +758,18 @@ class CharacterCreatorApp {
       }
     }
 
+    // Apply generation-based limits for attributes and disciplines
+    if (category === 'attributes' || category === 'disciplines') {
+      const generationMax = this.character.getMaxTraitByGeneration();
+      // For disciplines, use the lesser of 7 or generation max
+      if (category === 'disciplines') {
+        allowedMax = Math.min(allowedMax, generationMax, 7);
+      } else {
+        // For attributes, apply generation max but respect phase limits
+        allowedMax = Math.min(allowedMax, generationMax);
+      }
+    }
+
     // Calculate phase boundaries for colored dots
     const phases = ['setup', 'freebies', 'xp'];
     const currentPhaseIndex = phases.indexOf(this.currentPhase);
@@ -1073,6 +1085,28 @@ class CharacterCreatorApp {
     this.attachEventListeners();
   }
 
+  // Handle automatic 14th generation flaw
+  handleFourteenthGenerationFlaw() {
+    const effectiveGen = this.character.getEffectiveGeneration();
+    const hasFlaw = this.character.flaws.some(f => f.id === 'fourteenth_generation');
+
+    if (effectiveGen >= 14 && !hasFlaw) {
+      // Auto-add 14th generation flaw
+      const flawData = flawsData.physical.find(f => f.id === 'fourteenth_generation');
+      if (flawData) {
+        this.character.flaws.push({
+          ...flawData,
+          selectedCost: flawData.cost
+        });
+        this.character.freebies = this.character.calculateFreebies();
+      }
+    } else if (effectiveGen < 14 && hasFlaw) {
+      // Auto-remove 14th generation flaw
+      this.character.flaws = this.character.flaws.filter(f => f.id !== 'fourteenth_generation');
+      this.character.freebies = this.character.calculateFreebies();
+    }
+  }
+
   addFlaw(flawData, selectedCost) {
     // Check if already has this flaw
     if (this.character.flaws.some(f => f.id === flawData.id)) {
@@ -1100,6 +1134,7 @@ class CharacterCreatorApp {
         return;
       }
       this.character.dilutedVitae = selectedCost;
+      this.handleFourteenthGenerationFlaw(); // Check for 14th gen flaw
     }
 
     this.character.freebies = this.character.calculateFreebies();
@@ -1109,10 +1144,17 @@ class CharacterCreatorApp {
   }
 
   removeFlaw(flawId) {
+    // Don't allow manual removal of automatic 14th generation flaw
+    if (flawId === 'fourteenth_generation') {
+      alert('Этот недостаток добавляется автоматически при достижении 14-го поколения и не может быть удалён вручную.');
+      return;
+    }
+
     // Handle thin_blood flaw - decreases generation back
     const flaw = this.character.flaws.find(f => f.id === flawId);
     if (flaw && flaw.id === 'thin_blood') {
       this.character.dilutedVitae = 0;
+      this.handleFourteenthGenerationFlaw(); // Check for 14th gen flaw
     }
 
     this.character.flaws = this.character.flaws.filter(f => f.id !== flawId);
@@ -1123,6 +1165,11 @@ class CharacterCreatorApp {
   }
 
   isMeritFlawDisabled(item) {
+    // Disable automatic flaws (like 14th generation)
+    if (item.automatic) {
+      return true;
+    }
+
     // Check clan exclusions
     if (item.excludedClans && item.excludedClans.includes(this.character.clan)) {
       return true;
@@ -1148,6 +1195,10 @@ class CharacterCreatorApp {
   }
 
   getMeritFlawDisabledReason(item) {
+    if (item.automatic) {
+      return 'Добавляется автоматически при достижении 14-го поколения';
+    }
+
     if (item.excludedClans && item.excludedClans.includes(this.character.clan)) {
       return `Недоступно для ${this.getClanName()}`;
     }
@@ -1829,6 +1880,10 @@ class CharacterCreatorApp {
         if (this.character.setupBaseline) {
           this.character.setupBaseline.backgrounds[attr] = value;
         }
+        // Check for 14th generation flaw when generation changes
+        if (attr === 'generation') {
+          this.handleFourteenthGenerationFlaw();
+        }
       } else if (category === 'virtues') {
         this.character.virtues[attr] = value;
         if (this.character.setupBaseline) {
@@ -1976,6 +2031,10 @@ class CharacterCreatorApp {
             }
           }
           this.character.freebiesDeltas.backgrounds[attr] = newDelta;
+          // Check for 14th generation flaw when generation changes
+          if (attr === 'generation') {
+            this.handleFourteenthGenerationFlaw();
+          }
         } else if (category === 'virtues') {
           this.character.freebiesDeltas.virtues[attr] = newDelta;
         } else if (category === 'humanity') {
@@ -2008,6 +2067,10 @@ class CharacterCreatorApp {
             }
           }
           this.character.xpDeltas.backgrounds[attr] = xpDelta;
+          // Check for 14th generation flaw when generation changes
+          if (attr === 'generation') {
+            this.handleFourteenthGenerationFlaw();
+          }
         } else if (category === 'virtues') {
           this.character.xpDeltas.virtues[attr] = xpDelta;
         } else if (category === 'humanity') {

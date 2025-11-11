@@ -462,6 +462,26 @@ export class Character {
     return stats[gen] || { max: 10, perTurn: 1 };
   }
 
+  // Get maximum trait value based on generation (for attributes and disciplines)
+  getMaxTraitByGeneration() {
+    const gen = this.getEffectiveGeneration();
+    const limits = {
+      3: 10,
+      4: 9,
+      5: 8,
+      6: 7,
+      7: 6,
+      8: 5,
+      9: 5,
+      10: 5,
+      11: 5,
+      12: 5,
+      13: 5,
+      14: 4 // 14th generation has discipline max of 4
+    };
+    return limits[gen] || 5; // Default to 5 for generations beyond 13
+  }
+
   // Get clan disciplines
   getClanDisciplines() {
     // Load clan data and return disciplines
