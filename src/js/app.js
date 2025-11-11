@@ -1576,48 +1576,14 @@ class CharacterCreatorApp {
       }
     }
 
-    // Calculate allowedMax (same logic as renderDots)
-    const max = tracker.querySelectorAll('.dot').length;
-    let allowedMax = max;
-
-    if (this.currentPhase === 'setup') {
-      if (category === 'attributes') {
-        allowedMax = 6;
-      } else if (category === 'abilities') {
-        allowedMax = 5;
-      } else if (category === 'virtues') {
-        allowedMax = 5;
-      } else if (category === 'backgrounds') {
-        allowedMax = 5;
-      } else if (category === 'humanity' || category === 'willpower') {
-        allowedMax = 0;
-      }
-    }
-
-    // Apply generation-based limits
-    if (category === 'attributes') {
-      const generationMax = this.character.getMaxTraitByGeneration();
-      allowedMax = Math.min(allowedMax, generationMax);
-    } else if (category === 'disciplines') {
-      const generationMax = this.character.getMaxDisciplineByGeneration();
-      allowedMax = Math.min(allowedMax, generationMax, 7);
-    }
-
-    // Apply clan-specific restrictions
-    if (category === 'attributes' && attr === 'appearance' && this.character.clan === 'nosferatu') {
-      allowedMax = 0;
-    }
-
     const dots = tracker.querySelectorAll('.dot');
     dots.forEach((dot) => {
       const dotValue = parseInt(dot.dataset.value);
 
-      // Remove all phase and state classes first
-      dot.classList.remove('filled', 'locked-1', 'locked-2', 'future-1', 'future-2', 'cursor-not-allowed');
+      // Remove all phase classes first
+      dot.classList.remove('filled', 'locked-1', 'locked-2', 'future-1', 'future-2');
 
-      const filled = dotValue <= displayValue;
-
-      if (filled) {
+      if (dotValue <= displayValue) {
         dot.classList.add('filled');
 
         // Determine which phase this dot was bought in
@@ -1641,16 +1607,6 @@ class CharacterCreatorApp {
           dot.classList.add('future-1');
         } else if (phaseDistance === 2) {
           dot.classList.add('future-2');
-        }
-
-        // Recalculate disabled state for filled dots
-        if (dotValue > allowedMax && phaseDistance <= 0) {
-          dot.classList.add('cursor-not-allowed');
-        }
-      } else {
-        // Recalculate disabled state for empty dots
-        if (dotValue > allowedMax) {
-          dot.classList.add('cursor-not-allowed');
         }
       }
     });
