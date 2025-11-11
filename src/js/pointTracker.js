@@ -1,4 +1,5 @@
 // Point tracking and validation for Elder character creation
+import clansData from '../data/clans.json';
 
 export const ELDER_RULES = {
   attributes: {
@@ -15,7 +16,8 @@ export const ELDER_RULES = {
     maxBeforeFreebies: 5
   },
   disciplines: {
-    total: 7
+    total: 7,
+    minClanPoints: 4
   },
   backgrounds: {
     total: 3,
@@ -154,6 +156,23 @@ export class PointTracker {
       errors.push(`Дисциплины: использовано ${total}/${ELDER_RULES.disciplines.total}`);
     } else if (total < ELDER_RULES.disciplines.total) {
       errors.push(`Дисциплины: нужно распределить ${ELDER_RULES.disciplines.total} очков (распределено: ${total})`);
+    }
+
+    // Check clan discipline minimum
+    const clan = clansData.find(c => c.id === this.character.clan);
+    if (clan && clan.disciplines) {
+      const clanDisciplines = clan.disciplines;
+      let clanDisciplinePoints = 0;
+
+      Object.entries(this.character.disciplines).forEach(([discId, value]) => {
+        if (clanDisciplines.includes(discId)) {
+          clanDisciplinePoints += value;
+        }
+      });
+
+      if (clanDisciplinePoints < ELDER_RULES.disciplines.minClanPoints) {
+        errors.push(`Дисциплины клана: минимум ${ELDER_RULES.disciplines.minClanPoints} очков в дисциплинах клана (распределено: ${clanDisciplinePoints})`);
+      }
     }
 
     return { valid: errors.length === 0, errors, total };

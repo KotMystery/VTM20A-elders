@@ -92,7 +92,7 @@ export class Character {
     this.bloodPerTurn = 0;
 
     // Experience
-    this.experience = 103; // Elders start with 103 XP
+    this.experience = 78; // Elders start with 78 XP
     this.experienceSpent = 0;
 
     // Freebies (15 base + 7 coterie flaw + 0-7 personal flaws = 22-29)
@@ -460,6 +460,26 @@ export class Character {
       14: { max: 10, perTurn: 1 }
     };
     return stats[gen] || { max: 10, perTurn: 1 };
+  }
+
+  // Get maximum trait value based on generation (for attributes and disciplines)
+  getMaxTraitByGeneration() {
+    const gen = this.getEffectiveGeneration();
+    const limits = {
+      3: 10,
+      4: 9,
+      5: 8,
+      6: 7,
+      7: 6,
+      8: 5,
+      9: 5,
+      10: 5,
+      11: 5,
+      12: 5,
+      13: 5,
+      14: 4 // 14th generation has discipline max of 4
+    };
+    return limits[gen] || 5; // Default to 5 for generations beyond 13
   }
 
   // Get clan disciplines

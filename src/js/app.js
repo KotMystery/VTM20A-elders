@@ -529,7 +529,7 @@ class CharacterCreatorApp {
             </div>
             <div class="flex items-center gap-2">
               <div class="dot-tracker" data-category="disciplines" data-subcategory="" data-attr="${discId}">
-                ${this.renderDots(level, 10, 'disciplines', null, discId)}
+                ${this.renderDots(level, 7, 'disciplines', null, discId)}
               </div>
               <button class="text-red-500 hover:text-red-400 text-xl" onclick="app.removeDiscipline('${discId}')">×</button>
             </div>
@@ -566,6 +566,7 @@ class CharacterCreatorApp {
               Достоинства: -${totalMeritCosts}<br>
               Использовано: <span id="freebies-counter">${this.character.freebiesSpent}/${this.character.freebies}</span><br>
               <span class="text-yellow-400 mt-1 block">Кликните на пустую точку справа от текущего значения для повышения. Стоимость: Атрибут (5), Способность (2), Дисциплина (7), Факт Биографии (1), Добродетель (2), Человечность (1), Сила воли (1). Вы можете найти все Достоинства и Недостатки в корбуке на страницах 515-535.</span>
+              <span class="text-blue-400 mt-2 block text-xs"><strong>Разбавленное Витэ:</strong> Несмотря на вашу древность, по какой-то причине ваше Витэ гораздо слабее чем у ваших современников и "одногодок". Это может быть как и высокое поколение Сира, так и какое-то магическое проклятие или попросту временная слабость после долгого Торпора. Механически, этот Недостаток повышает ваше поколение.</span>
             </div>
           </div>
 
@@ -644,10 +645,10 @@ class CharacterCreatorApp {
 
           <div class="mb-4 p-4 bg-gray-800 rounded">
             <div class="text-lg font-bold mb-2">
-              Доступно: <span id="xp-available" class="${available >= 0 ? 'text-green-400' : 'text-red-400'}">${available}</span> / <span id="xp-total">103</span> XP
+              Доступно: <span id="xp-available" class="${available >= 0 ? 'text-green-400' : 'text-red-400'}">${available}</span> / <span id="xp-total">78</span> XP
             </div>
             <div class="text-sm text-gray-400 mb-2">
-              Старейшины начинают с 103 опыта<br>
+              Старейшины начинают с 78 опыта<br>
               Использовано: <span id="xp-counter">${this.character.experienceSpent}/${this.character.experience}</span>
             </div>
             <div class="text-sm text-yellow-400">
@@ -757,6 +758,18 @@ class CharacterCreatorApp {
       }
     }
 
+    // Apply generation-based limits for attributes and disciplines
+    if (category === 'attributes' || category === 'disciplines') {
+      const generationMax = this.character.getMaxTraitByGeneration();
+      // For disciplines, use the lesser of 7 or generation max
+      if (category === 'disciplines') {
+        allowedMax = Math.min(allowedMax, generationMax, 7);
+      } else {
+        // For attributes, apply generation max but respect phase limits
+        allowedMax = Math.min(allowedMax, generationMax);
+      }
+    }
+
     // Calculate phase boundaries for colored dots
     const phases = ['setup', 'freebies', 'xp'];
     const currentPhaseIndex = phases.indexOf(this.currentPhase);
@@ -810,7 +823,7 @@ class CharacterCreatorApp {
       // Future phase dots should show with full opacity as visual indicators
       let disabled = '';
       if (allowedMax > 0 && i > allowedMax && phaseDistance <= 0) {
-        disabled = 'opacity-50 cursor-not-allowed';
+        disabled = 'cursor-not-allowed';
       }
 
       // Add phase-specific class
@@ -1072,6 +1085,28 @@ class CharacterCreatorApp {
     this.attachEventListeners();
   }
 
+  // Handle automatic 14th generation flaw
+  handleFourteenthGenerationFlaw() {
+    const effectiveGen = this.character.getEffectiveGeneration();
+    const hasFlaw = this.character.flaws.some(f => f.id === 'fourteenth_generation');
+
+    if (effectiveGen >= 14 && !hasFlaw) {
+      // Auto-add 14th generation flaw
+      const flawData = flawsData.physical.find(f => f.id === 'fourteenth_generation');
+      if (flawData) {
+        this.character.flaws.push({
+          ...flawData,
+          selectedCost: flawData.cost
+        });
+        this.character.freebies = this.character.calculateFreebies();
+      }
+    } else if (effectiveGen < 14 && hasFlaw) {
+      // Auto-remove 14th generation flaw
+      this.character.flaws = this.character.flaws.filter(f => f.id !== 'fourteenth_generation');
+      this.character.freebies = this.character.calculateFreebies();
+    }
+  }
+
   addFlaw(flawData, selectedCost) {
     // Check if already has this flaw
     if (this.character.flaws.some(f => f.id === flawData.id)) {
@@ -1099,6 +1134,7 @@ class CharacterCreatorApp {
         return;
       }
       this.character.dilutedVitae = selectedCost;
+      this.handleFourteenthGenerationFlaw(); // Check for 14th gen flaw
     }
 
     this.character.freebies = this.character.calculateFreebies();
@@ -1108,10 +1144,17 @@ class CharacterCreatorApp {
   }
 
   removeFlaw(flawId) {
+    // Don't allow manual removal of automatic 14th generation flaw
+    if (flawId === 'fourteenth_generation') {
+      alert('Этот недостаток добавляется автоматически при достижении 14-го поколения и не может быть удалён вручную.');
+      return;
+    }
+
     // Handle thin_blood flaw - decreases generation back
     const flaw = this.character.flaws.find(f => f.id === flawId);
     if (flaw && flaw.id === 'thin_blood') {
       this.character.dilutedVitae = 0;
+      this.handleFourteenthGenerationFlaw(); // Check for 14th gen flaw
     }
 
     this.character.flaws = this.character.flaws.filter(f => f.id !== flawId);
@@ -1122,6 +1165,11 @@ class CharacterCreatorApp {
   }
 
   isMeritFlawDisabled(item) {
+    // Disable automatic flaws (like 14th generation)
+    if (item.automatic) {
+      return true;
+    }
+
     // Check clan exclusions
     if (item.excludedClans && item.excludedClans.includes(this.character.clan)) {
       return true;
@@ -1147,6 +1195,10 @@ class CharacterCreatorApp {
   }
 
   getMeritFlawDisabledReason(item) {
+    if (item.automatic) {
+      return 'Добавляется автоматически при достижении 14-го поколения';
+    }
+
     if (item.excludedClans && item.excludedClans.includes(this.character.clan)) {
       return `Недоступно для ${this.getClanName()}`;
     }
@@ -1828,6 +1880,10 @@ class CharacterCreatorApp {
         if (this.character.setupBaseline) {
           this.character.setupBaseline.backgrounds[attr] = value;
         }
+        // Check for 14th generation flaw when generation changes
+        if (attr === 'generation') {
+          this.handleFourteenthGenerationFlaw();
+        }
       } else if (category === 'virtues') {
         this.character.virtues[attr] = value;
         if (this.character.setupBaseline) {
@@ -1975,6 +2031,10 @@ class CharacterCreatorApp {
             }
           }
           this.character.freebiesDeltas.backgrounds[attr] = newDelta;
+          // Check for 14th generation flaw when generation changes
+          if (attr === 'generation') {
+            this.handleFourteenthGenerationFlaw();
+          }
         } else if (category === 'virtues') {
           this.character.freebiesDeltas.virtues[attr] = newDelta;
         } else if (category === 'humanity') {
@@ -2007,6 +2067,10 @@ class CharacterCreatorApp {
             }
           }
           this.character.xpDeltas.backgrounds[attr] = xpDelta;
+          // Check for 14th generation flaw when generation changes
+          if (attr === 'generation') {
+            this.handleFourteenthGenerationFlaw();
+          }
         } else if (category === 'virtues') {
           this.character.xpDeltas.virtues[attr] = xpDelta;
         } else if (category === 'humanity') {
