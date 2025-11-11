@@ -792,7 +792,6 @@ class CharacterCreatorApp {
     // Always render dots from 1 to max (standard dot notation)
     for (let i = 1; i <= max; i++) {
       const filled = i <= displayValue ? 'filled' : '';
-      const disabled = (allowedMax > 0 && i > allowedMax) ? 'opacity-50 cursor-not-allowed' : '';
 
       // Determine which phase this dot was bought in
       let dotPhase = 'setup';
@@ -805,6 +804,13 @@ class CharacterCreatorApp {
       // Calculate phase distance (negative = past, 0 = current, positive = future)
       const dotPhaseIndex = phases.indexOf(dotPhase);
       const phaseDistance = dotPhaseIndex - currentPhaseIndex;
+
+      // Only disable dots that exceed allowedMax AND are not from future phases
+      // Future phase dots should show with full opacity as visual indicators
+      let disabled = '';
+      if (allowedMax > 0 && i > allowedMax && phaseDistance <= 0) {
+        disabled = 'opacity-50 cursor-not-allowed';
+      }
 
       // Add phase-specific class
       let phaseClass = '';
@@ -1263,6 +1269,7 @@ class CharacterCreatorApp {
 
     console.log(`[PHASE_SWITCH] ==============================\n`);
     this.render();
+    this.updatePointCounters(); // Update counters after render
     this.attachEventListeners();
   }
 
@@ -1786,10 +1793,20 @@ class CharacterCreatorApp {
       // In setup phase, directly modify character properties
       if (category === 'attributes') {
         this.character.attributes[subcategory][attr] = value;
+        // Also update baseline if it exists (after revisiting setup phase)
+        if (this.character.setupBaseline) {
+          this.character.setupBaseline.attributes[subcategory][attr] = value;
+        }
       } else if (category === 'abilities') {
         this.character.abilities[subcategory][attr] = value;
+        if (this.character.setupBaseline) {
+          this.character.setupBaseline.abilities[subcategory][attr] = value;
+        }
       } else if (category === 'disciplines') {
         this.character.disciplines[attr] = value;
+        if (this.character.setupBaseline) {
+          this.character.setupBaseline.disciplines[attr] = value;
+        }
 
         // Sync primary path level with discipline level
         if (attr === 'necromancy' && this.character.necromancyPaths.length > 0) {
@@ -1807,12 +1824,24 @@ class CharacterCreatorApp {
           }
         }
         this.character.backgrounds[attr] = value;
+        if (this.character.setupBaseline) {
+          this.character.setupBaseline.backgrounds[attr] = value;
+        }
       } else if (category === 'virtues') {
         this.character.virtues[attr] = value;
+        if (this.character.setupBaseline) {
+          this.character.setupBaseline.virtues[attr] = value;
+        }
       } else if (category === 'humanity') {
         this.character.humanity = value;
+        if (this.character.setupBaseline) {
+          this.character.setupBaseline.humanity = value;
+        }
       } else if (category === 'willpower') {
         this.character.willpower = value;
+        if (this.character.setupBaseline) {
+          this.character.setupBaseline.willpower = value;
+        }
       }
 
       // Wipe later phase deltas for this stat since setup value changed
@@ -2846,63 +2875,56 @@ class CharacterCreatorApp {
       return;
     }
 
-    // Make the purchase
+    let success = false;
+
+    // Make the purchase using updateCharacterValue to maintain phase isolation
     if (type === 'attribute') {
       const category = document.getElementById('freebieAttrCategory')?.value;
       const attr = document.getElementById('freebieAttribute')?.value;
       if (category && attr) {
-        this.character.attributes[category][attr]++;
-        this.character.freebiesSpent += costAmount;
+        const current = this.getCurrentValue('attributes', category, attr);
+        success = this.updateCharacterValue('attributes', category, attr, current + 1);
       }
     } else if (type === 'ability') {
       const category = document.getElementById('freebieAbilityCategory')?.value;
       const ability = document.getElementById('freebieAbility')?.value;
       if (category && ability) {
-        if (!this.character.abilities[category][ability]) {
-          this.character.abilities[category][ability] = 0;
-        }
-        this.character.abilities[category][ability]++;
-        this.character.freebiesSpent += costAmount;
+        const current = this.getCurrentValue('abilities', category, ability);
+        success = this.updateCharacterValue('abilities', category, ability, current + 1);
       }
     } else if (type === 'discipline') {
       const discId = document.getElementById('freebieDiscipline')?.value;
       if (discId) {
-        if (!this.character.disciplines[discId]) {
-          this.character.disciplines[discId] = 0;
-        }
-        this.character.disciplines[discId]++;
-        this.character.freebiesSpent += costAmount;
+        const current = this.getCurrentValue('disciplines', null, discId);
+        success = this.updateCharacterValue('disciplines', null, discId, current + 1);
       }
     } else if (type === 'background') {
       const bgId = document.getElementById('freebieBackground')?.value;
       if (bgId) {
-        if (!this.character.backgrounds[bgId]) {
-          this.character.backgrounds[bgId] = 0;
-        }
-        this.character.backgrounds[bgId]++;
-        this.character.freebiesSpent += costAmount;
+        const current = this.getCurrentValue('backgrounds', null, bgId);
+        success = this.updateCharacterValue('backgrounds', null, bgId, current + 1);
       }
     } else if (type === 'virtue') {
       const virtue = document.getElementById('freebieVirtue')?.value;
       if (virtue) {
-        this.character.virtues[virtue]++;
-        this.character.freebiesSpent += costAmount;
+        const current = this.getCurrentValue('virtues', null, virtue);
+        success = this.updateCharacterValue('virtues', null, virtue, current + 1);
       }
     } else if (type === 'humanity') {
-      this.character.humanity++;
-      this.character.freebiesSpent += costAmount;
+      const current = this.getCurrentValue('humanity', null, null);
+      success = this.updateCharacterValue('humanity', null, null, current + 1);
     } else if (type === 'willpower') {
-      this.character.willpower++;
-      this.character.freebiesSpent += costAmount;
+      const current = this.getCurrentValue('willpower', null, null);
+      success = this.updateCharacterValue('willpower', null, null, current + 1);
     }
 
-    // Save and re-render
-    this.saveToLocalStorage();
-    this.render();
-    this.attachEventListeners();
-    this.updateAllDisplays();
-
-    alert(`Куплено за ${costAmount} бонусных очков!`);
+    if (success) {
+      // Re-render to update UI
+      this.render();
+      this.attachEventListeners();
+      this.updateAllDisplays();
+      alert(`Куплено за ${costAmount} бонусных очков!`);
+    }
   }
 
   // XP Spending Interface Methods
@@ -3187,54 +3209,50 @@ class CharacterCreatorApp {
       return;
     }
 
-    // Make the purchase
+    let success = false;
+
+    // Make the purchase using updateCharacterValue to maintain phase isolation
     if (type === 'attribute') {
       const category = document.getElementById('xpAttrCategory')?.value;
       const attr = document.getElementById('xpAttribute')?.value;
       if (category && attr) {
-        this.character.attributes[category][attr]++;
-        this.character.experienceSpent += costAmount;
+        const current = this.getCurrentValue('attributes', category, attr);
+        success = this.updateCharacterValue('attributes', category, attr, current + 1);
       }
     } else if (type === 'ability') {
       const category = document.getElementById('xpAbilityCategory')?.value;
       const ability = document.getElementById('xpAbility')?.value;
       if (category && ability) {
-        if (!this.character.abilities[category][ability]) {
-          this.character.abilities[category][ability] = 0;
-        }
-        this.character.abilities[category][ability]++;
-        this.character.experienceSpent += costAmount;
+        const current = this.getCurrentValue('abilities', category, ability);
+        success = this.updateCharacterValue('abilities', category, ability, current + 1);
       }
     } else if (type === 'discipline') {
       const discId = document.getElementById('xpDiscipline')?.value;
       if (discId) {
-        if (!this.character.disciplines[discId]) {
-          this.character.disciplines[discId] = 0;
-        }
-        this.character.disciplines[discId]++;
-        this.character.experienceSpent += costAmount;
+        const current = this.getCurrentValue('disciplines', null, discId);
+        success = this.updateCharacterValue('disciplines', null, discId, current + 1);
       }
     } else if (type === 'virtue') {
       const virtue = document.getElementById('xpVirtue')?.value;
       if (virtue) {
-        this.character.virtues[virtue]++;
-        this.character.experienceSpent += costAmount;
+        const current = this.getCurrentValue('virtues', null, virtue);
+        success = this.updateCharacterValue('virtues', null, virtue, current + 1);
       }
     } else if (type === 'humanity') {
-      this.character.humanity++;
-      this.character.experienceSpent += costAmount;
+      const current = this.getCurrentValue('humanity', null, null);
+      success = this.updateCharacterValue('humanity', null, null, current + 1);
     } else if (type === 'willpower') {
-      this.character.willpower++;
-      this.character.experienceSpent += costAmount;
+      const current = this.getCurrentValue('willpower', null, null);
+      success = this.updateCharacterValue('willpower', null, null, current + 1);
     }
 
-    // Save and re-render
-    this.saveToLocalStorage();
-    this.render();
-    this.attachEventListeners();
-    this.updateAllDisplays();
-
-    alert(`Куплено за ${costAmount} XP!`);
+    if (success) {
+      // Re-render to update UI
+      this.render();
+      this.attachEventListeners();
+      this.updateAllDisplays();
+      alert(`Куплено за ${costAmount} XP!`);
+    }
   }
 
   saveToLocalStorage() {

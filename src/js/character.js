@@ -256,6 +256,9 @@ export class Character {
         this.freebiesDeltas.willpower = 0;
         this.xpDeltas.willpower = 0;
       }
+
+      // Recalculate spent points after wiping deltas
+      this.recalculateSpentPoints();
     } else if (fromPhase === 'freebies') {
       // Wipe only XP deltas for this stat
       if (category === 'attributes') {
@@ -273,7 +276,165 @@ export class Character {
       } else if (category === 'willpower') {
         this.xpDeltas.willpower = 0;
       }
+
+      // Recalculate spent XP after wiping deltas
+      this.recalculateSpentPoints();
     }
+  }
+
+  // Recalculate freebiesSpent and experienceSpent from scratch based on all deltas
+  recalculateSpentPoints() {
+    console.log('[RECALC] ========== Recalculating Spent Points ==========');
+
+    let totalFreebies = 0;
+    let totalXP = 0;
+
+    // Freebie costs (per point)
+    const FREEBIE_COSTS = {
+      attribute: 5,
+      ability: 2,
+      discipline: 7,
+      background: 1,
+      virtue: 2,
+      humanity: 1,
+      willpower: 1
+    };
+
+    // XP costs (per dot)
+    const XP_COSTS = {
+      attribute: 4,
+      ability_new: 3,
+      ability_current: 2,
+      discipline_clan: 5,
+      discipline_other: 7,
+      background: 3,
+      virtue: 2,
+      humanity: 2,
+      willpower: 1
+    };
+
+    // Calculate freebies from freebiesDeltas
+    // Attributes
+    ['physical', 'social', 'mental'].forEach(subcat => {
+      Object.entries(this.freebiesDeltas.attributes[subcat]).forEach(([attr, delta]) => {
+        if (delta) {
+          totalFreebies += delta * FREEBIE_COSTS.attribute;
+          console.log(`[RECALC] Freebies: attributes.${subcat}.${attr} delta=${delta}, cost=${delta * FREEBIE_COSTS.attribute}`);
+        }
+      });
+    });
+
+    // Abilities
+    ['talents', 'skills', 'knowledges'].forEach(subcat => {
+      Object.entries(this.freebiesDeltas.abilities[subcat]).forEach(([attr, delta]) => {
+        if (delta) {
+          totalFreebies += delta * FREEBIE_COSTS.ability;
+          console.log(`[RECALC] Freebies: abilities.${subcat}.${attr} delta=${delta}, cost=${delta * FREEBIE_COSTS.ability}`);
+        }
+      });
+    });
+
+    // Disciplines
+    Object.entries(this.freebiesDeltas.disciplines).forEach(([attr, delta]) => {
+      if (delta) {
+        totalFreebies += delta * FREEBIE_COSTS.discipline;
+        console.log(`[RECALC] Freebies: disciplines.${attr} delta=${delta}, cost=${delta * FREEBIE_COSTS.discipline}`);
+      }
+    });
+
+    // Backgrounds
+    Object.entries(this.freebiesDeltas.backgrounds).forEach(([attr, delta]) => {
+      if (delta) {
+        totalFreebies += delta * FREEBIE_COSTS.background;
+        console.log(`[RECALC] Freebies: backgrounds.${attr} delta=${delta}, cost=${delta * FREEBIE_COSTS.background}`);
+      }
+    });
+
+    // Virtues
+    Object.entries(this.freebiesDeltas.virtues).forEach(([attr, delta]) => {
+      if (delta) {
+        totalFreebies += delta * FREEBIE_COSTS.virtue;
+        console.log(`[RECALC] Freebies: virtues.${attr} delta=${delta}, cost=${delta * FREEBIE_COSTS.virtue}`);
+      }
+    });
+
+    // Humanity
+    if (this.freebiesDeltas.humanity) {
+      totalFreebies += this.freebiesDeltas.humanity * FREEBIE_COSTS.humanity;
+      console.log(`[RECALC] Freebies: humanity delta=${this.freebiesDeltas.humanity}, cost=${this.freebiesDeltas.humanity * FREEBIE_COSTS.humanity}`);
+    }
+
+    // Willpower
+    if (this.freebiesDeltas.willpower) {
+      totalFreebies += this.freebiesDeltas.willpower * FREEBIE_COSTS.willpower;
+      console.log(`[RECALC] Freebies: willpower delta=${this.freebiesDeltas.willpower}, cost=${this.freebiesDeltas.willpower * FREEBIE_COSTS.willpower}`);
+    }
+
+    // Calculate XP from xpDeltas (similar logic)
+    // Attributes
+    ['physical', 'social', 'mental'].forEach(subcat => {
+      Object.entries(this.xpDeltas.attributes[subcat]).forEach(([attr, delta]) => {
+        if (delta) {
+          totalXP += delta * XP_COSTS.attribute;
+          console.log(`[RECALC] XP: attributes.${subcat}.${attr} delta=${delta}, cost=${delta * XP_COSTS.attribute}`);
+        }
+      });
+    });
+
+    // Abilities - use simpler logic (just multiply by current cost)
+    ['talents', 'skills', 'knowledges'].forEach(subcat => {
+      Object.entries(this.xpDeltas.abilities[subcat]).forEach(([attr, delta]) => {
+        if (delta) {
+          totalXP += delta * XP_COSTS.ability_current;
+          console.log(`[RECALC] XP: abilities.${subcat}.${attr} delta=${delta}, cost=${delta * XP_COSTS.ability_current}`);
+        }
+      });
+    });
+
+    // Disciplines - need to check if clan or not
+    Object.entries(this.xpDeltas.disciplines).forEach(([attr, delta]) => {
+      if (delta) {
+        // Simplified: assume other discipline cost
+        totalXP += delta * XP_COSTS.discipline_other;
+        console.log(`[RECALC] XP: disciplines.${attr} delta=${delta}, cost=${delta * XP_COSTS.discipline_other}`);
+      }
+    });
+
+    // Backgrounds
+    Object.entries(this.xpDeltas.backgrounds).forEach(([attr, delta]) => {
+      if (delta) {
+        totalXP += delta * XP_COSTS.background;
+        console.log(`[RECALC] XP: backgrounds.${attr} delta=${delta}, cost=${delta * XP_COSTS.background}`);
+      }
+    });
+
+    // Virtues
+    Object.entries(this.xpDeltas.virtues).forEach(([attr, delta]) => {
+      if (delta) {
+        totalXP += delta * XP_COSTS.virtue;
+        console.log(`[RECALC] XP: virtues.${attr} delta=${delta}, cost=${delta * XP_COSTS.virtue}`);
+      }
+    });
+
+    // Humanity
+    if (this.xpDeltas.humanity) {
+      totalXP += this.xpDeltas.humanity * XP_COSTS.humanity;
+      console.log(`[RECALC] XP: humanity delta=${this.xpDeltas.humanity}, cost=${this.xpDeltas.humanity * XP_COSTS.humanity}`);
+    }
+
+    // Willpower
+    if (this.xpDeltas.willpower) {
+      totalXP += this.xpDeltas.willpower * XP_COSTS.willpower;
+      console.log(`[RECALC] XP: willpower delta=${this.xpDeltas.willpower}, cost=${this.xpDeltas.willpower * XP_COSTS.willpower}`);
+    }
+
+    console.log(`[RECALC] Total Freebies: ${totalFreebies} (was ${this.freebiesSpent || 0})`);
+    console.log(`[RECALC] Total XP: ${totalXP} (was ${this.experienceSpent || 0})`);
+
+    this.freebiesSpent = totalFreebies;
+    this.experienceSpent = totalXP;
+
+    console.log('[RECALC] ====================================================');
   }
 
   // Calculate effective generation (base 9 - Generation background + Diluted Vitae flaw)
