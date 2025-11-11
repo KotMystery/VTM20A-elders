@@ -759,15 +759,14 @@ class CharacterCreatorApp {
     }
 
     // Apply generation-based limits for attributes and disciplines
-    if (category === 'attributes' || category === 'disciplines') {
+    if (category === 'attributes') {
       const generationMax = this.character.getMaxTraitByGeneration();
-      // For disciplines, use the lesser of 7 or generation max
-      if (category === 'disciplines') {
-        allowedMax = Math.min(allowedMax, generationMax, 7);
-      } else {
-        // For attributes, apply generation max but respect phase limits
-        allowedMax = Math.min(allowedMax, generationMax);
-      }
+      // For attributes, apply generation max but respect phase limits
+      allowedMax = Math.min(allowedMax, generationMax);
+    } else if (category === 'disciplines') {
+      const generationMax = this.character.getMaxDisciplineByGeneration();
+      // For disciplines, use the lesser of 7 (elder cap) or generation max
+      allowedMax = Math.min(allowedMax, generationMax, 7);
     }
 
     // Calculate phase boundaries for colored dots
