@@ -151,6 +151,8 @@ export class Character {
 
   // Get the value at end of a specific phase
   getValueAtPhase(category, subcategory, attr, phase) {
+    console.log(`[GET_VALUE_AT_PHASE] Category: ${category}, Subcategory: ${subcategory || 'none'}, Attr: ${attr}, Phase: ${phase}`);
+
     let baseValue = 0;
 
     // Get base value from attributes/abilities/etc
@@ -170,7 +172,12 @@ export class Character {
       baseValue = this.setupBaseline?.willpower || 1;
     }
 
-    if (phase === 'setup') return baseValue;
+    console.log(`[GET_VALUE_AT_PHASE] Base Value (from setup baseline): ${baseValue}`);
+
+    if (phase === 'setup') {
+      console.log(`[GET_VALUE_AT_PHASE] Returning setup value: ${baseValue}`);
+      return baseValue;
+    }
 
     // Add freebies delta
     let freebiesDelta = 0;
@@ -190,7 +197,13 @@ export class Character {
       freebiesDelta = this.freebiesDeltas.willpower || 0;
     }
 
-    if (phase === 'freebies') return baseValue + freebiesDelta;
+    console.log(`[GET_VALUE_AT_PHASE] Freebies Delta: ${freebiesDelta}`);
+
+    if (phase === 'freebies') {
+      const result = baseValue + freebiesDelta;
+      console.log(`[GET_VALUE_AT_PHASE] Returning freebies value: ${baseValue} + ${freebiesDelta} = ${result}`);
+      return result;
+    }
 
     // Add XP delta
     let xpDelta = 0;
@@ -210,7 +223,11 @@ export class Character {
       xpDelta = this.xpDeltas.willpower || 0;
     }
 
-    return baseValue + freebiesDelta + xpDelta;
+    console.log(`[GET_VALUE_AT_PHASE] XP Delta: ${xpDelta}`);
+
+    const result = baseValue + freebiesDelta + xpDelta;
+    console.log(`[GET_VALUE_AT_PHASE] Returning XP phase value: ${baseValue} + ${freebiesDelta} + ${xpDelta} = ${result}`);
+    return result;
   }
 
   // Wipe deltas for a specific stat in later phases
