@@ -246,8 +246,8 @@ export class Character {
     this.thaumaturgyRituals = this.thaumaturgyRituals.filter(r => r !== ritualId);
   }
 
-  // Serialize to JSON
-  toJSON() {
+  // Serialize to JSON string
+  serialize() {
     return JSON.stringify(this, null, 2);
   }
 
