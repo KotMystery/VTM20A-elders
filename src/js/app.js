@@ -15,6 +15,10 @@ import flawsData from '../data/flaws.json';
 
 class CharacterCreatorApp {
   constructor() {
+    console.log('\n\n========================================');
+    console.log('=== VTM20A ELDER CHARACTER CREATOR ===');
+    console.log('========================================\n');
+
     this.character = new Character();
     this.tracker = new PointTracker(this.character);
     this.currentPhase = 'setup';
@@ -48,7 +52,37 @@ class CharacterCreatorApp {
       willpower: (current) => current * 1
     };
 
-    console.log('[DEBUG] Freebie costs loaded:', this.FREEBIE_COSTS);
+    console.log('[INIT] ===== FREEBIE COSTS =====');
+    console.log('[INIT] Attribute: 5 per dot');
+    console.log('[INIT] Ability: 2 per dot');
+    console.log('[INIT] Background: 1 per dot');
+    console.log('[INIT] Discipline: 7 per dot');
+    console.log('[INIT] Virtue: 2 per dot');
+    console.log('[INIT] Humanity: 1 per dot');
+    console.log('[INIT] Willpower: 1 per dot\n');
+
+    console.log('[INIT] ===== XP COSTS =====');
+    console.log('[INIT] New Ability: 3 XP');
+    console.log('[INIT] New Discipline: 10 XP');
+    console.log('[INIT] New Path (Necro/Thaum): 7 XP');
+    console.log('[INIT] Attribute: current × 4');
+    console.log('[INIT] Ability: current × 2');
+    console.log('[INIT] Discipline (Physical): clan ×5, non-clan ×6, Caitiff ×5');
+    console.log('[INIT] Discipline (Mental): clan ×5, non-clan ×7, Caitiff ×6');
+    console.log('[INIT] Discipline (Unique): clan ×5, non-clan ×8, Caitiff ×7');
+    console.log('[INIT] Secondary Path: current × 4');
+    console.log('[INIT] Virtue: current × 2');
+    console.log('[INIT] Humanity: current × 2');
+    console.log('[INIT] Willpower: current × 1\n');
+
+    console.log('[INIT] ===== ELDER RULES (SETUP PHASE) =====');
+    console.log('[INIT] Attributes: 9/7/5 distribution, max 6 per attribute');
+    console.log('[INIT] Abilities: 18/12/8 distribution, max 5 per ability');
+    console.log('[INIT] Disciplines: 7 points total');
+    console.log('[INIT] Backgrounds: 3 points total (Generation, Herd, Resources, Retainers only)');
+    console.log('[INIT] Virtues: 5 points total (each starts at 1)');
+    console.log('[INIT] Freebies: 22 base + up to 7 from personal flaws');
+    console.log('[INIT] Experience: 33 XP starting\n');
 
     this.init();
   }
@@ -1064,13 +1098,32 @@ class CharacterCreatorApp {
   }
 
   switchPhase(phase) {
+    console.log(`\n[PHASE_SWITCH] ===== SWITCHING PHASE =====`);
+    console.log(`[PHASE_SWITCH] From: ${this.currentPhase} → To: ${phase}`);
+
     // When leaving setup phase, capture baseline to prevent stat reduction later
     if (this.currentPhase === 'setup' && phase !== 'setup') {
+      console.log(`[PHASE_SWITCH] Leaving setup phase - capturing baseline`);
       this.character.captureSetupBaseline();
+      console.log(`[PHASE_SWITCH] Setup baseline captured`);
+      console.log(`[PHASE_SWITCH] Phase hierarchy now enabled: Setup → Freebies → XP`);
       this.saveToLocalStorage();
     }
 
     this.currentPhase = phase;
+
+    // Log current state
+    if (phase === 'freebies') {
+      const available = this.character.freebies - (this.character.freebiesSpent || 0);
+      console.log(`[PHASE_SWITCH] Entering Freebies Phase`);
+      console.log(`[PHASE_SWITCH] Available freebies: ${available}/${this.character.freebies}`);
+    } else if (phase === 'xp') {
+      const available = this.character.experience - (this.character.experienceSpent || 0);
+      console.log(`[PHASE_SWITCH] Entering XP Phase`);
+      console.log(`[PHASE_SWITCH] Available XP: ${available}/${this.character.experience}`);
+    }
+
+    console.log(`[PHASE_SWITCH] ==============================\n`);
     this.render();
     this.attachEventListeners();
   }
@@ -1135,7 +1188,13 @@ class CharacterCreatorApp {
       }
       const changeListener = (e) => {
         const oldClan = this.character.clan;
-        this.character.clan = e.target.value;
+        const newClanId = e.target.value;
+
+        console.log(`\n[CHARACTER_CHANGE] ===== CLAN CHANGED =====`);
+        console.log(`[CHARACTER_CHANGE] Old Clan: ${oldClan || '(none)'}`);
+        console.log(`[CHARACTER_CHANGE] New Clan: ${newClanId}`);
+
+        this.character.clan = newClanId;
 
         // Get old and new clan disciplines
         const oldClanData = clansData.find(c => c.id === oldClan);
@@ -1143,6 +1202,8 @@ class CharacterCreatorApp {
 
         const newClanData = clansData.find(c => c.id === this.character.clan);
         const newClanDiscs = newClanData?.disciplines || [];
+
+        console.log(`[CHARACTER_CHANGE] New Clan Disciplines: ${newClanDiscs.join(', ')}`);
 
         // Remove disciplines that were clan-specific to old clan but not new clan
         // Keep disciplines with dots > 0 (already learned), remove only those at 0
@@ -1153,6 +1214,7 @@ class CharacterCreatorApp {
 
           // Remove if it was auto-added from old clan and not in new clan and no progress
           if (wasOldClan && !isNewClan && !hasProgress) {
+            console.log(`[CHARACTER_CHANGE] Removing old clan discipline: ${discId}`);
             delete this.character.disciplines[discId];
           }
         });
@@ -1162,11 +1224,13 @@ class CharacterCreatorApp {
           newClanDiscs.forEach(discId => {
             // Add clan disciplines if not already present
             if (!(discId in this.character.disciplines)) {
+              console.log(`[CHARACTER_CHANGE] Adding clan discipline: ${discId}`);
               this.character.disciplines[discId] = 0;
             }
           });
         }
 
+        console.log(`[CHARACTER_CHANGE] ===========================\n`);
         this.saveToLocalStorage();
         this.render();
         this.attachEventListeners();
@@ -2854,8 +2918,47 @@ class CharacterCreatorApp {
   loadFromLocalStorage() {
     const saved = localStorage.getItem('vtm_character');
     if (saved) {
+      console.log('[INIT] ===== LOADING EXISTING CHARACTER =====');
       this.character = Character.fromJSON(saved);
       this.tracker = new PointTracker(this.character);
+
+      console.log(`[INIT] Name: ${this.character.name || '(not set)'}`);
+      console.log(`[INIT] Clan: ${this.character.clan || '(not set)'}`);
+      console.log(`[INIT] Concept: ${this.character.concept || '(not set)'}`);
+      console.log(`[INIT] Generation: ${this.character.getEffectiveGeneration()}`);
+      console.log(`[INIT] Has Setup Baseline: ${!!this.character.setupBaseline}`);
+
+      if (this.character.setupBaseline) {
+        console.log('[INIT] Phase tracking enabled (setup completed)');
+      }
+
+      console.log(`\n[INIT] ===== CHARACTER POINTS =====`);
+      console.log(`[INIT] Freebies: ${this.character.freebiesSpent || 0}/${this.character.freebies} spent`);
+      console.log(`[INIT] Experience: ${this.character.experienceSpent || 0}/${this.character.experience} spent`);
+
+      const attrTotal = Object.values(this.character.attributes).reduce((sum, cat) =>
+        sum + Object.values(cat).reduce((s, v) => s + v, 0), 0) - 9;
+      console.log(`[INIT] Attributes Total: ${attrTotal}`);
+
+      const abilTotal = Object.values(this.character.abilities).reduce((sum, cat) =>
+        sum + Object.values(cat).reduce((s, v) => s + v, 0), 0);
+      console.log(`[INIT] Abilities Total: ${abilTotal}`);
+
+      const discTotal = Object.values(this.character.disciplines).reduce((s, v) => s + v, 0);
+      console.log(`[INIT] Disciplines Total: ${discTotal}`);
+
+      const bgTotal = Object.values(this.character.backgrounds).reduce((s, v) => s + v, 0);
+      console.log(`[INIT] Backgrounds Total: ${bgTotal}`);
+
+      const virtTotal = Object.values(this.character.virtues).reduce((s, v) => s + v, 0) - 3;
+      console.log(`[INIT] Virtues Total: ${virtTotal}`);
+
+      console.log(`\n[INIT] Merits: ${this.character.merits.length}`);
+      console.log(`[INIT] Flaws: ${this.character.flaws.length}`);
+      console.log('========================================\n');
+    } else {
+      console.log('[INIT] No existing character found. Starting fresh.');
+      console.log('========================================\n');
     }
   }
 
