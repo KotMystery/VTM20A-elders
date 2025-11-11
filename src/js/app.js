@@ -659,8 +659,11 @@ class CharacterCreatorApp {
   }
 
   renderSummary() {
-    const validation = this.tracker.validateAll();
+    const validation = this.tracker.validateAll(this.currentPhase);
     const allValid = Object.values(validation).every(v => v.valid);
+
+    // Only show finalize button in XP phase
+    const showFinalizeButton = this.currentPhase === 'xp';
 
     return `
       <div class="card">
@@ -688,13 +691,15 @@ class CharacterCreatorApp {
             <strong>Опыт:</strong> ${this.character.experienceSpent}/${this.character.experience}
           </div>
 
-          <div class="text-sm text-gray-400 mb-2">
-            Вы можете завершить создание персонажа даже если не потратили все бонусные очки или опыт.
-          </div>
+          ${showFinalizeButton ? `
+            <div class="text-sm text-gray-400 mb-2">
+              Вы можете завершить создание персонажа даже если не потратили все бонусные очки или опыт.
+            </div>
 
-          <button class="btn btn-primary w-full" id="finalizeBtn">
-            Завершить создание персонажа
-          </button>
+            <button class="btn btn-primary w-full" id="finalizeBtn">
+              Завершить создание персонажа
+            </button>
+          ` : ''}
         </div>
       </div>
     `;
@@ -715,17 +720,20 @@ class CharacterCreatorApp {
 
     // Determine the allowed limit based on phase and category
     let allowedMax = max;
-    let minValue = 1; // Default minimum (for attributes and virtues)
+    let minValue = 1; // Default minimum
 
     // Determine minimum value based on category
-    if (category === 'abilities' || category === 'disciplines' || category === 'backgrounds') {
-      minValue = 0; // These can go to 0
+    // Appearance can go to 0 (for Nosferatu and certain flaws)
+    if (category === 'attributes' && attr === 'appearance') {
+      minValue = 0;
+    } else if (category === 'abilities' || category === 'disciplines' || category === 'backgrounds') {
+      minValue = 0;
     } else if (category === 'attributes' || category === 'virtues') {
-      minValue = 1; // These must stay at least 1
+      minValue = 1;
     } else if (category === 'humanity') {
-      minValue = 0; // Can go to 0 in later phases
+      minValue = 0;
     } else if (category === 'willpower') {
-      minValue = 1; // Must stay at least 1
+      minValue = 1;
     }
 
     if (this.currentPhase === 'setup') {
@@ -743,17 +751,14 @@ class CharacterCreatorApp {
       }
     }
 
-    // Add zero dot for things that can be zero (for easy removal)
-    if (minValue === 0 && this.currentPhase === 'setup' && category !== 'humanity' && category !== 'willpower') {
-      const filledZero = current === 0 ? 'filled' : '';
-      html += `<div class="dot ${filledZero}" data-value="0" title="Убрать все точки">×</div>`;
-    }
-
-    for (let i = 1; i <= max; i++) {
+    // Render dots starting from minValue to max
+    // If minValue is 0, we render a dot for 0
+    const startValue = minValue;
+    for (let i = startValue; i <= max; i++) {
       const filled = i <= current ? 'filled' : '';
-      const disabled = i > allowedMax ? 'opacity-50 cursor-not-allowed' : '';
-      // No onclick - handled by global event delegation
-      html += `<div class="dot ${filled} ${disabled}" data-value="${i}"></div>`;
+      const disabled = (allowedMax > 0 && i > allowedMax) ? 'opacity-50 cursor-not-allowed' : '';
+      const displayValue = i === 0 ? '×' : '';
+      html += `<div class="dot ${filled} ${disabled}" data-value="${i}" data-min="${minValue}">${displayValue}</div>`;
     }
     return html;
   }
@@ -1299,23 +1304,44 @@ class CharacterCreatorApp {
     }
   }
 
-  handleDotClick(category, subcategory, attr, value, tracker) {
+  handleDotClick(category, subcategory, attr, clickedValue, tracker) {
     // In setup phase, humanity and willpower are derived - can't be clicked directly
     if (this.currentPhase === 'setup' && (category === 'humanity' || category === 'willpower')) {
       return;
     }
 
+    // Get current value
+    const currentValue = this.getCurrentValue(category, subcategory, attr);
+
+    // Get minimum value from the dot's data attribute
+    const clickedDot = tracker.querySelector(`[data-value="${clickedValue}"]`);
+    const minValue = clickedDot ? parseInt(clickedDot.dataset.min || '1') : 1;
+
+    // Simple toggle: if clicked dot is filled, unfill it; if unfilled, fill it
+    let newValue;
+    if (clickedValue <= currentValue) {
+      // Clicking a filled dot - unfill it (go to one less)
+      newValue = clickedValue - 1;
+      // Don't go below minimum
+      if (newValue < minValue) {
+        newValue = minValue;
+      }
+    } else {
+      // Clicking an unfilled dot - fill it
+      newValue = clickedValue;
+    }
+
     // Update character data using existing updateCharacterValue logic
-    const updated = this.updateCharacterValue(category, subcategory, attr, value);
+    const updated = this.updateCharacterValue(category, subcategory, attr, newValue);
     if (!updated) {
       return; // Update was rejected
     }
 
     // Update the dots visually WITHOUT re-rendering
     const dots = tracker.querySelectorAll('.dot');
-    dots.forEach((dot, index) => {
-      const dotValue = index + 1;
-      if (dotValue <= value) {
+    dots.forEach((dot) => {
+      const dotValue = parseInt(dot.dataset.value);
+      if (dotValue <= newValue) {
         dot.classList.add('filled');
       } else {
         dot.classList.remove('filled');
@@ -1779,7 +1805,7 @@ class CharacterCreatorApp {
 
     // Update overall validation summary (setup phase only)
     if (this.currentPhase === 'setup') {
-      const validation = this.tracker.validateAll();
+      const validation = this.tracker.validateAll(this.currentPhase);
       const allValid = Object.values(validation).every(v => v.valid);
 
       const summaryEl = document.getElementById('validation-summary');
@@ -1812,6 +1838,13 @@ class CharacterCreatorApp {
     console.log(`[FREEBIE_COST_START] ========== Calculating Freebie Cost ==========`);
     console.log(`[FREEBIE_COST] Category: ${category}, Subcategory: ${subcategory || 'none'}, Attr: ${attr}`);
     console.log(`[FREEBIE_COST] Current Value: ${currentValue}, New Value: ${newValue}`);
+    console.log(`[FREEBIE_COST] this.FREEBIE_COSTS exists: ${!!this.FREEBIE_COSTS}`);
+
+    // Defensive check
+    if (!this.FREEBIE_COSTS) {
+      console.error(`[FREEBIE_COST_ERROR] FREEBIE_COSTS not defined!`);
+      return 0;
+    }
 
     const diff = newValue - currentValue;
     console.log(`[FREEBIE_COST] Difference: ${diff} (${diff > 0 ? 'INCREASE' : diff < 0 ? 'DECREASE' : 'NO CHANGE'})`);
@@ -1819,19 +1852,19 @@ class CharacterCreatorApp {
     let costPerPoint = 0;
 
     if (category === 'attributes') {
-      costPerPoint = this.FREEBIE_COSTS.attribute;
+      costPerPoint = this.FREEBIE_COSTS.attribute || 5;
     } else if (category === 'abilities') {
-      costPerPoint = this.FREEBIE_COSTS.ability;
+      costPerPoint = this.FREEBIE_COSTS.ability || 2;
     } else if (category === 'disciplines') {
-      costPerPoint = this.FREEBIE_COSTS.discipline;
+      costPerPoint = this.FREEBIE_COSTS.discipline || 7;
     } else if (category === 'backgrounds') {
-      costPerPoint = this.FREEBIE_COSTS.background;
+      costPerPoint = this.FREEBIE_COSTS.background || 1;
     } else if (category === 'virtues') {
-      costPerPoint = this.FREEBIE_COSTS.virtue;
+      costPerPoint = this.FREEBIE_COSTS.virtue || 2;
     } else if (category === 'humanity') {
-      costPerPoint = this.FREEBIE_COSTS.humanity;
+      costPerPoint = this.FREEBIE_COSTS.humanity || 1;
     } else if (category === 'willpower') {
-      costPerPoint = this.FREEBIE_COSTS.willpower;
+      costPerPoint = this.FREEBIE_COSTS.willpower || 1;
     } else {
       console.error(`[FREEBIE_COST_ERROR] Unknown category: ${category}`);
       return 0;
