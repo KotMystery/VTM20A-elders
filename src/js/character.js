@@ -271,6 +271,15 @@ export class Character {
   static fromJSON(json) {
     const char = new Character();
     Object.assign(char, JSON.parse(json));
+
+    // Fix legacy saves that have null/undefined for these fields
+    if (char.freebiesSpent == null) {
+      char.freebiesSpent = 0;
+    }
+    if (char.experienceSpent == null) {
+      char.experienceSpent = 0;
+    }
+
     return char;
   }
 }

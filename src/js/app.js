@@ -1338,6 +1338,11 @@ class CharacterCreatorApp {
       // If increasing (above current value), calculate cost and spend points
       if (value > currentValue) {
         if (this.currentPhase === 'freebies') {
+          // Ensure freebiesSpent is initialized (handle legacy saves)
+          if (this.character.freebiesSpent == null) {
+            this.character.freebiesSpent = 0;
+          }
+
           const cost = this.calculateFreebieCost(category, subcategory, attr, currentValue, value);
           const available = this.character.freebies - this.character.freebiesSpent;
 
@@ -1348,6 +1353,11 @@ class CharacterCreatorApp {
 
           this.character.freebiesSpent += cost;
         } else if (this.currentPhase === 'xp') {
+          // Ensure experienceSpent is initialized (handle legacy saves)
+          if (this.character.experienceSpent == null) {
+            this.character.experienceSpent = 0;
+          }
+
           const cost = this.calculateXPCost(category, subcategory, attr, currentValue, value);
           const available = this.character.experience - this.character.experienceSpent;
 
