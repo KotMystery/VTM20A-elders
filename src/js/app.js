@@ -265,7 +265,7 @@ class CharacterCreatorApp {
               <div class="text-sm font-medium mb-2">Текущее поколение: ${this.character.getEffectiveGeneration()}</div>
               <div class="text-xs text-gray-400">
                 Базовое: 9<br>
-                Факт Биографии "Поколение": -${this.character.backgrounds.generation || 0}<br>
+                Факт Биографии "Поколение": -${this.getCurrentValue('backgrounds', null, 'generation')}<br>
                 Недостаток "Разбавленное Витэ": +${this.character.dilutedVitae}
               </div>
             </div>
@@ -529,7 +529,7 @@ class CharacterCreatorApp {
             </div>
             <div class="flex items-center gap-2">
               <div class="dot-tracker" data-category="disciplines" data-subcategory="" data-attr="${discId}">
-                ${this.renderDots(level, 7, 'disciplines', null, discId)}
+                ${this.renderDots(level, 10, 'disciplines', null, discId)}
               </div>
               <button class="text-red-500 hover:text-red-400 text-xl" onclick="app.removeDiscipline('${discId}')">×</button>
             </div>
@@ -758,10 +758,10 @@ class CharacterCreatorApp {
       }
     }
 
-    // Apply generation-based limits for attributes and disciplines
-    if (category === 'attributes') {
+    // Apply generation-based limits for attributes, abilities, and disciplines
+    if (category === 'attributes' || category === 'abilities') {
       const generationMax = this.character.getMaxTraitByGeneration();
-      // For attributes, apply generation max but respect phase limits
+      // For attributes and abilities, apply generation max but respect phase limits
       allowedMax = Math.min(allowedMax, generationMax);
     } else if (category === 'disciplines') {
       const generationMax = this.character.getMaxDisciplineByGeneration();
@@ -828,7 +828,7 @@ class CharacterCreatorApp {
       // For filled dots: only disable if from current or past phase (not future)
       // For empty dots: always disable if beyond allowedMax
       let disabled = '';
-      if (allowedMax > 0 && i > allowedMax) {
+      if (i > allowedMax) {
         if (!filled || phaseDistance <= 0) {
           disabled = 'cursor-not-allowed';
         }
@@ -1762,12 +1762,13 @@ class CharacterCreatorApp {
       generationDisplay.textContent = `Текущее поколение: ${this.character.getEffectiveGeneration()}`;
     }
 
-    // Update generation breakdown
+    // Update generation breakdown - use current value at current phase
     const genBreakdown = generationDisplay?.nextElementSibling;
     if (genBreakdown && genBreakdown.classList.contains('text-xs')) {
+      const currentGenerationBg = this.getCurrentValue('backgrounds', null, 'generation');
       genBreakdown.innerHTML = `
         Базовое: 9<br>
-        Факт Биографии "Поколение": -${this.character.backgrounds.generation || 0}<br>
+        Факт Биографии "Поколение": -${currentGenerationBg}<br>
         Недостаток "Разбавленное Витэ": +${this.character.dilutedVitae}
       `;
     }
@@ -1796,12 +1797,23 @@ class CharacterCreatorApp {
       });
     });
 
+    // Re-render ability dots (generation affects max ability values)
+    ['talents', 'skills', 'knowledges'].forEach(category => {
+      Object.keys(this.character.abilities[category]).forEach(abilityId => {
+        const tracker = document.querySelector(`.dot-tracker[data-category="abilities"][data-subcategory="${category}"][data-attr="${abilityId}"]`);
+        if (tracker) {
+          const current = this.character.abilities[category][abilityId];
+          tracker.innerHTML = this.renderDots(current, 10, 'abilities', category, abilityId);
+        }
+      });
+    });
+
     // Re-render discipline dots (generation affects max discipline values)
     Object.keys(this.character.disciplines).forEach(discId => {
       const tracker = document.querySelector(`.dot-tracker[data-category="disciplines"][data-attr="${discId}"]`);
       if (tracker) {
         const current = this.character.disciplines[discId];
-        tracker.innerHTML = this.renderDots(current, 7, 'disciplines', null, discId);
+        tracker.innerHTML = this.renderDots(current, 10, 'disciplines', null, discId);
       }
     });
 
