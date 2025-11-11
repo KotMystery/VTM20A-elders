@@ -116,6 +116,24 @@ export class Character {
 
     // Setup baseline - captures values at end of setup phase to prevent reduction in later phases
     this.setupBaseline = null;
+
+    // Phase-specific deltas to track hierarchical changes
+    // freebiesDeltas tracks what was added in freebies phase (on top of setup)
+    // xpDeltas tracks what was added in XP phase (on top of freebies)
+    this.freebiesDeltas = this.createEmptyDeltas();
+    this.xpDeltas = this.createEmptyDeltas();
+  }
+
+  createEmptyDeltas() {
+    return {
+      attributes: { physical: {}, social: {}, mental: {} },
+      abilities: { talents: {}, skills: {}, knowledges: {} },
+      disciplines: {},
+      backgrounds: {},
+      virtues: {},
+      humanity: 0,
+      willpower: 0
+    };
   }
 
   // Capture current state as setup baseline (called when leaving setup phase)
@@ -129,6 +147,116 @@ export class Character {
       humanity: this.humanity,
       willpower: this.willpower
     };
+  }
+
+  // Get the value at end of a specific phase
+  getValueAtPhase(category, subcategory, attr, phase) {
+    let baseValue = 0;
+
+    // Get base value from attributes/abilities/etc
+    if (category === 'attributes') {
+      baseValue = this.setupBaseline?.attributes[subcategory][attr] || 1;
+    } else if (category === 'abilities') {
+      baseValue = this.setupBaseline?.abilities[subcategory][attr] || 0;
+    } else if (category === 'disciplines') {
+      baseValue = this.setupBaseline?.disciplines[attr] || 0;
+    } else if (category === 'backgrounds') {
+      baseValue = this.setupBaseline?.backgrounds[attr] || 0;
+    } else if (category === 'virtues') {
+      baseValue = this.setupBaseline?.virtues[attr] || 1;
+    } else if (category === 'humanity') {
+      baseValue = this.setupBaseline?.humanity || 2;
+    } else if (category === 'willpower') {
+      baseValue = this.setupBaseline?.willpower || 1;
+    }
+
+    if (phase === 'setup') return baseValue;
+
+    // Add freebies delta
+    let freebiesDelta = 0;
+    if (category === 'attributes') {
+      freebiesDelta = this.freebiesDeltas.attributes[subcategory][attr] || 0;
+    } else if (category === 'abilities') {
+      freebiesDelta = this.freebiesDeltas.abilities[subcategory][attr] || 0;
+    } else if (category === 'disciplines') {
+      freebiesDelta = this.freebiesDeltas.disciplines[attr] || 0;
+    } else if (category === 'backgrounds') {
+      freebiesDelta = this.freebiesDeltas.backgrounds[attr] || 0;
+    } else if (category === 'virtues') {
+      freebiesDelta = this.freebiesDeltas.virtues[attr] || 0;
+    } else if (category === 'humanity') {
+      freebiesDelta = this.freebiesDeltas.humanity || 0;
+    } else if (category === 'willpower') {
+      freebiesDelta = this.freebiesDeltas.willpower || 0;
+    }
+
+    if (phase === 'freebies') return baseValue + freebiesDelta;
+
+    // Add XP delta
+    let xpDelta = 0;
+    if (category === 'attributes') {
+      xpDelta = this.xpDeltas.attributes[subcategory][attr] || 0;
+    } else if (category === 'abilities') {
+      xpDelta = this.xpDeltas.abilities[subcategory][attr] || 0;
+    } else if (category === 'disciplines') {
+      xpDelta = this.xpDeltas.disciplines[attr] || 0;
+    } else if (category === 'backgrounds') {
+      xpDelta = this.xpDeltas.backgrounds[attr] || 0;
+    } else if (category === 'virtues') {
+      xpDelta = this.xpDeltas.virtues[attr] || 0;
+    } else if (category === 'humanity') {
+      xpDelta = this.xpDeltas.humanity || 0;
+    } else if (category === 'willpower') {
+      xpDelta = this.xpDeltas.willpower || 0;
+    }
+
+    return baseValue + freebiesDelta + xpDelta;
+  }
+
+  // Wipe deltas for a specific stat in later phases
+  wipeLaterPhaseDeltas(category, subcategory, attr, fromPhase) {
+    if (fromPhase === 'setup') {
+      // Wipe both freebies and XP deltas for this stat
+      if (category === 'attributes') {
+        delete this.freebiesDeltas.attributes[subcategory][attr];
+        delete this.xpDeltas.attributes[subcategory][attr];
+      } else if (category === 'abilities') {
+        delete this.freebiesDeltas.abilities[subcategory][attr];
+        delete this.xpDeltas.abilities[subcategory][attr];
+      } else if (category === 'disciplines') {
+        delete this.freebiesDeltas.disciplines[attr];
+        delete this.xpDeltas.disciplines[attr];
+      } else if (category === 'backgrounds') {
+        delete this.freebiesDeltas.backgrounds[attr];
+        delete this.xpDeltas.backgrounds[attr];
+      } else if (category === 'virtues') {
+        delete this.freebiesDeltas.virtues[attr];
+        delete this.xpDeltas.virtues[attr];
+      } else if (category === 'humanity') {
+        this.freebiesDeltas.humanity = 0;
+        this.xpDeltas.humanity = 0;
+      } else if (category === 'willpower') {
+        this.freebiesDeltas.willpower = 0;
+        this.xpDeltas.willpower = 0;
+      }
+    } else if (fromPhase === 'freebies') {
+      // Wipe only XP deltas for this stat
+      if (category === 'attributes') {
+        delete this.xpDeltas.attributes[subcategory][attr];
+      } else if (category === 'abilities') {
+        delete this.xpDeltas.abilities[subcategory][attr];
+      } else if (category === 'disciplines') {
+        delete this.xpDeltas.disciplines[attr];
+      } else if (category === 'backgrounds') {
+        delete this.xpDeltas.backgrounds[attr];
+      } else if (category === 'virtues') {
+        delete this.xpDeltas.virtues[attr];
+      } else if (category === 'humanity') {
+        this.xpDeltas.humanity = 0;
+      } else if (category === 'willpower') {
+        this.xpDeltas.willpower = 0;
+      }
+    }
   }
 
   // Calculate effective generation (base 9 - Generation background + Diluted Vitae flaw)
