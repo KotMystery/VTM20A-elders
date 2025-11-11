@@ -226,23 +226,33 @@ export class PointTracker {
       errors.push('Необходимо указать имя персонажа');
     }
 
-    // Check if coterie flaw is selected (mandatory 7-point flaw)
-    if (!this.character.coterieFlaw) {
-      errors.push('Необходимо выбрать обязательный недостаток Котерии (7 очков)');
-    }
-
     return { valid: errors.length === 0, errors };
   }
 
   // Get all validation results
-  validateAll() {
+  // Phase-specific validation: only validate what's relevant to current phase
+  validateAll(currentPhase = 'setup') {
+    // In setup phase, validate character creation requirements
+    if (currentPhase === 'setup') {
+      return {
+        required: this.validateRequiredFields(),
+        attributes: this.validateAttributes(),
+        abilities: this.validateAbilities(),
+        disciplines: this.validateDisciplines(),
+        backgrounds: this.validateBackgrounds(),
+        virtues: this.validateVirtues()
+      };
+    }
+
+    // In freebies and XP phases, only basic validation
+    // No need to revalidate setup phase requirements
     return {
       required: this.validateRequiredFields(),
-      attributes: this.validateAttributes(),
-      abilities: this.validateAbilities(),
-      disciplines: this.validateDisciplines(),
-      backgrounds: this.validateBackgrounds(),
-      virtues: this.validateVirtues()
+      attributes: { valid: true, errors: [], totals: {} },
+      abilities: { valid: true, errors: [], totals: {} },
+      disciplines: { valid: true, errors: [], total: 0 },
+      backgrounds: { valid: true, errors: [], total: 0 },
+      virtues: { valid: true, errors: [], total: 0 }
     };
   }
 
