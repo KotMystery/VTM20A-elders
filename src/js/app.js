@@ -10,6 +10,8 @@ import necromancyData from '../data/necromancy.json';
 import thaumaturgyData from '../data/thaumaturgy.json';
 import conceptsData from '../data/concepts.json';
 import archetypesData from '../data/archetypes.json';
+import meritsData from '../data/merits.json';
+import flawsData from '../data/flaws.json';
 
 class CharacterCreatorApp {
   constructor() {
@@ -449,6 +451,9 @@ class CharacterCreatorApp {
 
   renderFreebiesPhase() {
     const available = this.character.freebies - this.character.freebiesSpent;
+    const totalFlawPoints = this.character.flaws.reduce((sum, f) => sum + (f.selectedCost || f.cost), 0);
+    const totalMeritCosts = this.character.merits.reduce((sum, m) => sum + (m.selectedCost || m.cost), 0);
+    const baseFreebies = 15 + 7 + Math.min(totalFlawPoints, 7) - totalMeritCosts;
 
     return `
       <div class="card">
@@ -459,11 +464,16 @@ class CharacterCreatorApp {
             Доступно: <span class="${available >= 0 ? 'text-green-400' : 'text-red-400'}">${available}</span> бонусных очков
           </div>
           <div class="text-sm text-gray-400">
-            Базовые: 22 (с обязательным недостатком котерии)<br>
-            Использовано: ${this.character.freebiesSpent}<br>
+            Базовые: 15<br>
+            Котерия (обязательный недостаток): +7<br>
+            Личные недостатки: +${Math.min(totalFlawPoints, 7)} (макс. 7)<br>
+            Достоинства: -${totalMeritCosts}<br>
+            Использовано на улучшения: ${this.character.freebiesSpent}<br>
             <span class="text-yellow-400 mt-1 block">Бонусные очки используются для улучшения характеристик сверх базового распределения.</span>
           </div>
         </div>
+
+        ${this.renderMeritsFlawsSection()}
 
         <div class="mb-6">
           <h4 class="font-semibold mb-3">Потратить бонусные очки</h4>
@@ -509,6 +519,64 @@ class CharacterCreatorApp {
         <div class="flex gap-3">
           <button class="btn btn-secondary" onclick="app.switchPhase('setup')">← Назад к настройке</button>
           <button class="btn btn-primary flex-1" onclick="app.switchPhase('xp')">Далее: Опыт →</button>
+        </div>
+      </div>
+    `;
+  }
+
+  renderMeritsFlawsSection() {
+    return `
+      <div class="mb-6 p-4 bg-gray-900 rounded">
+        <h4 class="font-semibold mb-3">Достоинства и Недостатки</h4>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <!-- Current Merits -->
+          <div>
+            <div class="text-sm font-medium mb-2">Достоинства (стоят бонусные очки):</div>
+            <div class="space-y-2">
+              ${this.character.merits.length === 0 ?
+                '<div class="text-xs text-gray-500">Нет выбранных достоинств</div>' :
+                this.character.merits.map(merit => `
+                  <div class="p-2 bg-gray-800 rounded flex justify-between items-start">
+                    <div class="flex-1">
+                      <div class="font-medium text-sm">${merit.name}</div>
+                      ${merit.description ? `<div class="text-xs text-gray-400 mt-1">${merit.description}</div>` : ''}
+                      ${merit.elderNote ? `<div class="text-xs text-yellow-400 mt-1">⚠️ ${merit.elderNote}</div>` : ''}
+                    </div>
+                    <div class="ml-2 text-nowrap">
+                      <span class="text-vtm-red font-medium">${merit.selectedCost || merit.cost}</span>
+                      <button class="ml-2 text-red-400 hover:text-red-300" onclick="app.removeMerit('${merit.id}')">✕</button>
+                    </div>
+                  </div>
+                `).join('')
+              }
+            </div>
+            <button class="btn btn-secondary w-full mt-2 text-sm" onclick="app.showMeritsModal()">+ Добавить достоинство</button>
+          </div>
+
+          <!-- Current Flaws -->
+          <div>
+            <div class="text-sm font-medium mb-2">Недостатки (дают бонусные очки, макс. 7):</div>
+            <div class="space-y-2">
+              ${this.character.flaws.length === 0 ?
+                '<div class="text-xs text-gray-500">Нет выбранных недостатков</div>' :
+                this.character.flaws.map(flaw => `
+                  <div class="p-2 bg-gray-800 rounded flex justify-between items-start">
+                    <div class="flex-1">
+                      <div class="font-medium text-sm">${flaw.name}</div>
+                      ${flaw.description ? `<div class="text-xs text-gray-400 mt-1">${flaw.description}</div>` : ''}
+                      ${flaw.elderNote ? `<div class="text-xs text-yellow-400 mt-1">⚠️ ${flaw.elderNote}</div>` : ''}
+                    </div>
+                    <div class="ml-2 text-nowrap">
+                      <span class="text-green-400 font-medium">+${flaw.selectedCost || flaw.cost}</span>
+                      <button class="ml-2 text-red-400 hover:text-red-300" onclick="app.removeFlaw('${flaw.id}')">✕</button>
+                    </div>
+                  </div>
+                `).join('')
+              }
+            </div>
+            <button class="btn btn-secondary w-full mt-2 text-sm" onclick="app.showFlawsModal()">+ Добавить недостаток</button>
+          </div>
         </div>
       </div>
     `;
@@ -641,6 +709,319 @@ class CharacterCreatorApp {
       html += `<div class="dot ${i <= current ? 'filled' : ''}" data-value="${i}"></div>`;
     }
     return html;
+  }
+
+  showMeritsModal() {
+    const allMerits = [];
+
+    // Core merits
+    Object.entries(meritsData).forEach(([category, items]) => {
+      if (category !== 'clanSpecific') {
+        items.forEach(merit => {
+          allMerits.push({ ...merit, category, isClanSpecific: false });
+        });
+      }
+    });
+
+    // Clan-specific merits (available to all)
+    const clanMerits = meritsData.clanSpecific;
+    if (clanMerits && this.character.clan) {
+      Object.entries(clanMerits).forEach(([clanId, items]) => {
+        items.forEach(merit => {
+          allMerits.push({ ...merit, clan: clanId, isClanSpecific: true });
+        });
+      });
+    }
+
+    this.showMeritFlawModal(allMerits, 'merits');
+  }
+
+  showFlawsModal() {
+    const allFlaws = [];
+
+    // All flaws from the data file
+    Object.entries(flawsData).forEach(([category, items]) => {
+      items.forEach(flaw => {
+        allFlaws.push({ ...flaw, category });
+      });
+    });
+
+    this.showMeritFlawModal(allFlaws, 'flaws');
+  }
+
+  showMeritFlawModal(items, type) {
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4';
+    modal.id = 'meritFlawModal';
+
+    const categories = [...new Set(items.map(i => i.category))];
+
+    modal.innerHTML = `
+      <div class="bg-vtm-grey rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-4 sticky top-0 bg-vtm-grey pb-2">
+          <h3 class="text-2xl font-bold text-vtm-red">${type === 'merits' ? 'Выбрать Достоинство' : 'Выбрать Недостаток'}</h3>
+          <button class="text-3xl text-gray-400 hover:text-white" onclick="document.getElementById('meritFlawModal').remove()">&times;</button>
+        </div>
+
+        <div class="mb-4">
+          <input type="text" id="meritFlawSearch" placeholder="Поиск..." class="input-field">
+        </div>
+
+        <div class="space-y-4">
+          ${categories.map(category => {
+            const categoryItems = items.filter(i => i.category === category);
+            const categoryName = {
+              'physical': 'Физические',
+              'mental': 'Ментальные',
+              'social': 'Социальные',
+              'supernatural': 'Сверхъестественные'
+            }[category] || category;
+
+            return `
+              <details open class="category-section">
+                <summary class="cursor-pointer font-semibold text-lg mb-2 text-vtm-red">${categoryName} (${categoryItems.length})</summary>
+                <div class="space-y-2 pl-2">
+                  ${categoryItems.map(item => {
+                    const isVariable = item.cost === 'variable' || (item.minCost && item.maxCost);
+                    const costDisplay = isVariable ?
+                      `${item.minCost}-${item.maxCost}` :
+                      item.cost;
+
+                    // Check if item should be disabled
+                    const isDisabled = this.isMeritFlawDisabled(item);
+                    const disabledClass = isDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-700 cursor-pointer';
+                    const disabledAttr = isDisabled ? 'data-disabled="true"' : '';
+
+                    return `
+                      <div class="merit-flaw-item p-3 bg-gray-800 rounded ${disabledClass} transition-colors"
+                           data-id="${item.id}"
+                           data-name="${item.name}"
+                           data-cost="${item.cost}"
+                           data-min-cost="${item.minCost || item.cost}"
+                           data-max-cost="${item.maxCost || item.cost}"
+                           data-is-variable="${isVariable}"
+                           ${disabledAttr}
+                           onclick="app.selectMeritFlaw(this, '${type}')">
+                        <div class="flex justify-between items-start mb-1">
+                          <div class="font-medium">${item.name}</div>
+                          <div class="text-${type === 'merits' ? 'vtm-red' : 'green-400'} font-medium ml-2">${type === 'merits' ? '-' : '+'}${costDisplay}</div>
+                        </div>
+                        ${item.description ? `<div class="text-xs text-gray-400">${item.description}</div>` : ''}
+                        ${item.elderNote ? `<div class="text-xs text-yellow-400 mt-1">⚠️ ${item.elderNote}</div>` : ''}
+                        ${isDisabled ? `<div class="text-xs text-red-400 mt-1">❌ ${this.getMeritFlawDisabledReason(item)}</div>` : ''}
+                        ${item.isClanSpecific ? `<div class="text-xs text-blue-400 mt-1">🔹 Связано с кланом ${this.getClanName(item.clan)}</div>` : ''}
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              </details>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Add search functionality
+    const searchInput = document.getElementById('meritFlawSearch');
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase();
+      document.querySelectorAll('.merit-flaw-item').forEach(item => {
+        const name = item.dataset.name.toLowerCase();
+        item.style.display = name.includes(query) ? 'block' : 'none';
+      });
+    });
+
+    searchInput.focus();
+  }
+
+  selectMeritFlaw(element, type) {
+    if (element.dataset.disabled === 'true') return;
+
+    const itemData = {
+      id: element.dataset.id,
+      name: element.dataset.name,
+      cost: element.dataset.cost === 'variable' ? parseInt(element.dataset.minCost) : parseInt(element.dataset.cost),
+      description: element.querySelector('.text-gray-400')?.textContent || '',
+      elderNote: element.querySelector('.text-yellow-400')?.textContent.replace('⚠️ ', '') || ''
+    };
+
+    const isVariable = element.dataset.isVariable === 'true';
+
+    if (isVariable) {
+      const minCost = parseInt(element.dataset.minCost);
+      const maxCost = parseInt(element.dataset.maxCost);
+      this.showDotSelectionModal(itemData, minCost, maxCost, type);
+    } else {
+      if (type === 'merits') {
+        this.addMerit(itemData, itemData.cost);
+      } else {
+        this.addFlaw(itemData, itemData.cost);
+      }
+      document.getElementById('meritFlawModal').remove();
+    }
+  }
+
+  showDotSelectionModal(itemData, minCost, maxCost, type) {
+    const existingDotModal = document.getElementById('dotSelectionModal');
+    if (existingDotModal) existingDotModal.remove();
+
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[60]';
+    modal.id = 'dotSelectionModal';
+
+    modal.innerHTML = `
+      <div class="bg-vtm-grey rounded-lg p-6 max-w-md w-full mx-4">
+        <h3 class="text-xl font-bold text-vtm-red mb-4">${itemData.name}</h3>
+        <p class="text-sm text-gray-400 mb-4">Выберите стоимость (${minCost}-${maxCost} ${type === 'merits' ? 'очков' : 'очков'}):</p>
+
+        <div class="flex gap-2 justify-center mb-6">
+          ${Array.from({ length: maxCost - minCost + 1 }, (_, i) => minCost + i).map(cost => `
+            <button class="dot-selector w-12 h-12 rounded-full border-2 border-gray-600 hover:border-vtm-red flex items-center justify-center font-bold transition-colors"
+                    data-cost="${cost}"
+                    onclick="app.selectDotCost(${cost})">
+              ${cost}
+            </button>
+          `).join('')}
+        </div>
+
+        <div class="flex gap-2">
+          <button class="btn btn-secondary flex-1" onclick="document.getElementById('dotSelectionModal').remove()">Отмена</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Store the item data and type for the callback
+    modal.dataset.itemData = JSON.stringify(itemData);
+    modal.dataset.type = type;
+  }
+
+  selectDotCost(cost) {
+    const modal = document.getElementById('dotSelectionModal');
+    const itemData = JSON.parse(modal.dataset.itemData);
+    const type = modal.dataset.type;
+
+    if (type === 'merits') {
+      this.addMerit(itemData, cost);
+    } else {
+      this.addFlaw(itemData, cost);
+    }
+
+    modal.remove();
+    document.getElementById('meritFlawModal').remove();
+  }
+
+  addMerit(meritData, selectedCost) {
+    // Check if already has this merit
+    if (this.character.merits.some(m => m.id === meritData.id)) {
+      alert('У вас уже есть это достоинство');
+      return;
+    }
+
+    this.character.merits.push({
+      ...meritData,
+      selectedCost: selectedCost
+    });
+
+    this.character.freebies = this.character.calculateFreebies();
+    this.saveToLocalStorage();
+    this.render();
+    this.attachEventListeners();
+  }
+
+  removeMerit(meritId) {
+    this.character.merits = this.character.merits.filter(m => m.id !== meritId);
+    this.character.freebies = this.character.calculateFreebies();
+    this.saveToLocalStorage();
+    this.render();
+    this.attachEventListeners();
+  }
+
+  addFlaw(flawData, selectedCost) {
+    // Check if already has this flaw
+    if (this.character.flaws.some(f => f.id === flawData.id)) {
+      alert('У вас уже есть этот недостаток');
+      return;
+    }
+
+    // Check max 7 points from flaws
+    const currentFlawPoints = this.character.flaws.reduce((sum, f) => sum + (f.selectedCost || f.cost), 0);
+    if (currentFlawPoints + selectedCost > 7) {
+      alert(`Максимум 7 очков от недостатков. У вас уже ${currentFlawPoints} очков.`);
+      return;
+    }
+
+    this.character.flaws.push({
+      ...flawData,
+      selectedCost: selectedCost
+    });
+
+    this.character.freebies = this.character.calculateFreebies();
+    this.saveToLocalStorage();
+    this.render();
+    this.attachEventListeners();
+  }
+
+  removeFlaw(flawId) {
+    this.character.flaws = this.character.flaws.filter(f => f.id !== flawId);
+    this.character.freebies = this.character.calculateFreebies();
+    this.saveToLocalStorage();
+    this.render();
+    this.attachEventListeners();
+  }
+
+  isMeritFlawDisabled(item) {
+    // Check clan exclusions
+    if (item.excludedClans && item.excludedClans.includes(this.character.clan)) {
+      return true;
+    }
+
+    // Check minimum requirements
+    if (item.minWillpower && this.character.willpower < item.minWillpower) {
+      return true;
+    }
+
+    if (item.minCharisma && this.character.attributes.social.charisma < item.minCharisma) {
+      return true;
+    }
+
+    // Check incompatible merits/flaws
+    if (item.incompatibleWith) {
+      const hasIncompatible = this.character.merits.some(m => item.incompatibleWith.includes(m.id)) ||
+                              this.character.flaws.some(f => item.incompatibleWith.includes(f.id));
+      if (hasIncompatible) return true;
+    }
+
+    return false;
+  }
+
+  getMeritFlawDisabledReason(item) {
+    if (item.excludedClans && item.excludedClans.includes(this.character.clan)) {
+      return `Недоступно для ${this.getClanName()}`;
+    }
+
+    if (item.minWillpower && this.character.willpower < item.minWillpower) {
+      return `Требуется Сила Воли ${item.minWillpower}+`;
+    }
+
+    if (item.minCharisma && this.character.attributes.social.charisma < item.minCharisma) {
+      return `Требуется Харизма ${item.minCharisma}+`;
+    }
+
+    if (item.incompatibleWith) {
+      return 'Несовместимо с другими выбранными опциями';
+    }
+
+    return 'Недоступно';
+  }
+
+  getClanName(clanId = null) {
+    const id = clanId || this.character.clan;
+    const clan = clansData.find(c => c.id === id);
+    return clan ? clan.name : '';
   }
 
   switchPhase(phase) {
