@@ -1796,6 +1796,17 @@ class CharacterCreatorApp {
       });
     });
 
+    // Re-render ability dots (generation affects max ability values)
+    ['talents', 'skills', 'knowledges'].forEach(category => {
+      Object.keys(this.character.abilities[category]).forEach(abilityId => {
+        const tracker = document.querySelector(`.dot-tracker[data-category="abilities"][data-subcategory="${category}"][data-attr="${abilityId}"]`);
+        if (tracker) {
+          const current = this.character.abilities[category][abilityId];
+          tracker.innerHTML = this.renderDots(current, 10, 'abilities', category, abilityId);
+        }
+      });
+    });
+
     // Re-render discipline dots (generation affects max discipline values)
     Object.keys(this.character.disciplines).forEach(discId => {
       const tracker = document.querySelector(`.dot-tracker[data-category="disciplines"][data-attr="${discId}"]`);
