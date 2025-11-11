@@ -140,3 +140,97 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #a00000;
 }
+
+/* Print styles */
+@media print {
+  @page {
+    size: A4;
+    margin: 1cm;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Hide UI elements */
+  .no-print,
+  header,
+  .tab,
+  button:not(.print-only) {
+    display: none !important;
+  }
+
+  /* Optimize for printing */
+  .card {
+    page-break-inside: avoid;
+    border: 1px solid #333 !important;
+    background: white !important;
+    box-shadow: none !important;
+    margin-bottom: 0.5cm;
+  }
+
+  .print-section {
+    page-break-inside: avoid;
+  }
+
+  .section-title {
+    color: #8B0000 !important;
+    border-color: #8B0000 !important;
+  }
+
+  /* Ensure text is readable */
+  .text-gray-300,
+  .text-gray-400,
+  .stat-label,
+  span {
+    color: #333 !important;
+  }
+
+  .text-vtm-red,
+  .font-bold {
+    color: #8B0000 !important;
+  }
+
+  /* Make dots visible */
+  .renderStaticDots span {
+    color: black !important;
+  }
+
+  /* Grid adjustments for print */
+  .grid {
+    display: grid;
+  }
+
+  .grid-cols-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .grid-cols-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Spacing adjustments */
+  .space-y-6 > * + *,
+  .space-y-4 > * + *,
+  .space-y-3 > * + *,
+  .space-y-2 > * + * {
+    margin-top: 0.5rem;
+  }
+
+  .gap-4,
+  .gap-6 {
+    gap: 1rem;
+  }
+
+  /* Border for header */
+  .border-4 {
+    border-width: 2px !important;
+    border-color: #8B0000 !important;
+  }
+
+  /* Ensure proper layout */
+  .character-sheet-summary {
+    width: 100%;
+  }
+}
