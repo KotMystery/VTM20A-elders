@@ -2318,7 +2318,7 @@ class CharacterCreatorApp {
   }
 
   saveToLocalStorage() {
-    localStorage.setItem('vtm_character', this.character.toJSON());
+    localStorage.setItem('vtm_character', this.character.serialize());
   }
 
   loadFromLocalStorage() {
@@ -2330,7 +2330,7 @@ class CharacterCreatorApp {
   }
 
   saveCharacter() {
-    const json = this.character.toJSON();
+    const json = this.character.serialize();
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
