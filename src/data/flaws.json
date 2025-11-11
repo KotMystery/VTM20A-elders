@@ -26,7 +26,7 @@
     { "id": "deaf", "name": "Глухота", "cost": 4 },
     { "id": "mute", "name": "Немота", "cost": 4 },
     { "id": "disease_carrier", "name": "Разносчик заразы", "cost": 4 },
-    { "id": "thin_blood", "name": "Разбавленная кровь", "cost": "variable", "minCost": 1, "maxCost": 5 },
+    { "id": "thin_blood", "name": "Разбавленное Витэ", "cost": "variable", "minCost": 1, "maxCost": 5 },
     { "id": "sterile_vitae", "name": "Бесплодная витэ", "cost": 5 },
     { "id": "flesh_of_corpse", "name": "Мёртвая плоть", "cost": 5 },
     { "id": "inbred", "name": "Плод инбридинга", "cost": "variable", "minCost": 1, "maxCost": 5 },

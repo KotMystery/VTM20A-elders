@@ -529,7 +529,7 @@ class CharacterCreatorApp {
             </div>
             <div class="flex items-center gap-2">
               <div class="dot-tracker" data-category="disciplines" data-subcategory="" data-attr="${discId}">
-                ${this.renderDots(level, 10, 'disciplines', null, discId)}
+                ${this.renderDots(level, 7, 'disciplines', null, discId)}
               </div>
               <button class="text-red-500 hover:text-red-400 text-xl" onclick="app.removeDiscipline('${discId}')">×</button>
             </div>
@@ -566,6 +566,7 @@ class CharacterCreatorApp {
               Достоинства: -${totalMeritCosts}<br>
               Использовано: <span id="freebies-counter">${this.character.freebiesSpent}/${this.character.freebies}</span><br>
               <span class="text-yellow-400 mt-1 block">Кликните на пустую точку справа от текущего значения для повышения. Стоимость: Атрибут (5), Способность (2), Дисциплина (7), Факт Биографии (1), Добродетель (2), Человечность (1), Сила воли (1). Вы можете найти все Достоинства и Недостатки в корбуке на страницах 515-535.</span>
+              <span class="text-blue-400 mt-2 block text-xs"><strong>Разбавленное Витэ:</strong> Несмотря на вашу древность, по какой-то причине ваше Витэ гораздо слабее чем у ваших современников и "одногодок". Это может быть как и высокое поколение Сира, так и какое-то магическое проклятие или попросту временная слабость после долгого Торпора. Механически, этот Недостаток повышает ваше поколение.</span>
             </div>
           </div>
 
