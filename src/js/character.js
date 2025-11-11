@@ -408,6 +408,14 @@ export class Character {
       char.experienceSpent = 0;
     }
 
+    // Initialize delta structures if they don't exist (legacy saves)
+    if (!char.freebiesDeltas) {
+      char.freebiesDeltas = char.createEmptyDeltas();
+    }
+    if (!char.xpDeltas) {
+      char.xpDeltas = char.createEmptyDeltas();
+    }
+
     return char;
   }
 }

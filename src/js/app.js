@@ -1311,26 +1311,37 @@ class CharacterCreatorApp {
     this.saveToLocalStorage();
   }
 
-  updateCharacterValue(category, subcategory, attr, value) {
-    // Get current value
-    let currentValue = 0;
-    if (category === 'attributes') {
-      currentValue = this.character.attributes[subcategory][attr];
-    } else if (category === 'abilities') {
-      currentValue = this.character.abilities[subcategory][attr] || 0;
-    } else if (category === 'disciplines') {
-      currentValue = this.character.disciplines[attr] || 0;
-    } else if (category === 'backgrounds') {
-      currentValue = this.character.backgrounds[attr] || 0;
-    } else if (category === 'virtues') {
-      currentValue = this.character.virtues[attr];
-    } else if (category === 'humanity') {
-      currentValue = this.character.humanity;
-    } else if (category === 'willpower') {
-      currentValue = this.character.willpower;
+  // Get current effective value at current phase
+  getCurrentValue(category, subcategory, attr) {
+    if (this.currentPhase === 'setup' || !this.character.setupBaseline) {
+      // In setup phase or no baseline yet, read directly from character
+      if (category === 'attributes') {
+        return this.character.attributes[subcategory][attr];
+      } else if (category === 'abilities') {
+        return this.character.abilities[subcategory][attr] || 0;
+      } else if (category === 'disciplines') {
+        return this.character.disciplines[attr] || 0;
+      } else if (category === 'backgrounds') {
+        return this.character.backgrounds[attr] || 0;
+      } else if (category === 'virtues') {
+        return this.character.virtues[attr];
+      } else if (category === 'humanity') {
+        return this.character.humanity;
+      } else if (category === 'willpower') {
+        return this.character.willpower;
+      }
+    } else {
+      // Use hierarchical value calculation
+      return this.character.getValueAtPhase(category, subcategory, attr, this.currentPhase);
     }
+    return 0;
+  }
 
-    // Setup phase: enforce limits
+  updateCharacterValue(category, subcategory, attr, value) {
+    // Get current effective value
+    const currentValue = this.getCurrentValue(category, subcategory, attr);
+
+    // Setup phase: enforce limits and directly modify character
     if (this.currentPhase === 'setup') {
       if (category === 'attributes') {
         // Attributes: max 6 in setup phase
@@ -1353,112 +1364,209 @@ class CharacterCreatorApp {
           return false;
         }
       }
-    }
 
-    // In freebies/xp phases, prevent reducing below setup baseline and spend points for increases
-    if (this.currentPhase === 'freebies' || this.currentPhase === 'xp') {
-      // Check if we have a baseline (should exist after leaving setup)
-      if (this.character.setupBaseline) {
-        let baselineValue = 0;
+      // In setup phase, directly modify character properties
+      if (category === 'attributes') {
+        this.character.attributes[subcategory][attr] = value;
+      } else if (category === 'abilities') {
+        this.character.abilities[subcategory][attr] = value;
+      } else if (category === 'disciplines') {
+        this.character.disciplines[attr] = value;
 
-        // Get baseline value for this stat
-        if (category === 'attributes') {
-          baselineValue = this.character.setupBaseline.attributes[subcategory][attr] || 0;
-        } else if (category === 'abilities') {
-          baselineValue = this.character.setupBaseline.abilities[subcategory][attr] || 0;
-        } else if (category === 'disciplines') {
-          baselineValue = this.character.setupBaseline.disciplines[attr] || 0;
-        } else if (category === 'backgrounds') {
-          baselineValue = this.character.setupBaseline.backgrounds[attr] || 0;
-        } else if (category === 'virtues') {
-          baselineValue = this.character.setupBaseline.virtues[attr] || 0;
-        } else if (category === 'humanity') {
-          baselineValue = this.character.setupBaseline.humanity || 0;
-        } else if (category === 'willpower') {
-          baselineValue = this.character.setupBaseline.willpower || 0;
+        // Sync primary path level with discipline level
+        if (attr === 'necromancy' && this.character.necromancyPaths.length > 0) {
+          this.character.necromancyPaths[0].level = value;
+        } else if (attr === 'thaumaturgy' && this.character.thaumaturgyPaths.length > 0) {
+          this.character.thaumaturgyPaths[0].level = value;
         }
-
-        // Prevent reducing below baseline
-        if (value < baselineValue) {
-          return false;
+      } else if (category === 'backgrounds') {
+        // Check mutual exclusion between Generation and Diluted Vitae
+        if (attr === 'generation' && value > 0) {
+          const hasDilutedVitae = this.character.flaws.some(f => f.id === 'thin_blood');
+          if (hasDilutedVitae) {
+            alert('Факт биографии "Поколение" несовместим с недостатком "Разбавленное Витэ". Сначала уберите недостаток.');
+            return false;
+          }
         }
+        this.character.backgrounds[attr] = value;
+      } else if (category === 'virtues') {
+        this.character.virtues[attr] = value;
+      } else if (category === 'humanity') {
+        this.character.humanity = value;
+      } else if (category === 'willpower') {
+        this.character.willpower = value;
       }
 
-      // If increasing (above current value), calculate cost and spend points
-      if (value > currentValue) {
+      // Wipe later phase deltas for this stat since setup value changed
+      this.character.wipeLaterPhaseDeltas(category, subcategory, attr, 'setup');
+
+      this.saveToLocalStorage();
+      return true;
+    }
+
+    // Freebies/XP phases: use delta tracking
+    if (this.currentPhase === 'freebies' || this.currentPhase === 'xp') {
+      // Ensure we have a baseline
+      if (!this.character.setupBaseline) {
+        console.error('[ERROR] No setup baseline exists!');
+        return false;
+      }
+
+      // Get baseline value from setup phase
+      const baselineValue = this.character.getValueAtPhase(category, subcategory, attr, 'setup');
+
+      // Prevent reducing below baseline from previous phase
+      const previousPhase = this.currentPhase === 'freebies' ? 'setup' : 'freebies';
+      const previousPhaseValue = this.character.getValueAtPhase(category, subcategory, attr, previousPhase);
+
+      if (value < previousPhaseValue) {
+        return false; // Can't reduce below previous phase
+      }
+
+      // Calculate cost/refund for the change
+      let costDelta = 0;
+      const increasing = value > currentValue;
+      const decreasing = value < currentValue;
+
+      if (increasing) {
+        // Calculate cost for increase
         if (this.currentPhase === 'freebies') {
-          // Ensure freebiesSpent is initialized (handle legacy saves)
+          // Ensure freebiesSpent is initialized
           if (this.character.freebiesSpent == null) {
-            console.log('[DEBUG] freebiesSpent was null, initializing to 0');
             this.character.freebiesSpent = 0;
           }
 
-          console.log(`[DEBUG] Before spending: freebiesSpent = ${this.character.freebiesSpent}`);
-          const cost = this.calculateFreebieCost(category, subcategory, attr, currentValue, value);
-          console.log(`[DEBUG] Calculated cost: ${cost} for ${category}.${attr} from ${currentValue} to ${value}`);
+          costDelta = this.calculateFreebieCost(category, subcategory, attr, currentValue, value);
           const available = this.character.freebies - this.character.freebiesSpent;
 
-          if (cost > available) {
-            alert(`Недостаточно бонусных очков. Нужно: ${cost}, доступно: ${available}`);
+          if (costDelta > available) {
+            alert(`Недостаточно бонусных очков. Нужно: ${costDelta}, доступно: ${available}`);
             return false;
           }
 
-          this.character.freebiesSpent += cost;
-          console.log(`[DEBUG] After spending: freebiesSpent = ${this.character.freebiesSpent}`);
+          this.character.freebiesSpent += costDelta;
         } else if (this.currentPhase === 'xp') {
-          // Ensure experienceSpent is initialized (handle legacy saves)
+          // Ensure experienceSpent is initialized
           if (this.character.experienceSpent == null) {
             this.character.experienceSpent = 0;
           }
 
-          const cost = this.calculateXPCost(category, subcategory, attr, currentValue, value);
+          costDelta = this.calculateXPCost(category, subcategory, attr, currentValue, value);
           const available = this.character.experience - this.character.experienceSpent;
 
-          if (cost > available) {
-            alert(`Недостаточно XP. Нужно: ${cost}, доступно: ${available}`);
+          if (costDelta > available) {
+            alert(`Недостаточно XP. Нужно: ${costDelta}, доступно: ${available}`);
             return false;
           }
 
-          this.character.experienceSpent += cost;
+          this.character.experienceSpent += costDelta;
+        }
+      } else if (decreasing) {
+        // Calculate refund for decrease (within current phase only)
+        if (this.currentPhase === 'freebies') {
+          const refund = this.calculateFreebieCost(category, subcategory, attr, value, currentValue);
+          this.character.freebiesSpent -= refund;
+          console.log(`[REFUND] Refunded ${refund} freebies for ${category}.${attr} from ${currentValue} to ${value}`);
+        } else if (this.currentPhase === 'xp') {
+          const refund = this.calculateXPCost(category, subcategory, attr, value, currentValue);
+          this.character.experienceSpent -= refund;
+          console.log(`[REFUND] Refunded ${refund} XP for ${category}.${attr} from ${currentValue} to ${value}`);
         }
       }
-    }
 
-    // Update the value
-    if (category === 'attributes') {
-      this.character.attributes[subcategory][attr] = value;
-    } else if (category === 'abilities') {
-      this.character.abilities[subcategory][attr] = value;
-    } else if (category === 'disciplines') {
-      this.character.disciplines[attr] = value;
+      // Update the delta for current phase
+      const newDelta = value - previousPhaseValue;
 
-      // Sync primary path level with discipline level
-      if (attr === 'necromancy' && this.character.necromancyPaths.length > 0) {
-        this.character.necromancyPaths[0].level = value;
-      } else if (attr === 'thaumaturgy' && this.character.thaumaturgyPaths.length > 0) {
-        this.character.thaumaturgyPaths[0].level = value;
-      }
-    } else if (category === 'backgrounds') {
-      // Check mutual exclusion between Generation and Diluted Vitae
-      if (attr === 'generation' && value > 0) {
-        const hasDilutedVitae = this.character.flaws.some(f => f.id === 'thin_blood');
-        if (hasDilutedVitae) {
-          alert('Факт биографии "Поколение" несовместим с недостатком "Разбавленное Витэ". Сначала уберите недостаток.');
-          return false;
+      if (this.currentPhase === 'freebies') {
+        // Update freebies delta
+        if (category === 'attributes') {
+          this.character.freebiesDeltas.attributes[subcategory][attr] = newDelta;
+        } else if (category === 'abilities') {
+          this.character.freebiesDeltas.abilities[subcategory][attr] = newDelta;
+        } else if (category === 'disciplines') {
+          this.character.freebiesDeltas.disciplines[attr] = newDelta;
+        } else if (category === 'backgrounds') {
+          // Check mutual exclusion between Generation and Diluted Vitae
+          if (attr === 'generation' && value > 0) {
+            const hasDilutedVitae = this.character.flaws.some(f => f.id === 'thin_blood');
+            if (hasDilutedVitae) {
+              alert('Факт биографии "Поколение" несовместим с недостатком "Разбавленное Витэ". Сначала уберите недостаток.');
+              return false;
+            }
+          }
+          this.character.freebiesDeltas.backgrounds[attr] = newDelta;
+        } else if (category === 'virtues') {
+          this.character.freebiesDeltas.virtues[attr] = newDelta;
+        } else if (category === 'humanity') {
+          this.character.freebiesDeltas.humanity = newDelta;
+        } else if (category === 'willpower') {
+          this.character.freebiesDeltas.willpower = newDelta;
+        }
+
+        // Wipe XP deltas since freebies value changed
+        this.character.wipeLaterPhaseDeltas(category, subcategory, attr, 'freebies');
+
+      } else if (this.currentPhase === 'xp') {
+        // Update XP delta
+        const freebiesPhaseValue = this.character.getValueAtPhase(category, subcategory, attr, 'freebies');
+        const xpDelta = value - freebiesPhaseValue;
+
+        if (category === 'attributes') {
+          this.character.xpDeltas.attributes[subcategory][attr] = xpDelta;
+        } else if (category === 'abilities') {
+          this.character.xpDeltas.abilities[subcategory][attr] = xpDelta;
+        } else if (category === 'disciplines') {
+          this.character.xpDeltas.disciplines[attr] = xpDelta;
+        } else if (category === 'backgrounds') {
+          // Check mutual exclusion between Generation and Diluted Vitae
+          if (attr === 'generation' && value > 0) {
+            const hasDilutedVitae = this.character.flaws.some(f => f.id === 'thin_blood');
+            if (hasDilutedVitae) {
+              alert('Факт биографии "Поколение" несовместим с недостатком "Разбавленное Витэ". Сначала уберите недостаток.');
+              return false;
+            }
+          }
+          this.character.xpDeltas.backgrounds[attr] = xpDelta;
+        } else if (category === 'virtues') {
+          this.character.xpDeltas.virtues[attr] = xpDelta;
+        } else if (category === 'humanity') {
+          this.character.xpDeltas.humanity = xpDelta;
+        } else if (category === 'willpower') {
+          this.character.xpDeltas.willpower = xpDelta;
         }
       }
-      this.character.backgrounds[attr] = value;
-    } else if (category === 'virtues') {
-      this.character.virtues[attr] = value;
-    } else if (category === 'humanity') {
-      this.character.humanity = value;
-    } else if (category === 'willpower') {
-      this.character.willpower = value;
+
+      // Also update the character's main properties to reflect current total
+      // (This maintains backward compatibility with code that reads directly)
+      if (category === 'attributes') {
+        this.character.attributes[subcategory][attr] = value;
+      } else if (category === 'abilities') {
+        this.character.abilities[subcategory][attr] = value;
+      } else if (category === 'disciplines') {
+        this.character.disciplines[attr] = value;
+
+        // Sync primary path level with discipline level
+        if (attr === 'necromancy' && this.character.necromancyPaths.length > 0) {
+          this.character.necromancyPaths[0].level = value;
+        } else if (attr === 'thaumaturgy' && this.character.thaumaturgyPaths.length > 0) {
+          this.character.thaumaturgyPaths[0].level = value;
+        }
+      } else if (category === 'backgrounds') {
+        this.character.backgrounds[attr] = value;
+      } else if (category === 'virtues') {
+        this.character.virtues[attr] = value;
+      } else if (category === 'humanity') {
+        this.character.humanity = value;
+      } else if (category === 'willpower') {
+        this.character.willpower = value;
+      }
+
+      this.saveToLocalStorage();
+      return true;
     }
 
-    this.saveToLocalStorage();
-    // Don't call updateAllDisplays() here - caller will update UI as needed
-    return true; // Update successful
+    // Shouldn't reach here
+    return false;
   }
 
   updateValidationDisplays() {
