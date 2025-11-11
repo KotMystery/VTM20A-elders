@@ -66,6 +66,11 @@
     @apply bg-green-500 border-green-500; /* 2 phases ahead - green */
   }
 
+  /* Disabled empty dots - need ACTUAL visual styling */
+  .dot.cursor-not-allowed {
+    @apply border-red-900 bg-gray-800 opacity-100; /* Override: dark border, dark bg, full opacity */
+  }
+
   .stat-group {
     @apply mb-6;
   }
