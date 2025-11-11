@@ -331,11 +331,13 @@ export class Character {
     total += 7; // Mandatory coterie flaw
 
     // Add personal flaws (max 7 points)
-    const flawPoints = this.flaws.reduce((sum, flaw) => sum + flaw.cost, 0);
+    // Use selectedCost (chosen by player) instead of default cost
+    const flawPoints = this.flaws.reduce((sum, flaw) => sum + (flaw.selectedCost || flaw.cost), 0);
     total += Math.min(flawPoints, 7);
 
     // Subtract merit costs
-    const meritCosts = this.merits.reduce((sum, merit) => sum + merit.cost, 0);
+    // Use selectedCost (chosen by player) instead of default cost
+    const meritCosts = this.merits.reduce((sum, merit) => sum + (merit.selectedCost || merit.cost), 0);
     total -= meritCosts;
 
     return total;

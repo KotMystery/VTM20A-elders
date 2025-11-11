@@ -98,10 +98,15 @@ class CharacterCreatorApp {
   init() {
     this.loadFromLocalStorage();
 
-    // Calculate derived stats from virtues
-    this.character.humanity = this.character.virtues.conscience + this.character.virtues.selfControl;
-    this.character.willpower = this.character.virtues.courage;
-    this.character.willpowerCurrent = this.character.willpower;
+    // Restore values to match loaded phase
+    this.restoreValuesForPhase(this.currentPhase);
+
+    // Calculate derived stats from virtues (only if in setup without baseline)
+    if (this.currentPhase === 'setup' && !this.character.setupBaseline) {
+      this.character.humanity = this.character.virtues.conscience + this.character.virtues.selfControl;
+      this.character.willpower = this.character.virtues.courage;
+      this.character.willpowerCurrent = this.character.willpower;
+    }
 
     this.render();
     this.attachEventListeners();
@@ -751,11 +756,72 @@ class CharacterCreatorApp {
       }
     }
 
+    // Calculate phase boundaries for colored dots
+    const phases = ['setup', 'freebies', 'xp'];
+    const currentPhaseIndex = phases.indexOf(this.currentPhase);
+
+    let setupValue = 0;
+    let freebiesValue = 0;
+    let xpValue = current;
+
+    if (this.character.setupBaseline) {
+      // Calculate values at each phase
+      setupValue = this.character.getValueAtPhase(category, subcategory, attr, 'setup');
+      freebiesValue = this.character.getValueAtPhase(category, subcategory, attr, 'freebies');
+      xpValue = this.character.getValueAtPhase(category, subcategory, attr, 'xp');
+    } else {
+      // No baseline yet - all dots are from current phase
+      setupValue = current;
+      freebiesValue = current;
+      xpValue = current;
+    }
+
+    // Determine how many dots to fill: show future phase dots when in earlier phases
+    let displayValue = current;
+    if (this.character.setupBaseline) {
+      // In earlier phases, show all dots including future phases
+      if (currentPhaseIndex === 0) { // Setup phase
+        displayValue = xpValue; // Show all dots through XP
+      } else if (currentPhaseIndex === 1) { // Freebies phase
+        displayValue = xpValue; // Show XP dots too
+      } else { // XP phase
+        displayValue = xpValue; // Only show up to XP
+      }
+    }
+
     // Always render dots from 1 to max (standard dot notation)
     for (let i = 1; i <= max; i++) {
-      const filled = i <= current ? 'filled' : '';
+      const filled = i <= displayValue ? 'filled' : '';
       const disabled = (allowedMax > 0 && i > allowedMax) ? 'opacity-50 cursor-not-allowed' : '';
-      html += `<div class="dot ${filled} ${disabled}" data-value="${i}" data-min="${minValue}"></div>`;
+
+      // Determine which phase this dot was bought in
+      let dotPhase = 'setup';
+      if (i > freebiesValue) {
+        dotPhase = 'xp';
+      } else if (i > setupValue) {
+        dotPhase = 'freebies';
+      }
+
+      // Calculate phase distance (negative = past, 0 = current, positive = future)
+      const dotPhaseIndex = phases.indexOf(dotPhase);
+      const phaseDistance = dotPhaseIndex - currentPhaseIndex;
+
+      // Add phase-specific class
+      let phaseClass = '';
+      if (filled) {
+        if (phaseDistance === -1) {
+          phaseClass = 'locked-1'; // 1 phase back (darker)
+        } else if (phaseDistance === -2) {
+          phaseClass = 'locked-2'; // 2 phases back (much darker)
+        } else if (phaseDistance === 1) {
+          phaseClass = 'future-1'; // 1 phase ahead (yellow)
+        } else if (phaseDistance === 2) {
+          phaseClass = 'future-2'; // 2 phases ahead (green)
+        }
+        // phaseDistance === 0 gets no extra class (current phase, normal color)
+      }
+
+      html += `<div class="dot ${filled} ${disabled} ${phaseClass}" data-value="${i}" data-min="${minValue}"></div>`;
     }
     return html;
   }
@@ -1099,6 +1165,73 @@ class CharacterCreatorApp {
     return clan ? clan.name : '';
   }
 
+  // Restore character values to match the target phase
+  restoreValuesForPhase(phase) {
+    console.log(`[RESTORE] Restoring values for phase: ${phase}`);
+
+    if (!this.character.setupBaseline) {
+      // No baseline yet - we're still in initial setup
+      console.log(`[RESTORE] No baseline captured yet, keeping current values`);
+      return;
+    }
+
+    // Helper to restore a single value
+    const restoreValue = (category, subcategory, attr) => {
+      const value = this.character.getValueAtPhase(category, subcategory, attr, phase);
+
+      if (category === 'attributes') {
+        this.character.attributes[subcategory][attr] = value;
+      } else if (category === 'abilities') {
+        this.character.abilities[subcategory][attr] = value;
+      } else if (category === 'disciplines') {
+        this.character.disciplines[attr] = value;
+      } else if (category === 'backgrounds') {
+        this.character.backgrounds[attr] = value;
+      } else if (category === 'virtues') {
+        this.character.virtues[attr] = value;
+      } else if (category === 'humanity') {
+        this.character.humanity = value;
+      } else if (category === 'willpower') {
+        this.character.willpower = value;
+      }
+    };
+
+    // Restore all attributes
+    ['physical', 'social', 'mental'].forEach(subcat => {
+      Object.keys(this.character.attributes[subcat]).forEach(attr => {
+        restoreValue('attributes', subcat, attr);
+      });
+    });
+
+    // Restore all abilities
+    ['talents', 'skills', 'knowledges'].forEach(subcat => {
+      Object.keys(this.character.abilities[subcat]).forEach(attr => {
+        restoreValue('abilities', subcat, attr);
+      });
+    });
+
+    // Restore disciplines
+    Object.keys(this.character.disciplines).forEach(attr => {
+      restoreValue('disciplines', null, attr);
+    });
+
+    // Restore backgrounds
+    Object.keys(this.character.backgrounds).forEach(attr => {
+      restoreValue('backgrounds', null, attr);
+    });
+
+    // Restore virtues
+    Object.keys(this.character.virtues).forEach(attr => {
+      restoreValue('virtues', null, attr);
+    });
+
+    // Restore humanity and willpower
+    restoreValue('humanity', null, null);
+    restoreValue('willpower', null, null);
+
+    console.log(`[RESTORE] Values restored for phase: ${phase}`);
+  }
+
   switchPhase(phase) {
     console.log(`\n[PHASE_SWITCH] ===== SWITCHING PHASE =====`);
     console.log(`[PHASE_SWITCH] From: ${this.currentPhase} → To: ${phase}`);
@@ -1113,6 +1246,9 @@ class CharacterCreatorApp {
     }
 
     this.currentPhase = phase;
+
+    // Restore character values to match the target phase
+    this.restoreValuesForPhase(phase);
 
     // Log current state
     if (phase === 'freebies') {
@@ -1335,13 +1471,68 @@ class CharacterCreatorApp {
     }
 
     // Update the dots visually WITHOUT re-rendering
+    // Calculate phase boundaries for colored dots
+    const phases = ['setup', 'freebies', 'xp'];
+    const currentPhaseIndex = phases.indexOf(this.currentPhase);
+
+    let setupValue = 0;
+    let freebiesValue = 0;
+    let xpValue = newValue;
+
+    if (this.character.setupBaseline) {
+      setupValue = this.character.getValueAtPhase(category, subcategory, attr, 'setup');
+      freebiesValue = this.character.getValueAtPhase(category, subcategory, attr, 'freebies');
+      xpValue = this.character.getValueAtPhase(category, subcategory, attr, 'xp');
+    } else {
+      setupValue = newValue;
+      freebiesValue = newValue;
+      xpValue = newValue;
+    }
+
+    // Determine how many dots to show filled (including future phases)
+    let displayValue = newValue;
+    if (this.character.setupBaseline) {
+      if (currentPhaseIndex === 0) { // Setup phase
+        displayValue = xpValue;
+      } else if (currentPhaseIndex === 1) { // Freebies phase
+        displayValue = xpValue;
+      } else { // XP phase
+        displayValue = xpValue;
+      }
+    }
+
     const dots = tracker.querySelectorAll('.dot');
     dots.forEach((dot) => {
       const dotValue = parseInt(dot.dataset.value);
-      if (dotValue <= newValue) {
+
+      // Remove all phase classes first
+      dot.classList.remove('filled', 'locked-1', 'locked-2', 'future-1', 'future-2');
+
+      if (dotValue <= displayValue) {
         dot.classList.add('filled');
-      } else {
-        dot.classList.remove('filled');
+
+        // Determine which phase this dot was bought in
+        let dotPhase = 'setup';
+        if (dotValue > freebiesValue) {
+          dotPhase = 'xp';
+        } else if (dotValue > setupValue) {
+          dotPhase = 'freebies';
+        }
+
+        // Calculate phase distance
+        const dotPhaseIndex = phases.indexOf(dotPhase);
+        const phaseDistance = dotPhaseIndex - currentPhaseIndex;
+
+        // Add phase-specific class
+        if (phaseDistance === -1) {
+          dot.classList.add('locked-1');
+        } else if (phaseDistance === -2) {
+          dot.classList.add('locked-2');
+        } else if (phaseDistance === 1) {
+          dot.classList.add('future-1');
+        } else if (phaseDistance === 2) {
+          dot.classList.add('future-2');
+        }
       }
     });
 
@@ -1368,16 +1559,63 @@ class CharacterCreatorApp {
     this.character.willpower = this.character.virtues.courage;
     this.character.willpowerCurrent = this.character.willpower;
 
+    // Calculate phase boundaries for colored dots
+    const phases = ['setup', 'freebies', 'xp'];
+    const currentPhaseIndex = phases.indexOf(this.currentPhase);
+
     // Update humanity display
     const humanityTracker = document.querySelector('[data-category="humanity"]');
     if (humanityTracker) {
+      let setupValue = 0;
+      let freebiesValue = 0;
+      let xpValue = this.character.humanity;
+
+      if (this.character.setupBaseline) {
+        setupValue = this.character.getValueAtPhase('humanity', null, null, 'setup');
+        freebiesValue = this.character.getValueAtPhase('humanity', null, null, 'freebies');
+        xpValue = this.character.getValueAtPhase('humanity', null, null, 'xp');
+      } else {
+        setupValue = this.character.humanity;
+        freebiesValue = this.character.humanity;
+        xpValue = this.character.humanity;
+      }
+
+      // Show future phase dots when in earlier phases
+      let displayValue = this.character.humanity;
+      if (this.character.setupBaseline) {
+        displayValue = xpValue; // Always show max value across all phases
+      }
+
       const dots = humanityTracker.querySelectorAll('.dot');
       dots.forEach((dot, index) => {
         const dotValue = index + 1;
-        if (dotValue <= this.character.humanity) {
+
+        // Remove all phase classes
+        dot.classList.remove('filled', 'locked-1', 'locked-2', 'future-1', 'future-2');
+
+        if (dotValue <= displayValue) {
           dot.classList.add('filled');
-        } else {
-          dot.classList.remove('filled');
+
+          // Determine phase and add class
+          let dotPhase = 'setup';
+          if (dotValue > freebiesValue) {
+            dotPhase = 'xp';
+          } else if (dotValue > setupValue) {
+            dotPhase = 'freebies';
+          }
+
+          const dotPhaseIndex = phases.indexOf(dotPhase);
+          const phaseDistance = dotPhaseIndex - currentPhaseIndex;
+
+          if (phaseDistance === -1) {
+            dot.classList.add('locked-1');
+          } else if (phaseDistance === -2) {
+            dot.classList.add('locked-2');
+          } else if (phaseDistance === 1) {
+            dot.classList.add('future-1');
+          } else if (phaseDistance === 2) {
+            dot.classList.add('future-2');
+          }
         }
       });
     }
@@ -1385,13 +1623,56 @@ class CharacterCreatorApp {
     // Update willpower display
     const willpowerTracker = document.querySelector('[data-category="willpower"]');
     if (willpowerTracker) {
+      let setupValue = 0;
+      let freebiesValue = 0;
+      let xpValue = this.character.willpower;
+
+      if (this.character.setupBaseline) {
+        setupValue = this.character.getValueAtPhase('willpower', null, null, 'setup');
+        freebiesValue = this.character.getValueAtPhase('willpower', null, null, 'freebies');
+        xpValue = this.character.getValueAtPhase('willpower', null, null, 'xp');
+      } else {
+        setupValue = this.character.willpower;
+        freebiesValue = this.character.willpower;
+        xpValue = this.character.willpower;
+      }
+
+      // Show future phase dots when in earlier phases
+      let displayValue = this.character.willpower;
+      if (this.character.setupBaseline) {
+        displayValue = xpValue; // Always show max value across all phases
+      }
+
       const dots = willpowerTracker.querySelectorAll('.dot');
       dots.forEach((dot, index) => {
         const dotValue = index + 1;
-        if (dotValue <= this.character.willpower) {
+
+        // Remove all phase classes
+        dot.classList.remove('filled', 'locked-1', 'locked-2', 'future-1', 'future-2');
+
+        if (dotValue <= displayValue) {
           dot.classList.add('filled');
-        } else {
-          dot.classList.remove('filled');
+
+          // Determine phase and add class
+          let dotPhase = 'setup';
+          if (dotValue > freebiesValue) {
+            dotPhase = 'xp';
+          } else if (dotValue > setupValue) {
+            dotPhase = 'freebies';
+          }
+
+          const dotPhaseIndex = phases.indexOf(dotPhase);
+          const phaseDistance = dotPhaseIndex - currentPhaseIndex;
+
+          if (phaseDistance === -1) {
+            dot.classList.add('locked-1');
+          } else if (phaseDistance === -2) {
+            dot.classList.add('locked-2');
+          } else if (phaseDistance === 1) {
+            dot.classList.add('future-1');
+          } else if (phaseDistance === 2) {
+            dot.classList.add('future-2');
+          }
         }
       });
     }
@@ -2958,6 +3239,7 @@ class CharacterCreatorApp {
 
   saveToLocalStorage() {
     localStorage.setItem('vtm_character', this.character.serialize());
+    localStorage.setItem('vtm_currentPhase', this.currentPhase);
   }
 
   loadFromLocalStorage() {
@@ -2966,6 +3248,13 @@ class CharacterCreatorApp {
       console.log('[INIT] ===== LOADING EXISTING CHARACTER =====');
       this.character = Character.fromJSON(saved);
       this.tracker = new PointTracker(this.character);
+
+      // Restore currentPhase
+      const savedPhase = localStorage.getItem('vtm_currentPhase');
+      if (savedPhase) {
+        this.currentPhase = savedPhase;
+        console.log(`[INIT] Restored phase: ${savedPhase}`);
+      }
 
       console.log(`[INIT] Name: ${this.character.name || '(not set)'}`);
       console.log(`[INIT] Clan: ${this.character.clan || '(not set)'}`);
