@@ -564,7 +564,7 @@ class CharacterCreatorApp {
               Котерия (обязательный недостаток): +7<br>
               Личные недостатки: +${Math.min(totalFlawPoints, 7)} (макс. 7)<br>
               Достоинства: -${totalMeritCosts}<br>
-              Использовано на улучшения: ${this.character.freebiesSpent}<br>
+              Использовано: <span id="freebies-counter">${this.character.freebiesSpent}/${this.character.freebies}</span><br>
               <span class="text-yellow-400 mt-1 block">Кликните на пустую точку справа от текущего значения для повышения. Стоимость: Атрибут (5), Способность (2), Дисциплина (7), Предыстория (1), Добродетель (2), Человечность (1), Сила воли (1)</span>
             </div>
           </div>
@@ -647,7 +647,8 @@ class CharacterCreatorApp {
               Доступно: <span class="${available >= 0 ? 'text-green-400' : 'text-red-400'}">${available}</span> / 33 XP
             </div>
             <div class="text-sm text-gray-400 mb-2">
-              Древние начинают с 33 опыта
+              Древние начинают с 33 опыта<br>
+              Использовано: <span id="xp-counter">${this.character.experienceSpent}/${this.character.experience}</span>
             </div>
             <div class="text-sm text-yellow-400">
               Кликните на пустую точку справа от текущего значения для повышения. Стоимость: Атрибут (текущее × 4), Способность (новая: 3, текущее × 2), Дисциплина (новая: 10, текущее × 5-10), Добродетель (текущее × 2), Человечность (текущее × 2), Сила воли (текущее)</div>
