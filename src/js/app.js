@@ -2875,63 +2875,56 @@ class CharacterCreatorApp {
       return;
     }
 
-    // Make the purchase
+    let success = false;
+
+    // Make the purchase using updateCharacterValue to maintain phase isolation
     if (type === 'attribute') {
       const category = document.getElementById('freebieAttrCategory')?.value;
       const attr = document.getElementById('freebieAttribute')?.value;
       if (category && attr) {
-        this.character.attributes[category][attr]++;
-        this.character.freebiesSpent += costAmount;
+        const current = this.getCurrentValue('attributes', category, attr);
+        success = this.updateCharacterValue('attributes', category, attr, current + 1);
       }
     } else if (type === 'ability') {
       const category = document.getElementById('freebieAbilityCategory')?.value;
       const ability = document.getElementById('freebieAbility')?.value;
       if (category && ability) {
-        if (!this.character.abilities[category][ability]) {
-          this.character.abilities[category][ability] = 0;
-        }
-        this.character.abilities[category][ability]++;
-        this.character.freebiesSpent += costAmount;
+        const current = this.getCurrentValue('abilities', category, ability);
+        success = this.updateCharacterValue('abilities', category, ability, current + 1);
       }
     } else if (type === 'discipline') {
       const discId = document.getElementById('freebieDiscipline')?.value;
       if (discId) {
-        if (!this.character.disciplines[discId]) {
-          this.character.disciplines[discId] = 0;
-        }
-        this.character.disciplines[discId]++;
-        this.character.freebiesSpent += costAmount;
+        const current = this.getCurrentValue('disciplines', null, discId);
+        success = this.updateCharacterValue('disciplines', null, discId, current + 1);
       }
     } else if (type === 'background') {
       const bgId = document.getElementById('freebieBackground')?.value;
       if (bgId) {
-        if (!this.character.backgrounds[bgId]) {
-          this.character.backgrounds[bgId] = 0;
-        }
-        this.character.backgrounds[bgId]++;
-        this.character.freebiesSpent += costAmount;
+        const current = this.getCurrentValue('backgrounds', null, bgId);
+        success = this.updateCharacterValue('backgrounds', null, bgId, current + 1);
       }
     } else if (type === 'virtue') {
       const virtue = document.getElementById('freebieVirtue')?.value;
       if (virtue) {
-        this.character.virtues[virtue]++;
-        this.character.freebiesSpent += costAmount;
+        const current = this.getCurrentValue('virtues', null, virtue);
+        success = this.updateCharacterValue('virtues', null, virtue, current + 1);
       }
     } else if (type === 'humanity') {
-      this.character.humanity++;
-      this.character.freebiesSpent += costAmount;
+      const current = this.getCurrentValue('humanity', null, null);
+      success = this.updateCharacterValue('humanity', null, null, current + 1);
     } else if (type === 'willpower') {
-      this.character.willpower++;
-      this.character.freebiesSpent += costAmount;
+      const current = this.getCurrentValue('willpower', null, null);
+      success = this.updateCharacterValue('willpower', null, null, current + 1);
     }
 
-    // Save and re-render
-    this.saveToLocalStorage();
-    this.render();
-    this.attachEventListeners();
-    this.updateAllDisplays();
-
-    alert(`Куплено за ${costAmount} бонусных очков!`);
+    if (success) {
+      // Re-render to update UI
+      this.render();
+      this.attachEventListeners();
+      this.updateAllDisplays();
+      alert(`Куплено за ${costAmount} бонусных очков!`);
+    }
   }
 
   // XP Spending Interface Methods
@@ -3216,54 +3209,50 @@ class CharacterCreatorApp {
       return;
     }
 
-    // Make the purchase
+    let success = false;
+
+    // Make the purchase using updateCharacterValue to maintain phase isolation
     if (type === 'attribute') {
       const category = document.getElementById('xpAttrCategory')?.value;
       const attr = document.getElementById('xpAttribute')?.value;
       if (category && attr) {
-        this.character.attributes[category][attr]++;
-        this.character.experienceSpent += costAmount;
+        const current = this.getCurrentValue('attributes', category, attr);
+        success = this.updateCharacterValue('attributes', category, attr, current + 1);
       }
     } else if (type === 'ability') {
       const category = document.getElementById('xpAbilityCategory')?.value;
       const ability = document.getElementById('xpAbility')?.value;
       if (category && ability) {
-        if (!this.character.abilities[category][ability]) {
-          this.character.abilities[category][ability] = 0;
-        }
-        this.character.abilities[category][ability]++;
-        this.character.experienceSpent += costAmount;
+        const current = this.getCurrentValue('abilities', category, ability);
+        success = this.updateCharacterValue('abilities', category, ability, current + 1);
       }
     } else if (type === 'discipline') {
       const discId = document.getElementById('xpDiscipline')?.value;
       if (discId) {
-        if (!this.character.disciplines[discId]) {
-          this.character.disciplines[discId] = 0;
-        }
-        this.character.disciplines[discId]++;
-        this.character.experienceSpent += costAmount;
+        const current = this.getCurrentValue('disciplines', null, discId);
+        success = this.updateCharacterValue('disciplines', null, discId, current + 1);
       }
     } else if (type === 'virtue') {
       const virtue = document.getElementById('xpVirtue')?.value;
       if (virtue) {
-        this.character.virtues[virtue]++;
-        this.character.experienceSpent += costAmount;
+        const current = this.getCurrentValue('virtues', null, virtue);
+        success = this.updateCharacterValue('virtues', null, virtue, current + 1);
       }
     } else if (type === 'humanity') {
-      this.character.humanity++;
-      this.character.experienceSpent += costAmount;
+      const current = this.getCurrentValue('humanity', null, null);
+      success = this.updateCharacterValue('humanity', null, null, current + 1);
     } else if (type === 'willpower') {
-      this.character.willpower++;
-      this.character.experienceSpent += costAmount;
+      const current = this.getCurrentValue('willpower', null, null);
+      success = this.updateCharacterValue('willpower', null, null, current + 1);
     }
 
-    // Save and re-render
-    this.saveToLocalStorage();
-    this.render();
-    this.attachEventListeners();
-    this.updateAllDisplays();
-
-    alert(`Куплено за ${costAmount} XP!`);
+    if (success) {
+      // Re-render to update UI
+      this.render();
+      this.attachEventListeners();
+      this.updateAllDisplays();
+      alert(`Куплено за ${costAmount} XP!`);
+    }
   }
 
   saveToLocalStorage() {
