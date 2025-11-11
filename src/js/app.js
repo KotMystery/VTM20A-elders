@@ -769,6 +769,12 @@ class CharacterCreatorApp {
       allowedMax = Math.min(allowedMax, generationMax, 7);
     }
 
+    // Apply clan-specific restrictions
+    // Nosferatu: Appearance must be 0 and cannot be changed
+    if (category === 'attributes' && attr === 'appearance' && this.character.clan === 'nosferatu') {
+      allowedMax = 0;
+    }
+
     // Calculate phase boundaries for colored dots
     const phases = ['setup', 'freebies', 'xp'];
     const currentPhaseIndex = phases.indexOf(this.currentPhase);
@@ -1427,6 +1433,13 @@ class CharacterCreatorApp {
           });
         }
 
+        // Apply clan-specific restrictions
+        // Nosferatu: Appearance must be 0 and cannot be changed
+        if (newClanId === 'nosferatu') {
+          console.log(`[CHARACTER_CHANGE] Setting Nosferatu appearance to 0`);
+          this.character.attributes.social.appearance = 0;
+        }
+
         console.log(`[CHARACTER_CHANGE] ===========================\n`);
         this.saveToLocalStorage();
         this.render();
@@ -1768,6 +1781,26 @@ class CharacterCreatorApp {
         `;
       }
     }
+
+    // Re-render attribute dots (generation affects max attribute values)
+    ['physical', 'social', 'mental'].forEach(category => {
+      Object.keys(this.character.attributes[category]).forEach(attr => {
+        const tracker = document.querySelector(`.dot-tracker[data-category="attributes"][data-subcategory="${category}"][data-attr="${attr}"]`);
+        if (tracker) {
+          const current = this.character.attributes[category][attr];
+          tracker.innerHTML = this.renderDots(current, 10, 'attributes', category, attr);
+        }
+      });
+    });
+
+    // Re-render discipline dots (generation affects max discipline values)
+    Object.keys(this.character.disciplines).forEach(discId => {
+      const tracker = document.querySelector(`.dot-tracker[data-category="disciplines"][data-attr="${discId}"]`);
+      if (tracker) {
+        const current = this.character.disciplines[discId];
+        tracker.innerHTML = this.renderDots(current, 7, 'disciplines', null, discId);
+      }
+    });
 
     this.saveToLocalStorage();
   }

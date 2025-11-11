@@ -66,9 +66,14 @@
     @apply bg-green-500 border-green-500; /* 2 phases ahead - green */
   }
 
-  /* Disabled empty dots - need ACTUAL visual styling */
+  /* Disabled dots - need ACTUAL visual styling and behavior override */
   .dot.cursor-not-allowed {
-    @apply border-red-900 bg-gray-800 opacity-100; /* Override: dark border, dark bg, full opacity */
+    @apply border-red-900 bg-gray-800 opacity-100 cursor-not-allowed; /* Override: dark border, dark bg, full opacity, proper cursor */
+  }
+
+  /* Remove hover effect from disabled dots */
+  .dot.cursor-not-allowed:hover {
+    @apply border-red-900; /* Keep dark border on hover, don't change to vtm-red */
   }
 
   .stat-group {
