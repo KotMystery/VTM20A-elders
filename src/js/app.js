@@ -965,6 +965,16 @@ class CharacterCreatorApp {
   }
 
   attachEventListeners() {
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', (e) => {
+        const phase = e.target.getAttribute('data-phase');
+        if (phase) {
+          this.switchPhase(phase);
+        }
+      });
+    });
+
     // Basic info text inputs
     ['name', 'player', 'chronicle', 'nature', 'demeanor', 'concept', 'sire'].forEach(field => {
       const el = document.getElementById(field);
