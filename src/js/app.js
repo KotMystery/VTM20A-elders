@@ -828,7 +828,7 @@ class CharacterCreatorApp {
       // For filled dots: only disable if from current or past phase (not future)
       // For empty dots: always disable if beyond allowedMax
       let disabled = '';
-      if (allowedMax > 0 && i > allowedMax) {
+      if (i > allowedMax) {
         if (!filled || phaseDistance <= 0) {
           disabled = 'cursor-not-allowed';
         }
