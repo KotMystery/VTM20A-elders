@@ -265,7 +265,7 @@ class CharacterCreatorApp {
               <div class="text-sm font-medium mb-2">Текущее поколение: ${this.character.getEffectiveGeneration()}</div>
               <div class="text-xs text-gray-400">
                 Базовое: 9<br>
-                Факт Биографии "Поколение": -${this.character.backgrounds.generation || 0}<br>
+                Факт Биографии "Поколение": -${this.getCurrentValue('backgrounds', null, 'generation')}<br>
                 Недостаток "Разбавленное Витэ": +${this.character.dilutedVitae}
               </div>
             </div>
@@ -1762,12 +1762,13 @@ class CharacterCreatorApp {
       generationDisplay.textContent = `Текущее поколение: ${this.character.getEffectiveGeneration()}`;
     }
 
-    // Update generation breakdown
+    // Update generation breakdown - use current value at current phase
     const genBreakdown = generationDisplay?.nextElementSibling;
     if (genBreakdown && genBreakdown.classList.contains('text-xs')) {
+      const currentGenerationBg = this.getCurrentValue('backgrounds', null, 'generation');
       genBreakdown.innerHTML = `
         Базовое: 9<br>
-        Факт Биографии "Поколение": -${this.character.backgrounds.generation || 0}<br>
+        Факт Биографии "Поколение": -${currentGenerationBg}<br>
         Недостаток "Разбавленное Витэ": +${this.character.dilutedVitae}
       `;
     }
