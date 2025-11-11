@@ -40,6 +40,8 @@ class CharacterCreatorApp {
   // Main render method
   render() {
     const app = document.getElementById('app');
+    // Clear existing content first to force a full re-render
+    app.innerHTML = '';
     app.innerHTML = `
       <div class="min-h-screen p-4 md:p-6">
         <header class="mb-4">
