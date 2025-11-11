@@ -1263,6 +1263,7 @@ class CharacterCreatorApp {
 
     console.log(`[PHASE_SWITCH] ==============================\n`);
     this.render();
+    this.updatePointCounters(); // Update counters after render
     this.attachEventListeners();
   }
 
