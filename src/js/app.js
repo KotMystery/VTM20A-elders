@@ -458,70 +458,35 @@ class CharacterCreatorApp {
     const baseFreebies = 15 + 7 + Math.min(totalFlawPoints, 7) - totalMeritCosts;
 
     return `
-      <div class="card">
-        <h3 class="section-title">Распределение бонусных очков</h3>
+      <div class="space-y-4">
+        <div class="card">
+          <h3 class="section-title">Распределение бонусных очков</h3>
 
-        <div class="mb-4 p-4 bg-gray-800 rounded">
-          <div class="text-lg font-bold mb-2">
-            Доступно: <span class="${available >= 0 ? 'text-green-400' : 'text-red-400'}">${available}</span> бонусных очков
-          </div>
-          <div class="text-sm text-gray-400">
-            Базовые: 15<br>
-            Котерия (обязательный недостаток): +7<br>
-            Личные недостатки: +${Math.min(totalFlawPoints, 7)} (макс. 7)<br>
-            Достоинства: -${totalMeritCosts}<br>
-            Использовано на улучшения: ${this.character.freebiesSpent}<br>
-            <span class="text-yellow-400 mt-1 block">Бонусные очки используются для улучшения характеристик сверх базового распределения.</span>
-          </div>
-        </div>
-
-        ${this.renderMeritsFlawsSection()}
-
-        <div class="mb-6">
-          <h4 class="font-semibold mb-3">Потратить бонусные очки</h4>
-          <div class="space-y-3">
-            <div>
-              <label class="block text-sm font-medium mb-1">Что повысить?</label>
-              <select id="freebieType" class="input-field">
-                <option value="">Выберите...</option>
-                <option value="attribute">Атрибут (5 очков)</option>
-                <option value="ability">Способность (2 очка)</option>
-                <option value="discipline">Дисциплина (7 очков)</option>
-                <option value="background">Предыстория (1 очко)</option>
-                <option value="virtue">Добродетель (2 очка)</option>
-                <option value="humanity">Человечность (1 очко)</option>
-                <option value="willpower">Сила воли (1 очко)</option>
-              </select>
+          <div class="mb-4 p-4 bg-gray-800 rounded">
+            <div class="text-lg font-bold mb-2">
+              Доступно: <span class="${available >= 0 ? 'text-green-400' : 'text-red-400'}">${available}</span> бонусных очков
             </div>
-
-            <div id="freebiePurchaseOptions"></div>
-
-            <div id="freebieCostDisplay" class="p-3 bg-gray-800 rounded hidden">
-              <div class="text-sm font-medium mb-1">Стоимость: <span id="freebieCostAmount" class="text-vtm-red">0</span> бонусных очков</div>
-              <div class="text-xs text-gray-400" id="freebieCostDetails"></div>
+            <div class="text-sm text-gray-400">
+              Базовые: 15<br>
+              Котерия (обязательный недостаток): +7<br>
+              Личные недостатки: +${Math.min(totalFlawPoints, 7)} (макс. 7)<br>
+              Достоинства: -${totalMeritCosts}<br>
+              Использовано на улучшения: ${this.character.freebiesSpent}<br>
+              <span class="text-yellow-400 mt-1 block">Кликните на пустую точку справа от текущего значения для повышения. Стоимость: Атрибут (5), Способность (2), Дисциплина (7), Предыстория (1), Добродетель (2), Человечность (1), Сила воли (1)</span>
             </div>
+          </div>
 
-            <button id="freebiePurchaseBtn" class="btn btn-primary w-full hidden">Купить</button>
+          ${this.renderMeritsFlawsSection()}
+
+          <div class="flex gap-3">
+            <button class="btn btn-secondary" onclick="app.switchPhase('setup')">← Назад к настройке</button>
+            <button class="btn btn-primary flex-1" onclick="app.switchPhase('xp')">Далее: Опыт →</button>
           </div>
         </div>
 
-        <details class="mb-4">
-          <summary class="cursor-pointer font-semibold mb-2">Справка: Таблица стоимости бонусных очков</summary>
-          <div class="space-y-1 text-xs text-gray-400 p-3 bg-gray-800 rounded">
-            <div>• Атрибут: <strong class="text-white">5</strong></div>
-            <div>• Способность: <strong class="text-white">2</strong></div>
-            <div>• Дисциплина: <strong class="text-white">7</strong></div>
-            <div>• Предыстория: <strong class="text-white">1</strong></div>
-            <div>• Добродетель: <strong class="text-white">2</strong></div>
-            <div>• Человечность: <strong class="text-white">1</strong></div>
-            <div>• Сила воли: <strong class="text-white">1</strong></div>
-          </div>
-        </details>
-
-        <div class="flex gap-3">
-          <button class="btn btn-secondary" onclick="app.switchPhase('setup')">← Назад к настройке</button>
-          <button class="btn btn-primary flex-1" onclick="app.switchPhase('xp')">Далее: Опыт →</button>
-        </div>
+        ${this.renderAttributes()}
+        ${this.renderAbilities()}
+        ${this.renderAdvantages()}
       </div>
     `;
   }
@@ -539,12 +504,8 @@ class CharacterCreatorApp {
               ${this.character.merits.length === 0 ?
                 '<div class="text-xs text-gray-500">Нет выбранных достоинств</div>' :
                 this.character.merits.map(merit => `
-                  <div class="p-2 bg-gray-800 rounded flex justify-between items-start">
-                    <div class="flex-1">
-                      <div class="font-medium text-sm">${merit.name}</div>
-                      ${merit.description ? `<div class="text-xs text-gray-400 mt-1">${merit.description}</div>` : ''}
-                      ${merit.elderNote ? `<div class="text-xs text-yellow-400 mt-1">⚠️ ${merit.elderNote}</div>` : ''}
-                    </div>
+                  <div class="p-2 bg-gray-800 rounded flex justify-between items-center">
+                    <div class="font-medium text-sm">${merit.name}</div>
                     <div class="ml-2 text-nowrap">
                       <span class="text-vtm-red font-medium">${merit.selectedCost || merit.cost}</span>
                       <button class="ml-2 text-red-400 hover:text-red-300" onclick="app.removeMerit('${merit.id}')">✕</button>
@@ -563,12 +524,8 @@ class CharacterCreatorApp {
               ${this.character.flaws.length === 0 ?
                 '<div class="text-xs text-gray-500">Нет выбранных недостатков</div>' :
                 this.character.flaws.map(flaw => `
-                  <div class="p-2 bg-gray-800 rounded flex justify-between items-start">
-                    <div class="flex-1">
-                      <div class="font-medium text-sm">${flaw.name}</div>
-                      ${flaw.description ? `<div class="text-xs text-gray-400 mt-1">${flaw.description}</div>` : ''}
-                      ${flaw.elderNote ? `<div class="text-xs text-yellow-400 mt-1">⚠️ ${flaw.elderNote}</div>` : ''}
-                    </div>
+                  <div class="p-2 bg-gray-800 rounded flex justify-between items-center">
+                    <div class="font-medium text-sm">${flaw.name}</div>
                     <div class="ml-2 text-nowrap">
                       <span class="text-green-400 font-medium">+${flaw.selectedCost || flaw.cost}</span>
                       <button class="ml-2 text-red-400 hover:text-red-300" onclick="app.removeFlaw('${flaw.id}')">✕</button>
@@ -588,65 +545,27 @@ class CharacterCreatorApp {
     const available = this.character.experience - this.character.experienceSpent;
 
     return `
-      <div class="card">
-        <h3 class="section-title">Распределение опыта (XP)</h3>
+      <div class="space-y-4">
+        <div class="card">
+          <h3 class="section-title">Распределение опыта (XP)</h3>
 
-        <div class="mb-4 p-4 bg-gray-800 rounded">
-          <div class="text-lg font-bold mb-2">
-            Доступно: <span class="${available >= 0 ? 'text-green-400' : 'text-red-400'}">${available}</span> / 33 XP
+          <div class="mb-4 p-4 bg-gray-800 rounded">
+            <div class="text-lg font-bold mb-2">
+              Доступно: <span class="${available >= 0 ? 'text-green-400' : 'text-red-400'}">${available}</span> / 33 XP
+            </div>
+            <div class="text-sm text-gray-400 mb-2">
+              Древние начинают с 33 опыта
+            </div>
+            <div class="text-sm text-yellow-400">
+              Кликните на пустую точку справа от текущего значения для повышения. Стоимость: Атрибут (текущее × 4), Способность (новая: 3, текущее × 2), Дисциплина (новая: 10, текущее × 5-10), Добродетель (текущее × 2), Человечность (текущее × 2), Сила воли (текущее)</div>
           </div>
-          <div class="text-sm text-gray-400">
-            Древние начинают с 33 опыта
-          </div>
+
+          <button class="btn btn-secondary w-full" onclick="app.switchPhase('freebies')">← Назад к Freebies</button>
         </div>
 
-        <div class="mb-6">
-          <h4 class="font-semibold mb-3">Потратить XP</h4>
-          <div class="space-y-3">
-            <div>
-              <label class="block text-sm font-medium mb-1">Что повысить?</label>
-              <select id="xpType" class="input-field">
-                <option value="">Выберите...</option>
-                <option value="attribute">Атрибут (текущее × 4)</option>
-                <option value="ability">Способность (новая: 3, повысить: текущее × 2)</option>
-                <option value="discipline">Дисциплина (новая: 10, повысить: зависит от клана)</option>
-                <option value="virtue">Добродетель (текущее × 2)</option>
-                <option value="humanity">Человечность (текущее × 2)</option>
-                <option value="willpower">Сила воли (текущее × 1)</option>
-              </select>
-            </div>
-
-            <div id="xpPurchaseOptions"></div>
-
-            <div id="xpCostDisplay" class="p-3 bg-gray-800 rounded hidden">
-              <div class="text-sm font-medium mb-1">Стоимость: <span id="xpCostAmount" class="text-vtm-red">0</span> XP</div>
-              <div class="text-xs text-gray-400" id="xpCostDetails"></div>
-            </div>
-
-            <button id="xpPurchaseBtn" class="btn btn-primary w-full hidden">Купить</button>
-          </div>
-        </div>
-
-        <details class="mb-4">
-          <summary class="cursor-pointer font-semibold mb-2">Справка: Полная таблица стоимости XP</summary>
-          <div class="space-y-1 text-xs text-gray-400 p-3 bg-gray-800 rounded">
-            <div>• Новая способность: <strong class="text-white">3</strong></div>
-            <div>• Новая дисциплина: <strong class="text-white">10</strong></div>
-            <div>• Новый путь (Некромантия/Тауматургия): <strong class="text-white">7</strong></div>
-            <div>• Атрибут: <strong class="text-white">текущее × 4</strong></div>
-            <div>• Способность: <strong class="text-white">текущее × 2</strong></div>
-            <div>• Дисциплина (физическая, клановая): <strong class="text-white">текущее × 5</strong></div>
-            <div>• Дисциплина (ментальная, клановая): <strong class="text-white">текущее × 6</strong></div>
-            <div>• Дисциплина (уникальная, клановая): <strong class="text-white">текущее × 7</strong></div>
-            <div>• Дисциплина (сторонняя): <strong class="text-white">текущее × 10</strong></div>
-            <div>• Дисциплина (Каитифф): <strong class="text-white">текущее × 6</strong></div>
-            <div>• Добродетель: <strong class="text-white">текущее × 2</strong></div>
-            <div>• Человечность/Путь: <strong class="text-white">текущее × 2</strong></div>
-            <div>• Сила воли: <strong class="text-white">текущее × 1</strong></div>
-          </div>
-        </details>
-
-        <button class="btn btn-secondary w-full" onclick="app.switchPhase('freebies')">← Назад к Freebies</button>
+        ${this.renderAttributes()}
+        ${this.renderAbilities()}
+        ${this.renderAdvantages()}
       </div>
     `;
   }
@@ -1033,15 +952,39 @@ class CharacterCreatorApp {
   }
 
   attachEventListeners() {
-    // Phase switching
-    document.querySelectorAll('.tab').forEach(tab => {
-      tab.addEventListener('click', (e) => {
+    // Remove old listeners if they exist
+    if (this.globalClickHandler) {
+      document.removeEventListener('click', this.globalClickHandler);
+    }
+
+    // Create global click handler with event delegation
+    this.globalClickHandler = (e) => {
+      // Handle dot clicks
+      if (e.target.classList.contains('dot')) {
+        const tracker = e.target.closest('.dot-tracker');
+        if (tracker) {
+          const category = tracker.dataset.category;
+          const subcategory = tracker.dataset.subcategory;
+          const attr = tracker.dataset.attr;
+          const value = parseInt(e.target.dataset.value);
+
+          this.updateCharacterValue(category, subcategory, attr, value);
+        }
+        return;
+      }
+
+      // Handle tab clicks
+      if (e.target.classList.contains('tab')) {
         const phase = e.target.dataset.phase;
         if (phase) {
           this.switchPhase(phase);
         }
-      });
-    });
+        return;
+      }
+    };
+
+    // Attach global handler
+    document.addEventListener('click', this.globalClickHandler);
 
     // Basic info text inputs
     ['name', 'player', 'chronicle', 'nature', 'demeanor', 'concept', 'sire'].forEach(field => {
@@ -1079,20 +1022,6 @@ class CharacterCreatorApp {
       });
     }
 
-    // Dot trackers
-    document.querySelectorAll('.dot-tracker').forEach(tracker => {
-      const category = tracker.dataset.category;
-      const subcategory = tracker.dataset.subcategory;
-      const attr = tracker.dataset.attr;
-
-      tracker.querySelectorAll('.dot').forEach(dot => {
-        dot.addEventListener('click', () => {
-          const value = parseInt(dot.dataset.value);
-          this.updateCharacterValue(category, subcategory, attr, value);
-        });
-      });
-    });
-
     // Add discipline button
     const addDiscBtn = document.getElementById('addDisciplineBtn');
     if (addDiscBtn) {
@@ -1114,31 +1043,59 @@ class CharacterCreatorApp {
     if (exportBtn) {
       exportBtn.addEventListener('click', () => this.exportToPDF());
     }
-
-    // Freebies spending interface
-    const freebieTypeSelect = document.getElementById('freebieType');
-    if (freebieTypeSelect) {
-      freebieTypeSelect.addEventListener('change', (e) => this.handleFreebieTypeChange(e.target.value));
-    }
-
-    const freebiePurchaseBtn = document.getElementById('freebiePurchaseBtn');
-    if (freebiePurchaseBtn) {
-      freebiePurchaseBtn.addEventListener('click', () => this.handleFreebiePurchase());
-    }
-
-    // XP spending interface
-    const xpTypeSelect = document.getElementById('xpType');
-    if (xpTypeSelect) {
-      xpTypeSelect.addEventListener('change', (e) => this.handleXPTypeChange(e.target.value));
-    }
-
-    const xpPurchaseBtn = document.getElementById('xpPurchaseBtn');
-    if (xpPurchaseBtn) {
-      xpPurchaseBtn.addEventListener('click', () => this.handleXPPurchase());
-    }
   }
 
   updateCharacterValue(category, subcategory, attr, value) {
+    // Get current value
+    let currentValue = 0;
+    if (category === 'attributes') {
+      currentValue = this.character.attributes[subcategory][attr];
+    } else if (category === 'abilities') {
+      currentValue = this.character.abilities[subcategory][attr] || 0;
+    } else if (category === 'disciplines') {
+      currentValue = this.character.disciplines[attr] || 0;
+    } else if (category === 'backgrounds') {
+      currentValue = this.character.backgrounds[attr] || 0;
+    } else if (category === 'virtues') {
+      currentValue = this.character.virtues[attr];
+    } else if (category === 'humanity') {
+      currentValue = this.character.humanity;
+    } else if (category === 'willpower') {
+      currentValue = this.character.willpower;
+    }
+
+    // In freebies/xp phases, only allow increases and spend points
+    if (this.currentPhase === 'freebies' || this.currentPhase === 'xp') {
+      // Only allow increases
+      if (value <= currentValue) {
+        return;
+      }
+
+      // Calculate cost and spend points
+      if (this.currentPhase === 'freebies') {
+        const cost = this.calculateFreebieCost(category, subcategory, attr, currentValue, value);
+        const available = this.character.freebies - this.character.freebiesSpent;
+
+        if (cost > available) {
+          alert(`Недостаточно бонусных очков. Нужно: ${cost}, доступно: ${available}`);
+          return;
+        }
+
+        this.character.freebiesSpent += cost;
+      } else if (this.currentPhase === 'xp') {
+        const cost = this.calculateXPCost(category, subcategory, attr, currentValue, value);
+        const available = this.character.experience - this.character.experienceSpent;
+
+        if (cost > available) {
+          alert(`Недостаточно XP. Нужно: ${cost}, доступно: ${available}`);
+          return;
+        }
+
+        this.character.experienceSpent += cost;
+      }
+    }
+
+    // Update the value
     if (category === 'attributes') {
       this.character.attributes[subcategory][attr] = value;
     } else if (category === 'abilities') {
@@ -1164,6 +1121,81 @@ class CharacterCreatorApp {
 
     this.saveToLocalStorage();
     this.updateAllDisplays();
+  }
+
+  calculateFreebieCost(category, subcategory, attr, currentValue, newValue) {
+    const diff = newValue - currentValue;
+    let costPerPoint = 0;
+
+    if (category === 'attributes') {
+      costPerPoint = FREEBIE_COSTS.attribute;
+    } else if (category === 'abilities') {
+      costPerPoint = FREEBIE_COSTS.ability;
+    } else if (category === 'disciplines') {
+      costPerPoint = FREEBIE_COSTS.discipline;
+    } else if (category === 'backgrounds') {
+      costPerPoint = FREEBIE_COSTS.background;
+    } else if (category === 'virtues') {
+      costPerPoint = FREEBIE_COSTS.virtue;
+    } else if (category === 'humanity') {
+      costPerPoint = FREEBIE_COSTS.humanity;
+    } else if (category === 'willpower') {
+      costPerPoint = FREEBIE_COSTS.willpower;
+    }
+
+    return diff * costPerPoint;
+  }
+
+  calculateXPCost(category, subcategory, attr, currentValue, newValue) {
+    let totalCost = 0;
+
+    // Sum up costs for each level
+    for (let level = currentValue + 1; level <= newValue; level++) {
+      let costForLevel = 0;
+
+      if (category === 'attributes') {
+        costForLevel = XP_COSTS.attribute(level);
+      } else if (category === 'abilities') {
+        if (currentValue === 0) {
+          // New ability
+          costForLevel = XP_COSTS.newAbility;
+        } else {
+          costForLevel = XP_COSTS.ability(level);
+        }
+      } else if (category === 'disciplines') {
+        if (currentValue === 0) {
+          // New discipline
+          costForLevel = XP_COSTS.newDiscipline;
+        } else {
+          // Get discipline category and clan affiliation
+          const disc = this.allDisciplines.find(d => d.id === attr);
+          const clanDiscs = this.getClanDisciplines();
+          const isClan = clanDiscs.includes(attr);
+          const isCaitiff = this.character.clan === 'caitiff';
+
+          if (isCaitiff) {
+            costForLevel = XP_COSTS.discipline[disc.category].caitiff(level);
+          } else if (isClan) {
+            costForLevel = XP_COSTS.discipline[disc.category].clan(level);
+          } else {
+            costForLevel = XP_COSTS.discipline[disc.category].nonClan(level);
+          }
+        }
+      } else if (category === 'virtues') {
+        costForLevel = XP_COSTS.virtue(level);
+      } else if (category === 'humanity') {
+        costForLevel = XP_COSTS.humanity(level);
+      } else if (category === 'willpower') {
+        costForLevel = XP_COSTS.willpower(level);
+      } else if (category === 'backgrounds') {
+        // Backgrounds can't be raised with XP in standard rules
+        return 999;
+      }
+
+      totalCost += costForLevel;
+    }
+
+    return totalCost;
   }
 
   updateAllDisplays() {
