@@ -49,6 +49,23 @@
     @apply bg-vtm-red border-vtm-red;
   }
 
+  /* Phase-based dot coloring */
+  .dot.filled.locked-1 {
+    @apply bg-red-900 border-red-900; /* 1 phase back - darker red */
+  }
+
+  .dot.filled.locked-2 {
+    @apply bg-red-950 border-red-950; /* 2 phases back - much darker red */
+  }
+
+  .dot.filled.future-1 {
+    @apply bg-yellow-500 border-yellow-500; /* 1 phase ahead - yellow */
+  }
+
+  .dot.filled.future-2 {
+    @apply bg-green-500 border-green-500; /* 2 phases ahead - green */
+  }
+
   .stat-group {
     @apply mb-6;
   }

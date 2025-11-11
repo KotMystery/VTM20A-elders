@@ -756,11 +756,59 @@ class CharacterCreatorApp {
       }
     }
 
+    // Calculate phase boundaries for colored dots
+    const phases = ['setup', 'freebies', 'xp'];
+    const currentPhaseIndex = phases.indexOf(this.currentPhase);
+
+    let setupValue = 0;
+    let freebiesValue = 0;
+    let xpValue = current;
+
+    if (this.character.setupBaseline) {
+      // Calculate values at each phase
+      setupValue = this.character.getValueAtPhase(category, subcategory, attr, 'setup');
+      freebiesValue = this.character.getValueAtPhase(category, subcategory, attr, 'freebies');
+      xpValue = this.character.getValueAtPhase(category, subcategory, attr, 'xp');
+    } else {
+      // No baseline yet - all dots are from current phase
+      setupValue = current;
+      freebiesValue = current;
+      xpValue = current;
+    }
+
     // Always render dots from 1 to max (standard dot notation)
     for (let i = 1; i <= max; i++) {
       const filled = i <= current ? 'filled' : '';
       const disabled = (allowedMax > 0 && i > allowedMax) ? 'opacity-50 cursor-not-allowed' : '';
-      html += `<div class="dot ${filled} ${disabled}" data-value="${i}" data-min="${minValue}"></div>`;
+
+      // Determine which phase this dot was bought in
+      let dotPhase = 'setup';
+      if (i > freebiesValue) {
+        dotPhase = 'xp';
+      } else if (i > setupValue) {
+        dotPhase = 'freebies';
+      }
+
+      // Calculate phase distance (negative = past, 0 = current, positive = future)
+      const dotPhaseIndex = phases.indexOf(dotPhase);
+      const phaseDistance = dotPhaseIndex - currentPhaseIndex;
+
+      // Add phase-specific class
+      let phaseClass = '';
+      if (filled) {
+        if (phaseDistance === -1) {
+          phaseClass = 'locked-1'; // 1 phase back (darker)
+        } else if (phaseDistance === -2) {
+          phaseClass = 'locked-2'; // 2 phases back (much darker)
+        } else if (phaseDistance === 1) {
+          phaseClass = 'future-1'; // 1 phase ahead (yellow)
+        } else if (phaseDistance === 2) {
+          phaseClass = 'future-2'; // 2 phases ahead (green)
+        }
+        // phaseDistance === 0 gets no extra class (current phase, normal color)
+      }
+
+      html += `<div class="dot ${filled} ${disabled} ${phaseClass}" data-value="${i}" data-min="${minValue}"></div>`;
     }
     return html;
   }
@@ -1410,13 +1458,53 @@ class CharacterCreatorApp {
     }
 
     // Update the dots visually WITHOUT re-rendering
+    // Calculate phase boundaries for colored dots
+    const phases = ['setup', 'freebies', 'xp'];
+    const currentPhaseIndex = phases.indexOf(this.currentPhase);
+
+    let setupValue = 0;
+    let freebiesValue = 0;
+
+    if (this.character.setupBaseline) {
+      setupValue = this.character.getValueAtPhase(category, subcategory, attr, 'setup');
+      freebiesValue = this.character.getValueAtPhase(category, subcategory, attr, 'freebies');
+    } else {
+      setupValue = newValue;
+      freebiesValue = newValue;
+    }
+
     const dots = tracker.querySelectorAll('.dot');
     dots.forEach((dot) => {
       const dotValue = parseInt(dot.dataset.value);
+
+      // Remove all phase classes first
+      dot.classList.remove('filled', 'locked-1', 'locked-2', 'future-1', 'future-2');
+
       if (dotValue <= newValue) {
         dot.classList.add('filled');
-      } else {
-        dot.classList.remove('filled');
+
+        // Determine which phase this dot was bought in
+        let dotPhase = 'setup';
+        if (dotValue > freebiesValue) {
+          dotPhase = 'xp';
+        } else if (dotValue > setupValue) {
+          dotPhase = 'freebies';
+        }
+
+        // Calculate phase distance
+        const dotPhaseIndex = phases.indexOf(dotPhase);
+        const phaseDistance = dotPhaseIndex - currentPhaseIndex;
+
+        // Add phase-specific class
+        if (phaseDistance === -1) {
+          dot.classList.add('locked-1');
+        } else if (phaseDistance === -2) {
+          dot.classList.add('locked-2');
+        } else if (phaseDistance === 1) {
+          dot.classList.add('future-1');
+        } else if (phaseDistance === 2) {
+          dot.classList.add('future-2');
+        }
       }
     });
 
@@ -1443,16 +1531,54 @@ class CharacterCreatorApp {
     this.character.willpower = this.character.virtues.courage;
     this.character.willpowerCurrent = this.character.willpower;
 
+    // Calculate phase boundaries for colored dots
+    const phases = ['setup', 'freebies', 'xp'];
+    const currentPhaseIndex = phases.indexOf(this.currentPhase);
+
     // Update humanity display
     const humanityTracker = document.querySelector('[data-category="humanity"]');
     if (humanityTracker) {
+      let setupValue = 0;
+      let freebiesValue = 0;
+
+      if (this.character.setupBaseline) {
+        setupValue = this.character.getValueAtPhase('humanity', null, null, 'setup');
+        freebiesValue = this.character.getValueAtPhase('humanity', null, null, 'freebies');
+      } else {
+        setupValue = this.character.humanity;
+        freebiesValue = this.character.humanity;
+      }
+
       const dots = humanityTracker.querySelectorAll('.dot');
       dots.forEach((dot, index) => {
         const dotValue = index + 1;
+
+        // Remove all phase classes
+        dot.classList.remove('filled', 'locked-1', 'locked-2', 'future-1', 'future-2');
+
         if (dotValue <= this.character.humanity) {
           dot.classList.add('filled');
-        } else {
-          dot.classList.remove('filled');
+
+          // Determine phase and add class
+          let dotPhase = 'setup';
+          if (dotValue > freebiesValue) {
+            dotPhase = 'xp';
+          } else if (dotValue > setupValue) {
+            dotPhase = 'freebies';
+          }
+
+          const dotPhaseIndex = phases.indexOf(dotPhase);
+          const phaseDistance = dotPhaseIndex - currentPhaseIndex;
+
+          if (phaseDistance === -1) {
+            dot.classList.add('locked-1');
+          } else if (phaseDistance === -2) {
+            dot.classList.add('locked-2');
+          } else if (phaseDistance === 1) {
+            dot.classList.add('future-1');
+          } else if (phaseDistance === 2) {
+            dot.classList.add('future-2');
+          }
         }
       });
     }
@@ -1460,13 +1586,47 @@ class CharacterCreatorApp {
     // Update willpower display
     const willpowerTracker = document.querySelector('[data-category="willpower"]');
     if (willpowerTracker) {
+      let setupValue = 0;
+      let freebiesValue = 0;
+
+      if (this.character.setupBaseline) {
+        setupValue = this.character.getValueAtPhase('willpower', null, null, 'setup');
+        freebiesValue = this.character.getValueAtPhase('willpower', null, null, 'freebies');
+      } else {
+        setupValue = this.character.willpower;
+        freebiesValue = this.character.willpower;
+      }
+
       const dots = willpowerTracker.querySelectorAll('.dot');
       dots.forEach((dot, index) => {
         const dotValue = index + 1;
+
+        // Remove all phase classes
+        dot.classList.remove('filled', 'locked-1', 'locked-2', 'future-1', 'future-2');
+
         if (dotValue <= this.character.willpower) {
           dot.classList.add('filled');
-        } else {
-          dot.classList.remove('filled');
+
+          // Determine phase and add class
+          let dotPhase = 'setup';
+          if (dotValue > freebiesValue) {
+            dotPhase = 'xp';
+          } else if (dotValue > setupValue) {
+            dotPhase = 'freebies';
+          }
+
+          const dotPhaseIndex = phases.indexOf(dotPhase);
+          const phaseDistance = dotPhaseIndex - currentPhaseIndex;
+
+          if (phaseDistance === -1) {
+            dot.classList.add('locked-1');
+          } else if (phaseDistance === -2) {
+            dot.classList.add('locked-2');
+          } else if (phaseDistance === 1) {
+            dot.classList.add('future-1');
+          } else if (phaseDistance === 2) {
+            dot.classList.add('future-2');
+          }
         }
       });
     }
