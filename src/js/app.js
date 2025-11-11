@@ -880,6 +880,11 @@ class CharacterCreatorApp {
       selectedCost: selectedCost
     });
 
+    // Handle thin_blood flaw - increases generation
+    if (flawData.id === 'thin_blood') {
+      this.character.dilutedVitae = selectedCost;
+    }
+
     this.character.freebies = this.character.calculateFreebies();
     this.saveToLocalStorage();
     this.render();
@@ -887,6 +892,12 @@ class CharacterCreatorApp {
   }
 
   removeFlaw(flawId) {
+    // Handle thin_blood flaw - decreases generation back
+    const flaw = this.character.flaws.find(f => f.id === flawId);
+    if (flaw && flaw.id === 'thin_blood') {
+      this.character.dilutedVitae = 0;
+    }
+
     this.character.flaws = this.character.flaws.filter(f => f.id !== flawId);
     this.character.freebies = this.character.calculateFreebies();
     this.saveToLocalStorage();
