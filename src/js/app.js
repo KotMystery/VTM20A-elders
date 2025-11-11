@@ -758,10 +758,10 @@ class CharacterCreatorApp {
       }
     }
 
-    // Apply generation-based limits for attributes and disciplines
-    if (category === 'attributes') {
+    // Apply generation-based limits for attributes, abilities, and disciplines
+    if (category === 'attributes' || category === 'abilities') {
       const generationMax = this.character.getMaxTraitByGeneration();
-      // For attributes, apply generation max but respect phase limits
+      // For attributes and abilities, apply generation max but respect phase limits
       allowedMax = Math.min(allowedMax, generationMax);
     } else if (category === 'disciplines') {
       const generationMax = this.character.getMaxDisciplineByGeneration();
