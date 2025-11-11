@@ -823,7 +823,7 @@ class CharacterCreatorApp {
       // Future phase dots should show with full opacity as visual indicators
       let disabled = '';
       if (allowedMax > 0 && i > allowedMax && phaseDistance <= 0) {
-        disabled = 'cursor-not-allowed';
+        disabled = 'opacity-50 cursor-not-allowed';
       }
 
       // Add phase-specific class
