@@ -565,7 +565,7 @@ class CharacterCreatorApp {
               Личные недостатки: +${Math.min(totalFlawPoints, 7)} (макс. 7)<br>
               Достоинства: -${totalMeritCosts}<br>
               Использовано: <span id="freebies-counter">${this.character.freebiesSpent}/${this.character.freebies}</span><br>
-              <span class="text-yellow-400 mt-1 block">Кликните на пустую точку справа от текущего значения для повышения. Стоимость: Атрибут (5), Способность (2), Дисциплина (7), Предыстория (1), Добродетель (2), Человечность (1), Сила воли (1)</span>
+              <span class="text-yellow-400 mt-1 block">Кликните на пустую точку справа от текущего значения для повышения. Стоимость: Атрибут (5), Способность (2), Дисциплина (7), Факт Биографии (1), Добродетель (2), Человечность (1), Сила воли (1). Вы можете найти все Достоинства и Недостатки в корбуке на страницах 515-535.</span>
             </div>
           </div>
 
@@ -941,7 +941,7 @@ class CharacterCreatorApp {
                         ${item.description ? `<div class="text-xs text-gray-400">${item.description}</div>` : ''}
                         ${item.elderNote ? `<div class="text-xs text-yellow-400 mt-1">⚠️ ${item.elderNote}</div>` : ''}
                         ${isDisabled ? `<div class="text-xs text-red-400 mt-1">❌ ${this.getMeritFlawDisabledReason(item)}</div>` : ''}
-                        ${item.isClanSpecific ? `<div class="text-xs text-blue-400 mt-1">🔹 Связано с кланом ${this.getClanName(item.clan)}</div>` : ''}
+                        ${item.isClanSpecific ? `<div class="text-xs text-blue-400 mt-1">🔹 Связано с кланом ${this.getClanName(item.clan)} (подробнее см. Lore of the Clans 20A)</div>` : ''}
                       </div>
                     `;
                   }).join('')}
