@@ -113,6 +113,22 @@ export class Character {
       attributes: null, // 'physical', 'social', or 'mental'
       abilities: null // 'talents', 'skills', or 'knowledges'
     };
+
+    // Setup baseline - captures values at end of setup phase to prevent reduction in later phases
+    this.setupBaseline = null;
+  }
+
+  // Capture current state as setup baseline (called when leaving setup phase)
+  captureSetupBaseline() {
+    this.setupBaseline = {
+      attributes: JSON.parse(JSON.stringify(this.attributes)),
+      abilities: JSON.parse(JSON.stringify(this.abilities)),
+      disciplines: JSON.parse(JSON.stringify(this.disciplines)),
+      backgrounds: JSON.parse(JSON.stringify(this.backgrounds)),
+      virtues: JSON.parse(JSON.stringify(this.virtues)),
+      humanity: this.humanity,
+      willpower: this.willpower
+    };
   }
 
   // Calculate effective generation (base 9 - Generation background + Diluted Vitae flaw)

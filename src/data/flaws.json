@@ -29,6 +29,7 @@
     { "id": "thin_blood", "name": "Разбавленная кровь", "cost": "variable", "minCost": 1, "maxCost": 5 },
     { "id": "sterile_vitae", "name": "Бесплодная витэ", "cost": 5 },
     { "id": "flesh_of_corpse", "name": "Мёртвая плоть", "cost": 5 },
+    { "id": "inbred", "name": "Плод инбридинга", "cost": "variable", "minCost": 1, "maxCost": 5 },
     { "id": "blind", "name": "Слепота", "cost": 6 }
   ],
   "mental": [
@@ -81,6 +82,77 @@
     { "id": "haunted_by_ghost", "name": "Мстительный призрак", "cost": 3 },
     { "id": "grip_damned", "name": "Поцелуй Проклятого", "cost": 4 },
     { "id": "doomed", "name": "Рок", "cost": 5 },
-    { "id": "light_sensitive", "name": "Светобоязнь", "cost": 5 }
-  ]
+    { "id": "light_sensitive", "name": "Светобоязнь", "cost": 5 },
+    { "id": "shadowwalker", "name": "Идущий в тенях", "cost": 6 }
+  ],
+  "clanSpecific": {
+    "assamite": [
+      { "id": "outcast", "name": "Изгнанник", "cost": 2, "category": "social" }
+    ],
+    "brujah": [
+      { "id": "predator_demeanor", "name": "Повадки хищника", "cost": 2, "category": "social" }
+    ],
+    "follower_of_set": [
+      { "id": "scales", "name": "Чешуя", "cost": "variable", "minCost": 1, "maxCost": 3, "category": "physical" },
+      { "id": "venomous_bite", "name": "Ядовитый укус", "cost": 2, "category": "physical" },
+      { "id": "forked_tongue", "name": "Раздвоенный язык", "cost": 2, "category": "physical" },
+      { "id": "heartless", "name": "Бессердечный", "cost": 4, "category": "supernatural" },
+      { "id": "aura_of_typhon", "name": "Аура Тифона", "cost": 5, "category": "supernatural" }
+    ],
+    "gangrel": [
+      { "id": "caged_rat", "name": "Крыса в клетке", "cost": 2, "category": "mental" },
+      { "id": "pack_member", "name": "Член стаи", "cost": 2, "category": "supernatural" }
+    ],
+    "lasombra": [
+      { "id": "uncontrollable_night_vision", "name": "Неуправляемое ночное зрение", "cost": 2, "category": "physical" },
+      { "id": "disobedient", "name": "Непослушный", "cost": 3, "category": "mental" },
+      { "id": "unworthy", "name": "Недостойный", "cost": 3, "category": "social" }
+    ],
+    "malkavian": [
+      { "id": "stigmata", "name": "Стигматы", "cost": "variable", "minCost": 2, "maxCost": 4, "category": "supernatural" },
+      { "id": "infectious", "name": "Инфекционный", "cost": 3, "category": "mental" },
+      { "id": "hypersensitive", "name": "Сверхвосприимчивый", "cost": 3, "category": "mental" },
+      { "id": "dead_inside", "name": "Мёртвый внутри", "cost": 4, "category": "mental" }
+    ],
+    "nosferatu": [
+      { "id": "stench", "name": "Вонь", "cost": 1, "category": "physical" },
+      { "id": "loss_of_scent", "name": "Потеря обоняния", "cost": 2, "category": "physical" },
+      { "id": "parasite_haven", "name": "Рассадник паразитов", "cost": 2, "category": "physical" },
+      { "id": "bestial", "name": "Зверьё", "cost": 3, "category": "social" },
+      { "id": "rot", "name": "Гниение", "cost": 4, "category": "physical" },
+      { "id": "tainted", "name": "Заражение", "cost": 5, "category": "supernatural" },
+      { "id": "garbled_speech", "name": "Бессвязная речь", "cost": 5, "category": "mental" }
+    ],
+    "ravnos": [
+      { "id": "chandala", "name": "Чандала", "cost": 1, "category": "social" },
+      { "id": "imperfect_reality", "name": "Несовершенная реальность", "cost": 2, "category": "supernatural" },
+      { "id": "oathbreaker", "name": "Клятвопреступник", "cost": 2, "category": "social" },
+      { "id": "lost_svadharma", "name": "Потерянная Свадхарма", "cost": 3, "category": "mental" }
+    ],
+    "toreador": [
+      { "id": "perfectionist_artist", "name": "Художник-перфекционист", "cost": 1, "category": "mental" }
+    ],
+    "tremere": [
+      { "id": "magical_curse", "name": "Магическое Проклятие", "cost": "variable", "minCost": 1, "maxCost": 5, "category": "supernatural" },
+      { "id": "recluse", "name": "Затворник", "cost": 2, "category": "social" },
+      { "id": "blood_of_mage", "name": "Кровь мага", "cost": 5, "category": "supernatural" },
+      { "id": "thaumaturgy_incapable", "name": "Неспособность к Тауматургии", "cost": 5, "category": "supernatural" }
+    ],
+    "tzimisce": [
+      { "id": "unblinking_stare", "name": "Немигающий взгляд", "cost": 1, "category": "physical" },
+      { "id": "ancestral_soil", "name": "Зависимость от земли предков", "cost": 2, "category": "supernatural" },
+      { "id": "faceless", "name": "Безликий", "cost": 3, "category": "physical" },
+      { "id": "privacy_obsession", "name": "Одержимость уединением", "cost": 3, "category": "mental" },
+      { "id": "revenant_weakness", "name": "Слабость ревенантов", "cost": 3, "category": "supernatural" },
+      { "id": "consumption", "name": "Потребление", "cost": 5, "category": "physical" }
+    ],
+    "ventrue": [
+      { "id": "rarefied_tastes", "name": "Необычные предпочтения", "cost": 2, "category": "physical" }
+    ],
+    "caitiff": [
+      { "id": "clan_weakness_caitiff", "name": "Слабость Клана", "cost": 2, "category": "supernatural" },
+      { "id": "absence_of_fangs", "name": "Отсутствие клыков", "cost": 2, "category": "physical" },
+      { "id": "bulimia", "name": "Булимия", "cost": 4, "category": "physical" }
+    ]
+  }
 }
