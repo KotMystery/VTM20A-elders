@@ -476,10 +476,29 @@ export class Character {
       10: 5,
       11: 5,
       12: 5,
-      13: 5,
-      14: 4 // 14th generation has discipline max of 4
+      13: 5
     };
-    return limits[gen] || 5; // Default to 5 for generations beyond 13
+    return limits[gen] || 5; // 14+ defaults to 5 for attributes
+  }
+
+  // Get maximum discipline value based on generation
+  getMaxDisciplineByGeneration() {
+    const gen = this.getEffectiveGeneration();
+    const limits = {
+      3: 10,
+      4: 9,
+      5: 8,
+      6: 7,
+      7: 6,
+      8: 5,
+      9: 5,
+      10: 5,
+      11: 5,
+      12: 5,
+      13: 5,
+      14: 4 // 14th generation specifically capped at 4 for disciplines
+    };
+    return limits[gen] || 4; // 15+ defaults to 4
   }
 
   // Get clan disciplines
