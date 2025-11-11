@@ -230,9 +230,9 @@ class CharacterCreatorApp {
             Максимум 6 в одном атрибуте до Freebies. Каждый атрибут начинается с 1.
           </div>
           <div class="flex gap-4">
-            <div>Физические: <span class="${validation.totals?.physical === 9 || validation.totals?.physical === 7 || validation.totals?.physical === 5 ? 'text-green-400' : 'text-red-400'}">${validation.totals?.physical || 0}</span></div>
-            <div>Социальные: <span class="${validation.totals?.social === 9 || validation.totals?.social === 7 || validation.totals?.social === 5 ? 'text-green-400' : 'text-red-400'}">${validation.totals?.social || 0}</span></div>
-            <div>Ментальные: <span class="${validation.totals?.mental === 9 || validation.totals?.mental === 7 || validation.totals?.mental === 5 ? 'text-green-400' : 'text-red-400'}">${validation.totals?.mental || 0}</span></div>
+            <div>Физические: <span data-validation="attributes-physical" class="${validation.totals?.physical === 9 || validation.totals?.physical === 7 || validation.totals?.physical === 5 ? 'text-green-400' : 'text-red-400'}">${validation.totals?.physical || 0}</span></div>
+            <div>Социальные: <span data-validation="attributes-social" class="${validation.totals?.social === 9 || validation.totals?.social === 7 || validation.totals?.social === 5 ? 'text-green-400' : 'text-red-400'}">${validation.totals?.social || 0}</span></div>
+            <div>Ментальные: <span data-validation="attributes-mental" class="${validation.totals?.mental === 9 || validation.totals?.mental === 7 || validation.totals?.mental === 5 ? 'text-green-400' : 'text-red-400'}">${validation.totals?.mental || 0}</span></div>
           </div>
         </div>
 
@@ -252,7 +252,7 @@ class CharacterCreatorApp {
         ${attrs.map((attr, idx) => `
           <div class="stat-row">
             <span class="stat-label">${labels[idx]}</span>
-            <div class="dot-tracker">
+            <div class="dot-tracker" data-category="attributes" data-subcategory="${category}" data-attr="${attr}">
               ${this.renderDots(this.character.attributes[category][attr], 10, 'attributes', category, attr)}
             </div>
           </div>
@@ -273,9 +273,9 @@ class CharacterCreatorApp {
             Максимум 5 в одной способности до Freebies.
           </div>
           <div class="flex gap-4">
-            <div>Таланты: <span class="${validation.totals?.talents === 18 || validation.totals?.talents === 12 || validation.totals?.talents === 8 ? 'text-green-400' : 'text-red-400'}">${validation.totals?.talents || 0}</span></div>
-            <div>Навыки: <span class="${validation.totals?.skills === 18 || validation.totals?.skills === 12 || validation.totals?.skills === 8 ? 'text-green-400' : 'text-red-400'}">${validation.totals?.skills || 0}</span></div>
-            <div>Познания: <span class="${validation.totals?.knowledges === 18 || validation.totals?.knowledges === 12 || validation.totals?.knowledges === 8 ? 'text-green-400' : 'text-red-400'}">${validation.totals?.knowledges || 0}</span></div>
+            <div>Таланты: <span data-validation="abilities-talents" class="${validation.totals?.talents === 18 || validation.totals?.talents === 12 || validation.totals?.talents === 8 ? 'text-green-400' : 'text-red-400'}">${validation.totals?.talents || 0}</span></div>
+            <div>Навыки: <span data-validation="abilities-skills" class="${validation.totals?.skills === 18 || validation.totals?.skills === 12 || validation.totals?.skills === 8 ? 'text-green-400' : 'text-red-400'}">${validation.totals?.skills || 0}</span></div>
+            <div>Познания: <span data-validation="abilities-knowledges" class="${validation.totals?.knowledges === 18 || validation.totals?.knowledges === 12 || validation.totals?.knowledges === 8 ? 'text-green-400' : 'text-red-400'}">${validation.totals?.knowledges || 0}</span></div>
           </div>
         </div>
 
@@ -295,7 +295,7 @@ class CharacterCreatorApp {
         ${abilities.map(ability => `
           <div class="stat-row">
             <span class="stat-label">${ability.name}</span>
-            <div class="dot-tracker">
+            <div class="dot-tracker" data-category="abilities" data-subcategory="${category}" data-attr="${ability.id}">
               ${this.renderDots(this.character.abilities[category][ability.id] || 0, 10, 'abilities', category, ability.id)}
             </div>
           </div>
@@ -315,7 +315,7 @@ class CharacterCreatorApp {
         <div class="card">
           <h3 class="section-title">Дисциплины</h3>
           <div class="mb-4 p-4 bg-gray-800 rounded">
-            <div class="text-sm font-medium">Всего очков: <span class="${discValidation.total <= 7 ? 'text-green-400' : 'text-red-400'}">${discValidation.total}/7</span></div>
+            <div class="text-sm font-medium">Всего очков: <span data-validation="disciplines-total" class="${discValidation.total <= 7 ? 'text-green-400' : 'text-red-400'}">${discValidation.total}/7</span></div>
           </div>
           <div id="disciplinesList">
             ${this.renderDisciplinesList()}
@@ -327,7 +327,7 @@ class CharacterCreatorApp {
         <div class="card">
           <h3 class="section-title">Предыстории</h3>
           <div class="mb-4 p-4 bg-gray-800 rounded">
-            <div class="text-sm font-medium mb-2">Всего очков: <span class="${bgValidation.total <= 3 ? 'text-green-400' : 'text-red-400'}">${bgValidation.total}/3</span></div>
+            <div class="text-sm font-medium mb-2">Всего очков: <span data-validation="backgrounds-total" class="${bgValidation.total <= 3 ? 'text-green-400' : 'text-red-400'}">${bgValidation.total}/3</span></div>
             <div class="text-xs text-gray-400">Доступны: Поколение, Стадо, Ресурсы, Слуги</div>
           </div>
           ${backgroundsData.map(bg => `
@@ -336,7 +336,7 @@ class CharacterCreatorApp {
                 <span class="stat-label">${bg.name}</span>
                 <div class="text-xs text-gray-400">${bg.description}</div>
               </div>
-              <div class="dot-tracker">
+              <div class="dot-tracker" data-category="backgrounds" data-subcategory="" data-attr="${bg.id}">
                 ${this.renderDots(this.character.backgrounds[bg.id] || 0, 5, 'backgrounds', null, bg.id)}
               </div>
             </div>
@@ -347,24 +347,24 @@ class CharacterCreatorApp {
         <div class="card">
           <h3 class="section-title">Добродетели</h3>
           <div class="mb-4 p-4 bg-gray-800 rounded">
-            <div class="text-sm font-medium">Всего очков: <span class="${virtValidation.total <= 5 ? 'text-green-400' : 'text-red-400'}">${virtValidation.total}/5</span></div>
+            <div class="text-sm font-medium">Всего очков: <span data-validation="virtues-total" class="${virtValidation.total <= 5 ? 'text-green-400' : 'text-red-400'}">${virtValidation.total}/5</span></div>
             <div class="text-xs text-gray-400">Каждая добродетель начинается с 1</div>
           </div>
           <div class="stat-row">
             <span class="stat-label">Совесть/Убеждение</span>
-            <div class="dot-tracker">
+            <div class="dot-tracker" data-category="virtues" data-subcategory="" data-attr="conscience">
               ${this.renderDots(this.character.virtues.conscience, 5, 'virtues', null, 'conscience')}
             </div>
           </div>
           <div class="stat-row">
             <span class="stat-label">Самоконтроль/Инстинкт</span>
-            <div class="dot-tracker">
+            <div class="dot-tracker" data-category="virtues" data-subcategory="" data-attr="selfControl">
               ${this.renderDots(this.character.virtues.selfControl, 5, 'virtues', null, 'selfControl')}
             </div>
           </div>
           <div class="stat-row">
             <span class="stat-label">Храбрость</span>
-            <div class="dot-tracker">
+            <div class="dot-tracker" data-category="virtues" data-subcategory="" data-attr="courage">
               ${this.renderDots(this.character.virtues.courage, 5, 'virtues', null, 'courage')}
             </div>
           </div>
@@ -375,13 +375,13 @@ class CharacterCreatorApp {
           <h3 class="section-title">Человечность и Сила воли</h3>
           <div class="stat-row">
             <span class="stat-label">Человечность</span>
-            <div class="dot-tracker">
+            <div class="dot-tracker" data-category="humanity" data-subcategory="" data-attr="humanity">
               ${this.renderDots(this.character.humanity, 10, 'humanity', null, 'humanity')}
             </div>
           </div>
           <div class="stat-row">
             <span class="stat-label">Сила воли</span>
-            <div class="dot-tracker">
+            <div class="dot-tracker" data-category="willpower" data-subcategory="" data-attr="willpower">
               ${this.renderDots(this.character.willpower, 10, 'willpower', null, 'willpower')}
             </div>
           </div>
@@ -435,7 +435,7 @@ class CharacterCreatorApp {
               ${pathsInfo}
             </div>
             <div class="flex items-center gap-2">
-              <div class="dot-tracker">
+              <div class="dot-tracker" data-category="disciplines" data-subcategory="" data-attr="${discId}">
                 ${this.renderDots(level, 10, 'disciplines', null, discId)}
               </div>
               <button class="text-red-500 hover:text-red-400 text-xl" onclick="app.removeDiscipline('${discId}')">×</button>
@@ -628,8 +628,8 @@ class CharacterCreatorApp {
     let html = '';
     for (let i = 1; i <= max; i++) {
       const filled = i <= current ? 'filled' : '';
-      const onclick = `app.updateCharacterValue('${category}', '${subcategory || ''}', '${attr}', ${i})`;
-      html += `<div class="dot ${filled}" onclick="${onclick}"></div>`;
+      // No onclick - handled by global event delegation
+      html += `<div class="dot ${filled}" data-value="${i}"></div>`;
     }
     return html;
   }
@@ -965,31 +965,64 @@ class CharacterCreatorApp {
   }
 
   attachEventListeners() {
-    // Tab switching
-    document.querySelectorAll('.tab').forEach(tab => {
-      tab.addEventListener('click', (e) => {
-        const phase = e.target.getAttribute('data-phase');
+    // Remove old global listener if it exists
+    if (this.globalClickHandler) {
+      document.removeEventListener('click', this.globalClickHandler);
+    }
+
+    // ONE global click handler for ALL clicks via event delegation
+    this.globalClickHandler = (e) => {
+      // Handle dot clicks
+      if (e.target.classList.contains('dot') && !e.target.classList.contains('cursor-not-allowed')) {
+        const tracker = e.target.closest('.dot-tracker');
+        if (tracker) {
+          const category = tracker.dataset.category;
+          const subcategory = tracker.dataset.subcategory;
+          const attr = tracker.dataset.attr;
+          const value = parseInt(e.target.dataset.value);
+          this.handleDotClick(category, subcategory, attr, value, tracker);
+        }
+        return;
+      }
+
+      // Handle tab clicks
+      if (e.target.classList.contains('tab')) {
+        const phase = e.target.dataset.phase;
         if (phase) {
           this.switchPhase(phase);
         }
-      });
-    });
+        return;
+      }
+    };
+
+    document.addEventListener('click', this.globalClickHandler);
 
     // Basic info text inputs
     ['name', 'player', 'chronicle', 'nature', 'demeanor', 'concept', 'sire'].forEach(field => {
       const el = document.getElementById(field);
       if (el) {
-        el.addEventListener('input', (e) => {
+        // Remove old listener if exists
+        const oldListener = el._inputListener;
+        if (oldListener) {
+          el.removeEventListener('input', oldListener);
+        }
+        // Add new listener and store reference
+        const newListener = (e) => {
           this.character[field] = e.target.value;
           this.saveToLocalStorage();
-        });
+        };
+        el.addEventListener('input', newListener);
+        el._inputListener = newListener;
       }
     });
 
     // Clan selection
     const clanSelect = document.getElementById('clan');
     if (clanSelect) {
-      clanSelect.addEventListener('change', (e) => {
+      if (clanSelect._changeListener) {
+        clanSelect.removeEventListener('change', clanSelect._changeListener);
+      }
+      const changeListener = (e) => {
         this.character.clan = e.target.value;
 
         // Auto-add clan disciplines
@@ -1008,30 +1041,71 @@ class CharacterCreatorApp {
         this.saveToLocalStorage();
         this.render();
         this.attachEventListeners();
-      });
+      };
+      clanSelect.addEventListener('change', changeListener);
+      clanSelect._changeListener = changeListener;
     }
 
     // Add discipline button
     const addDiscBtn = document.getElementById('addDisciplineBtn');
     if (addDiscBtn) {
-      addDiscBtn.addEventListener('click', () => this.showAddDisciplineDialog());
+      if (addDiscBtn._clickListener) {
+        addDiscBtn.removeEventListener('click', addDiscBtn._clickListener);
+      }
+      const clickListener = () => this.showAddDisciplineDialog();
+      addDiscBtn.addEventListener('click', clickListener);
+      addDiscBtn._clickListener = clickListener;
     }
 
     // Save/Load buttons
     const saveBtn = document.getElementById('saveBtn');
     if (saveBtn) {
-      saveBtn.addEventListener('click', () => this.saveCharacter());
+      if (saveBtn._clickListener) {
+        saveBtn.removeEventListener('click', saveBtn._clickListener);
+      }
+      const clickListener = () => this.saveCharacter();
+      saveBtn.addEventListener('click', clickListener);
+      saveBtn._clickListener = clickListener;
     }
 
     const loadBtn = document.getElementById('loadBtn');
     if (loadBtn) {
-      loadBtn.addEventListener('click', () => this.loadCharacter());
+      if (loadBtn._clickListener) {
+        loadBtn.removeEventListener('click', loadBtn._clickListener);
+      }
+      const clickListener = () => this.loadCharacter();
+      loadBtn.addEventListener('click', clickListener);
+      loadBtn._clickListener = clickListener;
     }
 
     const exportBtn = document.getElementById('exportBtn');
     if (exportBtn) {
-      exportBtn.addEventListener('click', () => this.exportToPDF());
+      if (exportBtn._clickListener) {
+        exportBtn.removeEventListener('click', exportBtn._clickListener);
+      }
+      const clickListener = () => this.exportToPDF();
+      exportBtn.addEventListener('click', clickListener);
+      exportBtn._clickListener = clickListener;
     }
+  }
+
+  handleDotClick(category, subcategory, attr, value, tracker) {
+    // Update character data using existing updateCharacterValue logic
+    this.updateCharacterValue(category, subcategory, attr, value);
+
+    // Update the dots visually WITHOUT re-rendering
+    const dots = tracker.querySelectorAll('.dot');
+    dots.forEach((dot, index) => {
+      const dotValue = index + 1;
+      if (dotValue <= value) {
+        dot.classList.add('filled');
+      } else {
+        dot.classList.remove('filled');
+      }
+    });
+
+    // Update validation displays
+    this.updateValidationDisplays();
   }
 
   updateCharacterValue(category, subcategory, attr, value) {
@@ -1109,7 +1183,70 @@ class CharacterCreatorApp {
     }
 
     this.saveToLocalStorage();
-    this.updateAllDisplays();
+    // Don't call updateAllDisplays() here - caller will update UI as needed
+  }
+
+  updateValidationDisplays() {
+    // Update only the validation text displays without re-rendering
+    const attrValidation = this.tracker.validateAttributes();
+    const abilValidation = this.tracker.validateAbilities();
+    const discValidation = this.tracker.validateDisciplines();
+    const bgValidation = this.tracker.validateBackgrounds();
+    const virtValidation = this.tracker.validateVirtues();
+
+    // Update attribute totals if they exist on page
+    const attrTotals = {
+      physical: attrValidation.totals?.physical || 0,
+      social: attrValidation.totals?.social || 0,
+      mental: attrValidation.totals?.mental || 0
+    };
+
+    // Find and update each display element
+    Object.entries(attrTotals).forEach(([category, total]) => {
+      const el = document.querySelector(`[data-validation="attributes-${category}"]`);
+      if (el) {
+        el.textContent = total;
+        const isValid = total === 9 || total === 7 || total === 5;
+        el.className = isValid ? 'text-green-400' : 'text-red-400';
+      }
+    });
+
+    // Update ability totals
+    const abilTotals = {
+      talents: abilValidation.totals?.talents || 0,
+      skills: abilValidation.totals?.skills || 0,
+      knowledges: abilValidation.totals?.knowledges || 0
+    };
+
+    Object.entries(abilTotals).forEach(([category, total]) => {
+      const el = document.querySelector(`[data-validation="abilities-${category}"]`);
+      if (el) {
+        el.textContent = total;
+        const isValid = total === 18 || total === 12 || total === 8;
+        el.className = isValid ? 'text-green-400' : 'text-red-400';
+      }
+    });
+
+    // Update discipline total
+    const discEl = document.querySelector('[data-validation="disciplines-total"]');
+    if (discEl) {
+      discEl.textContent = `${discValidation.total}/7`;
+      discEl.className = discValidation.total <= 7 ? 'text-green-400' : 'text-red-400';
+    }
+
+    // Update background total
+    const bgEl = document.querySelector('[data-validation="backgrounds-total"]');
+    if (bgEl) {
+      bgEl.textContent = `${bgValidation.total}/3`;
+      bgEl.className = bgValidation.total <= 3 ? 'text-green-400' : 'text-red-400';
+    }
+
+    // Update virtue total
+    const virtEl = document.querySelector('[data-validation="virtues-total"]');
+    if (virtEl) {
+      virtEl.textContent = `${virtValidation.total}/5`;
+      virtEl.className = virtValidation.total <= 5 ? 'text-green-400' : 'text-red-400';
+    }
   }
 
   calculateFreebieCost(category, subcategory, attr, currentValue, newValue) {
