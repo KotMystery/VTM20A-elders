@@ -226,7 +226,7 @@ class CharacterCreatorApp {
               <div class="text-sm font-medium mb-2">Текущее поколение: ${this.character.getEffectiveGeneration()}</div>
               <div class="text-xs text-gray-400">
                 Базовое: 9<br>
-                Фон "Поколение": -${this.character.backgrounds.generation || 0}<br>
+                Факт Биографии "Поколение": -${this.character.backgrounds.generation || 0}<br>
                 Недостаток "Разбавленное Витэ": +${this.character.dilutedVitae}
               </div>
             </div>
@@ -362,9 +362,11 @@ class CharacterCreatorApp {
         <!-- Disciplines -->
         <div class="card">
           <h3 class="section-title">Дисциплины</h3>
+          ${this.currentPhase === 'setup' ? `
           <div class="mb-4 p-4 bg-gray-800 rounded">
             <div class="text-sm font-medium">Всего очков: <span data-validation="disciplines-total" class="${discValidation.total <= 7 ? 'text-green-400' : 'text-red-400'}">${discValidation.total}/7</span></div>
           </div>
+          ` : ''}
           <div id="disciplinesList">
             ${this.renderDisciplinesList()}
           </div>
@@ -374,10 +376,12 @@ class CharacterCreatorApp {
         <!-- Backgrounds -->
         <div class="card">
           <h3 class="section-title">Факты биографии</h3>
+          ${this.currentPhase === 'setup' ? `
           <div class="mb-4 p-4 bg-gray-800 rounded">
             <div class="text-sm font-medium mb-2">Всего очков: <span data-validation="backgrounds-total" class="${bgValidation.total <= 3 ? 'text-green-400' : 'text-red-400'}">${bgValidation.total}/3</span></div>
             <div class="text-xs text-gray-400">Доступны: Поколение, Стадо, Ресурсы, Слуги</div>
           </div>
+          ` : ''}
           ${backgroundsData.map(bg => `
             <div class="stat-row">
               <div>
@@ -394,10 +398,12 @@ class CharacterCreatorApp {
         <!-- Virtues -->
         <div class="card">
           <h3 class="section-title">Добродетели</h3>
+          ${this.currentPhase === 'setup' ? `
           <div class="mb-4 p-4 bg-gray-800 rounded">
             <div class="text-sm font-medium">Всего очков: <span data-validation="virtues-total" class="${virtValidation.total <= 5 ? 'text-green-400' : 'text-red-400'}">${virtValidation.total}/5</span></div>
             <div class="text-xs text-gray-400">Каждая добродетель начинается с 1</div>
           </div>
+          ` : ''}
           <div class="stat-row">
             <span class="stat-label">Совесть/Решимость</span>
             <div class="dot-tracker" data-category="virtues" data-subcategory="" data-attr="conscience">
@@ -675,6 +681,18 @@ class CharacterCreatorApp {
 
     // Determine the allowed limit based on phase and category
     let allowedMax = max;
+    let minValue = 1; // Default minimum (for attributes and virtues)
+
+    // Determine minimum value based on category
+    if (category === 'abilities' || category === 'disciplines' || category === 'backgrounds') {
+      minValue = 0; // These can go to 0
+    } else if (category === 'attributes' || category === 'virtues') {
+      minValue = 1; // These must stay at least 1
+    } else if (category === 'humanity') {
+      minValue = 0; // Can go to 0 in later phases
+    } else if (category === 'willpower') {
+      minValue = 1; // Must stay at least 1
+    }
 
     if (this.currentPhase === 'setup') {
       // In setup phase, enforce limits
@@ -689,6 +707,12 @@ class CharacterCreatorApp {
       } else if (category === 'humanity' || category === 'willpower') {
         allowedMax = 0; // Cannot click these in setup phase - they're derived
       }
+    }
+
+    // Add zero dot for things that can be zero (for easy removal)
+    if (minValue === 0 && this.currentPhase === 'setup' && category !== 'humanity' && category !== 'willpower') {
+      const filledZero = current === 0 ? 'filled' : '';
+      html += `<div class="dot ${filledZero}" data-value="0" title="Убрать все точки">×</div>`;
     }
 
     for (let i = 1; i <= max; i++) {
@@ -730,9 +754,19 @@ class CharacterCreatorApp {
 
     // All flaws from the data file
     Object.entries(flawsData).forEach(([category, items]) => {
-      items.forEach(flaw => {
-        allFlaws.push({ ...flaw, category });
-      });
+      if (category === 'clanSpecific') {
+        // Handle clan-specific flaws
+        Object.entries(items).forEach(([clanId, clanFlaws]) => {
+          clanFlaws.forEach(flaw => {
+            allFlaws.push({ ...flaw, clan: clanId, isClanSpecific: true });
+          });
+        });
+      } else {
+        // Regular category with array of flaws
+        items.forEach(flaw => {
+          allFlaws.push({ ...flaw, category });
+        });
+      }
     });
 
     this.showMeritFlawModal(allFlaws, 'flaws');
@@ -1290,8 +1324,8 @@ class CharacterCreatorApp {
     if (genBreakdown && genBreakdown.classList.contains('text-xs')) {
       genBreakdown.innerHTML = `
         Базовое: 9<br>
-        Фон "Поколение": -${this.character.backgrounds.generation || 0}<br>
-        Недостаток "Разбавленная кровь": +${this.character.dilutedVitae}
+        Факт Биографии "Поколение": -${this.character.backgrounds.generation || 0}<br>
+        Недостаток "Разбавленное Витэ": +${this.character.dilutedVitae}
       `;
     }
 
@@ -1680,10 +1714,14 @@ class CharacterCreatorApp {
       costPerPoint = this.FREEBIE_COSTS.humanity;
     } else if (category === 'willpower') {
       costPerPoint = this.FREEBIE_COSTS.willpower;
+    } else {
+      console.error(`[ERROR] Unknown category for freebie cost: ${category}`);
+      return 0;
     }
 
-    console.log(`[DEBUG] costPerPoint = ${costPerPoint}, diff = ${diff}`);
-    return diff * costPerPoint;
+    const totalCost = diff * costPerPoint;
+    console.log(`[FREEBIE] Category: ${category}, From ${currentValue} to ${newValue}, Diff: ${diff}, Cost per point: ${costPerPoint}, Total: ${totalCost}`);
+    return totalCost;
   }
 
   calculateXPCost(category, subcategory, attr, currentValue, newValue) {
