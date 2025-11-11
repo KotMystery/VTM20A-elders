@@ -168,7 +168,7 @@ export class PointTracker {
     // Check if only allowed backgrounds
     Object.keys(backgrounds).forEach(bg => {
       if (!ELDER_RULES.backgrounds.allowed.includes(bg)) {
-        errors.push(`${bg}: недопустимая предыстория для Древних`);
+        errors.push(`${bg}: недопустимая предыстория для Старейшин`);
       }
     });
 

@@ -557,7 +557,7 @@ class CharacterCreatorApp {
 
           <div class="mb-4 p-4 bg-gray-800 rounded">
             <div class="text-lg font-bold mb-2">
-              Доступно: <span class="${available >= 0 ? 'text-green-400' : 'text-red-400'}">${available}</span> бонусных очков
+              Доступно: <span id="freebies-available" class="${available >= 0 ? 'text-green-400' : 'text-red-400'}">${available}</span> бонусных очков
             </div>
             <div class="text-sm text-gray-400">
               Базовые: 15<br>
@@ -644,10 +644,10 @@ class CharacterCreatorApp {
 
           <div class="mb-4 p-4 bg-gray-800 rounded">
             <div class="text-lg font-bold mb-2">
-              Доступно: <span class="${available >= 0 ? 'text-green-400' : 'text-red-400'}">${available}</span> / 33 XP
+              Доступно: <span id="xp-available" class="${available >= 0 ? 'text-green-400' : 'text-red-400'}">${available}</span> / <span id="xp-total">103</span> XP
             </div>
             <div class="text-sm text-gray-400 mb-2">
-              Древние начинают с 33 опыта<br>
+              Старейшины начинают с 103 опыта<br>
               Использовано: <span id="xp-counter">${this.character.experienceSpent}/${this.character.experience}</span>
             </div>
             <div class="text-sm text-yellow-400">
@@ -2150,10 +2150,26 @@ class CharacterCreatorApp {
       freebiesCounter.textContent = `${this.character.freebiesSpent || 0}/${this.character.freebies}`;
     }
 
+    // Update freebies available counter
+    const freebiesAvailable = document.getElementById('freebies-available');
+    if (freebiesAvailable) {
+      const available = this.character.freebies - (this.character.freebiesSpent || 0);
+      freebiesAvailable.textContent = available;
+      freebiesAvailable.className = available >= 0 ? 'text-green-400' : 'text-red-400';
+    }
+
     // Update XP counter
     const xpCounter = document.getElementById('xp-counter');
     if (xpCounter) {
       xpCounter.textContent = `${this.character.experienceSpent || 0}/${this.character.experience}`;
+    }
+
+    // Update XP available counter
+    const xpAvailable = document.getElementById('xp-available');
+    if (xpAvailable) {
+      const available = this.character.experience - (this.character.experienceSpent || 0);
+      xpAvailable.textContent = available;
+      xpAvailable.className = available >= 0 ? 'text-green-400' : 'text-red-400';
     }
   }
 
