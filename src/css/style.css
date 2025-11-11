@@ -46,12 +46,12 @@
   }
 
   .dot.filled {
-    @apply bg-red-500 border-red-500; /* Current phase - bright red */
+    @apply bg-red-600 border-red-600; /* Current phase - bright red */
   }
 
   /* Phase-based dot coloring */
   .dot.filled.locked-1 {
-    @apply bg-red-900 border-red-900; /* 1 phase back - darker red */
+    @apply bg-red-800 border-red-800; /* 1 phase back - darker red */
   }
 
   .dot.filled.locked-2 {
@@ -64,6 +64,11 @@
 
   .dot.filled.future-2 {
     @apply bg-green-500 border-green-500; /* 2 phases ahead - green */
+  }
+
+  /* Disabled dots (exceed elder maximum) */
+  .dot.filled.cursor-not-allowed {
+    @apply bg-gray-700 border-gray-700; /* Darker gray for locked/disabled dots */
   }
 
   .stat-group {
