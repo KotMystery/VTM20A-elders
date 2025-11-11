@@ -529,7 +529,7 @@ class CharacterCreatorApp {
             </div>
             <div class="flex items-center gap-2">
               <div class="dot-tracker" data-category="disciplines" data-subcategory="" data-attr="${discId}">
-                ${this.renderDots(level, 7, 'disciplines', null, discId)}
+                ${this.renderDots(level, 10, 'disciplines', null, discId)}
               </div>
               <button class="text-red-500 hover:text-red-400 text-xl" onclick="app.removeDiscipline('${discId}')">×</button>
             </div>
@@ -1812,7 +1812,7 @@ class CharacterCreatorApp {
       const tracker = document.querySelector(`.dot-tracker[data-category="disciplines"][data-attr="${discId}"]`);
       if (tracker) {
         const current = this.character.disciplines[discId];
-        tracker.innerHTML = this.renderDots(current, 7, 'disciplines', null, discId);
+        tracker.innerHTML = this.renderDots(current, 10, 'disciplines', null, discId);
       }
     });
 
