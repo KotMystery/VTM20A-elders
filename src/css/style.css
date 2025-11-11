@@ -69,7 +69,8 @@
   /* Disabled dots - need ACTUAL visual styling and behavior override */
   .dot.cursor-not-allowed {
     @apply border-red-900 bg-gray-800 opacity-100; /* Override: dark border, dark bg, full opacity */
-    cursor: not-allowed; /* Can't use @apply here due to circular dependency */
+    cursor: not-allowed !important; /* Force cursor override */
+    pointer-events: none; /* Prevent any interaction */
   }
 
   /* Remove hover effect from disabled dots */
