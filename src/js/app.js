@@ -2661,20 +2661,21 @@ class CharacterCreatorApp {
     // Sum up costs for each level
     for (let level = currentValue + 1; level <= newValue; level++) {
       let costForLevel = 0;
+      const currentLevel = level - 1; // Cost is based on current level, not new level
 
-      console.log(`[XP_COST] Calculating for level: ${level}`);
+      console.log(`[XP_COST] Calculating cost to go from ${currentLevel} to ${level}`);
 
       if (category === 'attributes') {
-        costForLevel = XP_COSTS.attribute(level);
-        console.log(`[XP_COST] Attribute formula: ${level} * 4 = ${costForLevel}`);
+        costForLevel = XP_COSTS.attribute(currentLevel);
+        console.log(`[XP_COST] Attribute formula: ${currentLevel} * 4 = ${costForLevel}`);
       } else if (category === 'abilities') {
         if (currentValue === 0) {
           // New ability
           costForLevel = XP_COSTS.newAbility;
           console.log(`[XP_COST] New ability: ${costForLevel}`);
         } else {
-          costForLevel = XP_COSTS.ability(level);
-          console.log(`[XP_COST] Ability formula: ${level} * 2 = ${costForLevel}`);
+          costForLevel = XP_COSTS.ability(currentLevel);
+          console.log(`[XP_COST] Ability formula: ${currentLevel} * 2 = ${costForLevel}`);
         }
       } else if (category === 'disciplines') {
         if (currentValue === 0) {
@@ -2691,25 +2692,25 @@ class CharacterCreatorApp {
           console.log(`[XP_COST] Discipline: ${attr}, Category: ${disc?.category}, IsClan: ${isClan}, IsCaitiff: ${isCaitiff}`);
 
           if (isCaitiff) {
-            costForLevel = XP_COSTS.discipline[disc.category].caitiff(level);
-            console.log(`[XP_COST] Caitiff discipline formula: ${level} * X = ${costForLevel}`);
+            costForLevel = XP_COSTS.discipline[disc.category].caitiff(currentLevel);
+            console.log(`[XP_COST] Caitiff discipline formula: ${currentLevel} * X = ${costForLevel}`);
           } else if (isClan) {
-            costForLevel = XP_COSTS.discipline[disc.category].clan(level);
-            console.log(`[XP_COST] Clan discipline formula: ${level} * X = ${costForLevel}`);
+            costForLevel = XP_COSTS.discipline[disc.category].clan(currentLevel);
+            console.log(`[XP_COST] Clan discipline formula: ${currentLevel} * X = ${costForLevel}`);
           } else {
-            costForLevel = XP_COSTS.discipline[disc.category].nonClan(level);
-            console.log(`[XP_COST] Non-clan discipline formula: ${level} * X = ${costForLevel}`);
+            costForLevel = XP_COSTS.discipline[disc.category].nonClan(currentLevel);
+            console.log(`[XP_COST] Non-clan discipline formula: ${currentLevel} * X = ${costForLevel}`);
           }
         }
       } else if (category === 'virtues') {
-        costForLevel = XP_COSTS.virtue(level);
-        console.log(`[XP_COST] Virtue formula: ${level} * 2 = ${costForLevel}`);
+        costForLevel = XP_COSTS.virtue(currentLevel);
+        console.log(`[XP_COST] Virtue formula: ${currentLevel} * 2 = ${costForLevel}`);
       } else if (category === 'humanity') {
-        costForLevel = XP_COSTS.humanity(level);
-        console.log(`[XP_COST] Humanity formula: ${level} * 2 = ${costForLevel}`);
+        costForLevel = XP_COSTS.humanity(currentLevel);
+        console.log(`[XP_COST] Humanity formula: ${currentLevel} * 2 = ${costForLevel}`);
       } else if (category === 'willpower') {
-        costForLevel = XP_COSTS.willpower(level);
-        console.log(`[XP_COST] Willpower formula: ${level} * 1 = ${costForLevel}`);
+        costForLevel = XP_COSTS.willpower(currentLevel);
+        console.log(`[XP_COST] Willpower formula: ${currentLevel} * 1 = ${costForLevel}`);
       } else if (category === 'backgrounds') {
         // Backgrounds can't be raised with XP in standard rules
         console.log(`[XP_COST_ERROR] Backgrounds cannot be raised with XP`);
