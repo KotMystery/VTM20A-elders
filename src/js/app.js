@@ -569,7 +569,7 @@ class CharacterCreatorApp {
             <div class="text-sm text-gray-400">
               Базовые: 15<br>
               Котерия (обязательный недостаток): +7<br>
-              Личные недостатки: +${Math.min(totalFlawPoints, 7)} (макс. 7)<br>
+              Личные недостатки: +${Math.min(totalFlawPoints, 9)} (макс. 9)<br>
               Достоинства: -${totalMeritCosts}<br>
               Использовано: <span id="freebies-counter">${this.character.freebiesSpent}/${this.character.freebies}</span><br>
               <span class="text-yellow-400 mt-1 block">Кликните на пустую точку справа от текущего значения для повышения. Стоимость: Атрибут (5), Способность (2), Дисциплина (7), Факт Биографии (1), Добродетель (2), Человечность (1), Сила воли (1). Вы можете найти все Достоинства и Недостатки в корбуке на страницах 515-535.</span>
@@ -620,7 +620,7 @@ class CharacterCreatorApp {
 
           <!-- Current Flaws -->
           <div>
-            <div class="text-sm font-medium mb-2">Недостатки (дают бонусные очки, макс. 7):</div>
+            <div class="text-sm font-medium mb-2">Недостатки (дают бонусные очки, макс. 9):</div>
             <div class="space-y-2">
               ${this.character.flaws.length === 0 ?
                 '<div class="text-xs text-gray-500">Нет выбранных недостатков</div>' :
@@ -652,10 +652,10 @@ class CharacterCreatorApp {
 
           <div class="mb-4 p-4 bg-gray-800 rounded">
             <div class="text-lg font-bold mb-2">
-              Доступно: <span id="xp-available" class="${available >= 0 ? 'text-green-400' : 'text-red-400'}">${available}</span> / <span id="xp-total">78</span> XP
+              Доступно: <span id="xp-available" class="${available >= 0 ? 'text-green-400' : 'text-red-400'}">${available}</span> / <span id="xp-total">113</span> XP
             </div>
             <div class="text-sm text-gray-400 mb-2">
-              Старейшины начинают с 78 опыта<br>
+              Старейшины начинают с 113 опыта<br>
               Использовано: <span id="xp-counter">${this.character.experienceSpent}/${this.character.experience}</span>
             </div>
             <div class="text-sm text-yellow-400">
