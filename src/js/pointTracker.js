@@ -29,10 +29,10 @@ export const ELDER_RULES = {
   },
   freebies: {
     base: 22, // Includes mandatory 7-point coterie flaw
-    personalFlawsMax: 7 // Can gain up to 7 more from personal flaws
+    personalFlawsMax: 9 // Can gain up to 9 more from personal flaws
   },
   experience: {
-    starting: 33
+    starting: 113
   }
 };
 

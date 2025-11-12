@@ -81,8 +81,8 @@ class CharacterCreatorApp {
     console.log('[INIT] Disciplines: 7 points total');
     console.log('[INIT] Backgrounds: 3 points total (Generation, Herd, Resources, Retainers only)');
     console.log('[INIT] Virtues: 5 points total (each starts at 1)');
-    console.log('[INIT] Freebies: 22 base + up to 7 from personal flaws');
-    console.log('[INIT] Experience: 33 XP starting\n');
+    console.log('[INIT] Freebies: 22 base + up to 9 from personal flaws');
+    console.log('[INIT] Experience: 113 XP starting\n');
 
     this.init();
   }

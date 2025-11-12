@@ -92,10 +92,10 @@ export class Character {
     this.bloodPerTurn = 0;
 
     // Experience
-    this.experience = 78; // Elders start with 78 XP
+    this.experience = 113; // Elders start with 113 XP
     this.experienceSpent = 0;
 
-    // Freebies (15 base + 7 coterie flaw + 0-7 personal flaws = 22-29)
+    // Freebies (15 base + 7 coterie flaw + 0-9 personal flaws = 22-31)
     this.freebies = 22; // Base with mandatory coterie flaw
     this.freebiesSpent = 0;
 
@@ -530,10 +530,10 @@ export class Character {
     let total = 15; // Base
     total += 7; // Mandatory coterie flaw
 
-    // Add personal flaws (max 7 points)
+    // Add personal flaws (max 9 points)
     // Use selectedCost (chosen by player) instead of default cost
     const flawPoints = this.flaws.reduce((sum, flaw) => sum + (flaw.selectedCost || flaw.cost), 0);
-    total += Math.min(flawPoints, 7);
+    total += Math.min(flawPoints, 9);
 
     // Subtract merit costs
     // Use selectedCost (chosen by player) instead of default cost
