@@ -159,11 +159,13 @@ class CharacterCreatorApp {
           </div>
 
           <!-- Action buttons -->
+          ${this.currentPhase !== 'summary' ? `
           <div class="mt-6 flex gap-3 justify-center flex-wrap sticky bottom-2 bg-vtm-dark p-3 rounded-lg shadow-lg">
             <button class="btn btn-secondary text-sm" id="saveBtn">💾 Сохранить</button>
             <button class="btn btn-secondary text-sm" id="loadBtn">📂 Загрузить</button>
             <button class="btn btn-primary text-sm" id="exportBtn">📄 PDF</button>
           </div>
+          ` : ''}
         </div>
       </div>
     `;
@@ -734,8 +736,8 @@ class CharacterCreatorApp {
 
     return `
       <div class="character-sheet-summary space-y-6">
-        <!-- Print Button -->
-        <div class="no-print flex justify-end mb-4">
+        <!-- Print Button - Hidden: Use browser's native print/save to PDF instead -->
+        <div class="no-print flex justify-end mb-4" style="display: none;">
           <button class="btn btn-primary" onclick="window.print()">
             🖨️ Печать / Сохранить в PDF
           </button>
@@ -1072,6 +1074,11 @@ class CharacterCreatorApp {
         allowedMax = 5; // Max 5 for backgrounds
       } else if (category === 'humanity' || category === 'willpower') {
         allowedMax = 0; // Cannot click these in setup phase - they're derived
+      }
+    } else if (this.currentPhase === 'xp') {
+      // In XP phase, disallow spending on Humanity, Willpower, and Virtues
+      if (category === 'humanity' || category === 'willpower' || category === 'virtues') {
+        allowedMax = 0; // Cannot spend XP on these
       }
     }
 
