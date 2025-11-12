@@ -569,7 +569,7 @@ class CharacterCreatorApp {
             <div class="text-sm text-gray-400">
               Базовые: 15<br>
               Котерия (обязательный недостаток): +7<br>
-              Личные недостатки: +${Math.min(totalFlawPoints, 7)} (макс. 7)<br>
+              Личные недостатки: +${Math.min(totalFlawPoints, 9)} (макс. 9)<br>
               Достоинства: -${totalMeritCosts}<br>
               Использовано: <span id="freebies-counter">${this.character.freebiesSpent}/${this.character.freebies}</span><br>
               <span class="text-yellow-400 mt-1 block">Кликните на пустую точку справа от текущего значения для повышения. Стоимость: Атрибут (5), Способность (2), Дисциплина (7), Факт Биографии (1), Добродетель (2), Человечность (1), Сила воли (1). Вы можете найти все Достоинства и Недостатки в корбуке на страницах 515-535.</span>
@@ -620,7 +620,7 @@ class CharacterCreatorApp {
 
           <!-- Current Flaws -->
           <div>
-            <div class="text-sm font-medium mb-2">Недостатки (дают бонусные очки, макс. 7):</div>
+            <div class="text-sm font-medium mb-2">Недостатки (дают бонусные очки, макс. 9):</div>
             <div class="space-y-2">
               ${this.character.flaws.length === 0 ?
                 '<div class="text-xs text-gray-500">Нет выбранных недостатков</div>' :
@@ -652,10 +652,10 @@ class CharacterCreatorApp {
 
           <div class="mb-4 p-4 bg-gray-800 rounded">
             <div class="text-lg font-bold mb-2">
-              Доступно: <span id="xp-available" class="${available >= 0 ? 'text-green-400' : 'text-red-400'}">${available}</span> / <span id="xp-total">78</span> XP
+              Доступно: <span id="xp-available" class="${available >= 0 ? 'text-green-400' : 'text-red-400'}">${available}</span> / <span id="xp-total">113</span> XP
             </div>
             <div class="text-sm text-gray-400 mb-2">
-              Старейшины начинают с 78 опыта<br>
+              Старейшины начинают с 113 опыта<br>
               Использовано: <span id="xp-counter">${this.character.experienceSpent}/${this.character.experience}</span>
             </div>
             <div class="text-sm text-yellow-400">
@@ -2661,20 +2661,21 @@ class CharacterCreatorApp {
     // Sum up costs for each level
     for (let level = currentValue + 1; level <= newValue; level++) {
       let costForLevel = 0;
+      const currentLevel = level - 1; // Cost is based on current level, not new level
 
-      console.log(`[XP_COST] Calculating for level: ${level}`);
+      console.log(`[XP_COST] Calculating cost to go from ${currentLevel} to ${level}`);
 
       if (category === 'attributes') {
-        costForLevel = XP_COSTS.attribute(level);
-        console.log(`[XP_COST] Attribute formula: ${level} * 4 = ${costForLevel}`);
+        costForLevel = XP_COSTS.attribute(currentLevel);
+        console.log(`[XP_COST] Attribute formula: ${currentLevel} * 4 = ${costForLevel}`);
       } else if (category === 'abilities') {
         if (currentValue === 0) {
           // New ability
           costForLevel = XP_COSTS.newAbility;
           console.log(`[XP_COST] New ability: ${costForLevel}`);
         } else {
-          costForLevel = XP_COSTS.ability(level);
-          console.log(`[XP_COST] Ability formula: ${level} * 2 = ${costForLevel}`);
+          costForLevel = XP_COSTS.ability(currentLevel);
+          console.log(`[XP_COST] Ability formula: ${currentLevel} * 2 = ${costForLevel}`);
         }
       } else if (category === 'disciplines') {
         if (currentValue === 0) {
@@ -2691,25 +2692,25 @@ class CharacterCreatorApp {
           console.log(`[XP_COST] Discipline: ${attr}, Category: ${disc?.category}, IsClan: ${isClan}, IsCaitiff: ${isCaitiff}`);
 
           if (isCaitiff) {
-            costForLevel = XP_COSTS.discipline[disc.category].caitiff(level);
-            console.log(`[XP_COST] Caitiff discipline formula: ${level} * X = ${costForLevel}`);
+            costForLevel = XP_COSTS.discipline[disc.category].caitiff(currentLevel);
+            console.log(`[XP_COST] Caitiff discipline formula: ${currentLevel} * X = ${costForLevel}`);
           } else if (isClan) {
-            costForLevel = XP_COSTS.discipline[disc.category].clan(level);
-            console.log(`[XP_COST] Clan discipline formula: ${level} * X = ${costForLevel}`);
+            costForLevel = XP_COSTS.discipline[disc.category].clan(currentLevel);
+            console.log(`[XP_COST] Clan discipline formula: ${currentLevel} * X = ${costForLevel}`);
           } else {
-            costForLevel = XP_COSTS.discipline[disc.category].nonClan(level);
-            console.log(`[XP_COST] Non-clan discipline formula: ${level} * X = ${costForLevel}`);
+            costForLevel = XP_COSTS.discipline[disc.category].nonClan(currentLevel);
+            console.log(`[XP_COST] Non-clan discipline formula: ${currentLevel} * X = ${costForLevel}`);
           }
         }
       } else if (category === 'virtues') {
-        costForLevel = XP_COSTS.virtue(level);
-        console.log(`[XP_COST] Virtue formula: ${level} * 2 = ${costForLevel}`);
+        costForLevel = XP_COSTS.virtue(currentLevel);
+        console.log(`[XP_COST] Virtue formula: ${currentLevel} * 2 = ${costForLevel}`);
       } else if (category === 'humanity') {
-        costForLevel = XP_COSTS.humanity(level);
-        console.log(`[XP_COST] Humanity formula: ${level} * 2 = ${costForLevel}`);
+        costForLevel = XP_COSTS.humanity(currentLevel);
+        console.log(`[XP_COST] Humanity formula: ${currentLevel} * 2 = ${costForLevel}`);
       } else if (category === 'willpower') {
-        costForLevel = XP_COSTS.willpower(level);
-        console.log(`[XP_COST] Willpower formula: ${level} * 1 = ${costForLevel}`);
+        costForLevel = XP_COSTS.willpower(currentLevel);
+        console.log(`[XP_COST] Willpower formula: ${currentLevel} * 1 = ${costForLevel}`);
       } else if (category === 'backgrounds') {
         // Backgrounds can't be raised with XP in standard rules
         console.log(`[XP_COST_ERROR] Backgrounds cannot be raised with XP`);
