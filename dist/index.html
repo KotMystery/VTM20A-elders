@@ -4,10 +4,30 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>VTM 20A - Создание Старейшины</title>
-  <script type="module" crossorigin src="/VTM20A-elders/assets/index-BnysSJqj.js"></script>
-  <link rel="stylesheet" crossorigin href="/VTM20A-elders/assets/index-CYAOBIFU.css">
+  <script type="module" crossorigin src="/VTM20A-elders/assets/index-CxNaUaKy.js"></script>
+  <link rel="stylesheet" crossorigin href="/VTM20A-elders/assets/index-BehOgRqb.css">
 </head>
 <body>
+  <!-- SVG filters for blood effect -->
+  <svg style="position: absolute; width: 0; height: 0;" aria-hidden="true">
+    <defs>
+      <filter id="blood-turbulence">
+        <feTurbulence type="fractalNoise" baseFrequency="0.01 0.02" numOctaves="2" result="turbulence">
+          <animate attributeName="baseFrequency"
+                   values="0.01 0.02; 0.015 0.025; 0.01 0.02"
+                   dur="2s"
+                   repeatCount="1" />
+        </feTurbulence>
+        <feDisplacementMap in="SourceGraphic" in2="turbulence" scale="3" xChannelSelector="R" yChannelSelector="G">
+          <animate attributeName="scale"
+                   values="0; 3; 0"
+                   dur="2s"
+                   repeatCount="1" />
+        </feDisplacementMap>
+      </filter>
+    </defs>
+  </svg>
+
   <div id="app"></div>
 </body>
 </html>

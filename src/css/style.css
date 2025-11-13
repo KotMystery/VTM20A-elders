@@ -121,6 +121,90 @@
   .tab:hover {
     @apply text-vtm-red;
   }
+
+  /* Compendium toggle button */
+  .compendium-toggle {
+    @apply inline-flex items-center justify-center ml-2 text-gray-500 hover:text-vtm-red transition-colors cursor-pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    vertical-align: middle;
+  }
+
+  .compendium-toggle.active {
+    @apply text-vtm-red;
+  }
+
+  /* Compendium panel - hidden by default */
+  .compendium-panel {
+    @apply overflow-hidden bg-vtm-grey border-l-2 border-vtm-red mt-2 mb-4;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 2s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 2s cubic-bezier(0.4, 0, 0.2, 1);
+    filter: url(#blood-turbulence);
+  }
+
+  .compendium-panel.active {
+    max-height: 2000px;
+    opacity: 1;
+  }
+
+  .compendium-content {
+    @apply p-4 grid gap-4;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+
+  /* Compendium items with stagger animation */
+  .compendium-item {
+    @apply p-3 bg-black bg-opacity-30 rounded border border-gray-700;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    transition-delay: calc(0.5s + var(--item-index) * 0.08s);
+  }
+
+  .compendium-panel.active .compendium-item {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Direction-aware animations */
+  .compendium-panel[data-direction="right"] .compendium-item {
+    transform: translateX(-20px);
+  }
+
+  .compendium-panel[data-direction="right"].active .compendium-item {
+    transform: translateX(0);
+  }
+
+  .compendium-panel[data-direction="left"] .compendium-item {
+    transform: translateX(20px);
+  }
+
+  .compendium-panel[data-direction="left"].active .compendium-item {
+    transform: translateX(0);
+  }
+
+  .compendium-panel[data-direction="both"] .compendium-item {
+    transform: scale(0.9) translateY(20px);
+  }
+
+  .compendium-panel[data-direction="both"].active .compendium-item {
+    transform: scale(1) translateY(0);
+  }
+
+  .compendium-item-title {
+    @apply text-vtm-red font-bold text-sm mb-1;
+  }
+
+  .compendium-item-description {
+    @apply text-gray-300 text-xs leading-relaxed mb-2;
+  }
+
+  .compendium-item-pageref {
+    @apply text-gray-500 text-xs italic;
+  }
 }
 
 /* Custom scrollbar */
