@@ -3331,8 +3331,8 @@ class CharacterCreatorApp {
     const spawnDroplet = () => {
       if (!panel.classList.contains('active')) return;
 
-      // Random chance (30%) to spawn droplet
-      if (Math.random() > 0.3) {
+      // Random chance (20%) to spawn droplet - rarer for subtlety
+      if (Math.random() > 0.2) {
         scheduleNextDroplet();
         return;
       }
@@ -3360,8 +3360,8 @@ class CharacterCreatorApp {
 
     const scheduleNextDroplet = () => {
       clearTimeout(dropletTimer);
-      // Random interval between 3-8 seconds
-      const interval = 3000 + Math.random() * 5000;
+      // Random interval between 5-12 seconds - longer for subtlety
+      const interval = 5000 + Math.random() * 7000;
       dropletTimer = setTimeout(spawnDroplet, interval);
     };
 
