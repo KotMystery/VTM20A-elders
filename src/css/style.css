@@ -140,6 +140,12 @@
     position: relative;
   }
 
+  /* Spacer to push content below when compendium is expanded */
+  .compendium-spacer {
+    height: 0;
+    transition: height 2.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
   /* Compendium panel - hidden by default, revealed like a blood pool beneath the page */
   .compendium-panel {
     @apply overflow-hidden mt-2 mb-4;
@@ -160,6 +166,9 @@
     z-index: 10;
     top: 0;
     width: 0;
+    height: auto;
+    min-height: 600px;
+    max-height: none;
     transition: width 2.5s cubic-bezier(0.4, 0, 0.2, 1),
                 opacity 2.5s cubic-bezier(0.4, 0, 0.2, 1);
   }
@@ -179,40 +188,29 @@
       width: calc(200% + 1rem); /* Cover 2 columns + 1 gap */
     }
 
-    /* Skills expand both ways - cover Talents on left and Knowledges on right */
-    .ability-category-wrapper .compendium-panel[data-direction="both"] {
-      left: calc(-100% - 1rem); /* Start at left edge (Talents column) */
-      /* Mask out the middle column to avoid covering Skills */
-      -webkit-mask-image: linear-gradient(to right,
-        black 0%, black calc(33.333% - 0.5rem),
-        transparent calc(33.333% - 0.5rem), transparent calc(66.666% + 0.5rem),
-        black calc(66.666% + 0.5rem), black 100%
-      );
-      mask-image: linear-gradient(to right,
-        black 0%, black calc(33.333% - 0.5rem),
-        transparent calc(33.333% - 0.5rem), transparent calc(66.666% + 0.5rem),
-        black calc(66.666% + 0.5rem), black 100%
-      );
+    /* Skills split: Left panel expands left (over Talents) */
+    .ability-category-wrapper .compendium-panel[data-direction="left-split"] {
+      right: calc(100% + 1rem); /* Start before Skills column */
+      left: auto;
     }
 
-    .ability-category-wrapper .compendium-panel[data-direction="both"].active {
-      width: calc(300% + 2rem); /* Span all 3 columns */
+    .ability-category-wrapper .compendium-panel[data-direction="left-split"].active {
+      width: calc(100% + 1rem); /* Cover 1 column + 1 gap (Talents) */
     }
 
-    /* Skills compendium uses 3-column layout with middle column empty */
-    .compendium-panel[data-direction="both"] .compendium-content {
-      grid-template-columns: 1fr 1fr 1fr;
-      grid-auto-flow: dense;
+    /* Skills split: Right panel expands right (over Knowledges) */
+    .ability-category-wrapper .compendium-panel[data-direction="right-split"] {
+      left: calc(100% + 1rem); /* Start after Skills column */
     }
 
-    /* First half of items go in first column */
-    .compendium-panel[data-direction="both"] .compendium-item:nth-child(-n+5) {
-      grid-column: 1;
+    .ability-category-wrapper .compendium-panel[data-direction="right-split"].active {
+      width: calc(100% + 1rem); /* Cover 1 column + 1 gap (Knowledges) */
     }
 
-    /* Second half of items go in third column */
-    .compendium-panel[data-direction="both"] .compendium-item:nth-child(n+6) {
-      grid-column: 3;
+    /* Split panels use single-column layout */
+    .compendium-panel[data-direction="left-split"] .compendium-content,
+    .compendium-panel[data-direction="right-split"] .compendium-content {
+      grid-template-columns: 1fr;
     }
 
     /* Knowledges expand left - cover Talents and Skills columns ONLY */
@@ -287,12 +285,21 @@
     transform: translateX(0);
   }
 
-  .compendium-panel[data-direction="both"] .compendium-item {
-    transform: scale(0.9) translateY(20px);
+  /* Skills split panels animations */
+  .compendium-panel[data-direction="left-split"] .compendium-item {
+    transform: translateX(20px);
   }
 
-  .compendium-panel[data-direction="both"].active .compendium-item {
-    transform: scale(1) translateY(0);
+  .compendium-panel[data-direction="left-split"].active .compendium-item {
+    transform: translateX(0);
+  }
+
+  .compendium-panel[data-direction="right-split"] .compendium-item {
+    transform: translateX(-20px);
+  }
+
+  .compendium-panel[data-direction="right-split"].active .compendium-item {
+    transform: translateX(0);
   }
 
   .compendium-item-title {
