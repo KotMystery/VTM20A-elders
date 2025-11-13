@@ -122,7 +122,12 @@ class CharacterCreatorApp {
       <div class="min-h-screen p-4 md:p-6">
         <header class="mb-4">
           <div class="flex justify-between items-center mb-2">
-            <div class="flex-1"></div>
+            <div class="flex-1 flex items-start">
+              <label class="flex items-center cursor-pointer text-sm text-gray-400 hover:text-gray-300">
+                <input type="checkbox" id="disableGraphicsToggle" class="mr-2" checked>
+                <span>Disable fancy-shmency graphics</span>
+              </label>
+            </div>
             <div class="flex-1 text-center">
               <h1 class="text-2xl md:text-3xl font-bold text-vtm-red mb-1">
                 Vampire: The Masquerade 20A
@@ -2032,6 +2037,27 @@ class CharacterCreatorApp {
       newCharacterBtn.addEventListener('click', clickListener);
       newCharacterBtn._clickListener = clickListener;
     }
+
+    const disableGraphicsToggle = document.getElementById('disableGraphicsToggle');
+    if (disableGraphicsToggle) {
+      // Load saved preference
+      const graphicsDisabled = localStorage.getItem('vtm_graphicsDisabled') === 'true';
+      disableGraphicsToggle.checked = graphicsDisabled;
+
+      if (disableGraphicsToggle._changeListener) {
+        disableGraphicsToggle.removeEventListener('change', disableGraphicsToggle._changeListener);
+      }
+      const changeListener = (e) => {
+        const disabled = e.target.checked;
+        localStorage.setItem('vtm_graphicsDisabled', disabled);
+        this.toggleBloodPoolGraphics(!disabled);
+      };
+      disableGraphicsToggle.addEventListener('change', changeListener);
+      disableGraphicsToggle._changeListener = changeListener;
+
+      // Initialize graphics state
+      this.toggleBloodPoolGraphics(!graphicsDisabled);
+    }
   }
 
   newCharacter() {
@@ -3518,6 +3544,35 @@ class CharacterCreatorApp {
 
     disruption.interval = setInterval(updateDisruption, 100);
     activeDisruptions.push(disruption);
+  }
+
+  toggleBloodPoolGraphics(enabled) {
+    this.graphicsEnabled = enabled;
+
+    if (enabled) {
+      // Initialize Canvas/WebGL for all active compendium panels
+      document.querySelectorAll('.compendium-panel.active').forEach(panel => {
+        this.initializeCanvasForPanel(panel);
+      });
+    } else {
+      // Cleanup all Canvas/WebGL instances
+      document.querySelectorAll('.compendium-panel canvas').forEach(canvas => {
+        canvas.remove();
+      });
+      // Clear any running animation frames
+      if (this.animationFrameId) {
+        cancelAnimationFrame(this.animationFrameId);
+        this.animationFrameId = null;
+      }
+    }
+  }
+
+  initializeCanvasForPanel(panel) {
+    if (!this.graphicsEnabled) return;
+
+    // TODO: Implement Canvas/WebGL initialization
+    // This will create the ripple simulation canvas
+    console.log('[GRAPHICS] Canvas initialization for panel:', panel);
   }
 
   updateSpecializationButton(category, id, type = 'ability') {
