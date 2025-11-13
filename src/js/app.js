@@ -3186,11 +3186,14 @@ class CharacterCreatorApp {
         // Open both left and right panels for Skills
         leftPanel.classList.add('active');
         rightPanel.classList.add('active');
+        this.randomizeBloodPoolAnimations(leftPanel);
+        this.randomizeBloodPoolAnimations(rightPanel);
         panelToMeasure = leftPanel;
         wrapperToExpand = leftPanel.closest('.ability-category-wrapper');
       } else {
         // Open single panel for Talents/Knowledges
         singlePanel.classList.add('active');
+        this.randomizeBloodPoolAnimations(singlePanel);
         panelToMeasure = singlePanel;
         wrapperToExpand = singlePanel.closest('.ability-category-wrapper');
       }
@@ -3209,6 +3212,90 @@ class CharacterCreatorApp {
         targetButton.classList.add('active');
       }
     }
+  }
+
+  randomizeBloodPoolAnimations(panel) {
+    if (!panel) return;
+
+    // Helper: random value within range
+    const rand = (min, max) => Math.random() * (max - min) + min;
+
+    // Helper: random integer within range
+    const randInt = (min, max) => Math.floor(rand(min, max));
+
+    // Helper: random with ±20% variation
+    const randVariation = (base, variation = 0.2) => {
+      const min = base * (1 - variation);
+      const max = base * (1 + variation);
+      return rand(min, max);
+    };
+
+    // 1. Random starting positions for transform-based animations
+    // Depth fog starting position
+    const fogStartX = rand(-2, 2);
+    const fogStartY = rand(-2, 2);
+    const fogStartScale = rand(0.98, 1.05);
+
+    // Caustics starting position
+    const causticsStartX = rand(-3, 3);
+    const causticsStartY = rand(-3, 3);
+    const causticsStartRotate = rand(-3, 3);
+
+    // Mist starting position
+    const mistStartY = rand(-2, 2);
+    const mistStartScale = rand(0.95, 1.05);
+
+    // 2. Random delays (2-10s range) for each animation cycle
+    // 50% chance to trigger immediately (0s) or with delay (2-10s)
+    const depthFogDelay = Math.random() < 0.5 ? 0 : rand(2, 10);
+    const causticsDelay = Math.random() < 0.5 ? 0 : rand(2, 10);
+    const glowDelay = Math.random() < 0.5 ? 0 : rand(2, 10);
+    const mistDelay = Math.random() < 0.5 ? 0 : rand(2, 10);
+    const dripsDelay = Math.random() < 0.5 ? 0 : rand(2, 10);
+    const decayDelay = Math.random() < 0.5 ? 180 : rand(182, 190); // Time decay base 180s ±20%
+
+    // 3. Random cycle durations (±20% from base)
+    const depthFogDuration = randVariation(90);  // Base: 90s
+    const causticsDuration = randVariation(75);  // Base: 75s
+    const glowDuration = randVariation(120);     // Base: 120s
+    const mistDuration = randVariation(100);     // Base: 100s
+    const dripsDuration = randVariation(200);    // Base: 200s
+    const decayDuration = randVariation(240);    // Base: 240s
+
+    // 4. Random initial opacity for subtle effects
+    const fogOpacity = rand(0.85, 1);
+    const causticsOpacity = rand(0.9, 1);
+    const mistOpacity = rand(0.25, 0.35);
+
+    // Set CSS custom properties on the panel
+    panel.style.setProperty('--fog-start-x', `${fogStartX}%`);
+    panel.style.setProperty('--fog-start-y', `${fogStartY}%`);
+    panel.style.setProperty('--fog-start-scale', fogStartScale);
+    panel.style.setProperty('--fog-delay', `${depthFogDelay}s`);
+    panel.style.setProperty('--fog-duration', `${depthFogDuration}s`);
+    panel.style.setProperty('--fog-opacity', fogOpacity);
+
+    panel.style.setProperty('--caustics-start-x', `${causticsStartX}%`);
+    panel.style.setProperty('--caustics-start-y', `${causticsStartY}%`);
+    panel.style.setProperty('--caustics-start-rotate', `${causticsStartRotate}deg`);
+    panel.style.setProperty('--caustics-delay', `${causticsDelay}s`);
+    panel.style.setProperty('--caustics-duration', `${causticsDuration}s`);
+    panel.style.setProperty('--caustics-opacity', causticsOpacity);
+
+    panel.style.setProperty('--mist-start-y', `${mistStartY}%`);
+    panel.style.setProperty('--mist-start-scale', mistStartScale);
+    panel.style.setProperty('--mist-delay', `${mistDelay}s`);
+    panel.style.setProperty('--mist-duration', `${mistDuration}s`);
+    panel.style.setProperty('--mist-opacity', mistOpacity);
+
+    panel.style.setProperty('--glow-delay', `${glowDelay}s`);
+    panel.style.setProperty('--glow-duration', `${glowDuration}s`);
+
+    panel.style.setProperty('--drips-delay', `${dripsDelay}s`);
+    panel.style.setProperty('--drips-duration', `${dripsDuration}s`);
+
+    panel.style.setProperty('--decay-delay', `${decayDelay}s`);
+    panel.style.setProperty('--decay-duration', `${decayDuration}s`);
   }
 
   updateSpecializationButton(category, id, type = 'ability') {
