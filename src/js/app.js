@@ -2013,6 +2013,11 @@ class CharacterCreatorApp {
       }
     });
 
+    // If ability changed, update the + button state for specializations
+    if (category === 'abilities') {
+      this.updateSpecializationButton(subcategory, attr);
+    }
+
     // If virtues changed IN SETUP PHASE, update derived stats (humanity, willpower)
     // In later phases, virtues can be raised independently without affecting humanity/willpower
     if (category === 'virtues' && this.currentPhase === 'setup') {
@@ -2969,6 +2974,51 @@ class CharacterCreatorApp {
     delete this.character.specializations.abilities[abilityId];
     this.saveToLocalStorage();
     this.updateAllDisplays();
+  }
+
+  updateSpecializationButton(category, abilityId) {
+    // Find the + button for this ability
+    const button = document.querySelector(`[data-add-specialization="${abilityId}"][data-category="${category}"]`);
+    if (!button) return;
+
+    // Get ability data
+    const allAbilities = [...abilitiesData.talents, ...abilitiesData.skills, ...abilitiesData.knowledges];
+    const ability = allAbilities.find(a => a.id === abilityId);
+    if (!ability) return;
+
+    // Get level at current phase
+    const currentLevel = this.character.setupBaseline
+      ? this.character.getValueAtPhase('abilities', category, abilityId, this.currentPhase)
+      : (this.character.abilities[category][abilityId] || 0);
+
+    const specializationAt = ability.specializationAt || 4;
+    const hasSpecialization = this.character.specializations.abilities[abilityId];
+
+    // Determine button state
+    let buttonTitle, buttonDisabled;
+    if (hasSpecialization) {
+      buttonTitle = 'Специализация уже добавлена';
+      buttonDisabled = true;
+    } else if (currentLevel < specializationAt) {
+      buttonTitle = `Требуется уровень ${specializationAt}`;
+      buttonDisabled = true;
+    } else {
+      buttonTitle = 'Добавить специализацию';
+      buttonDisabled = false;
+    }
+
+    // Update button
+    button.disabled = buttonDisabled;
+    button.title = buttonTitle;
+
+    // Update classes
+    if (buttonDisabled) {
+      button.classList.remove('text-vtm-red', 'hover:text-red-400', 'cursor-pointer');
+      button.classList.add('text-gray-600', 'cursor-not-allowed');
+    } else {
+      button.classList.remove('text-gray-600', 'cursor-not-allowed');
+      button.classList.add('text-vtm-red', 'hover:text-red-400', 'cursor-pointer');
+    }
   }
 
   managePaths(discId) {
