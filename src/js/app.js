@@ -314,7 +314,15 @@ class CharacterCreatorApp {
 
     return `
       <div class="card">
-        <h3 class="section-title">Атрибуты</h3>
+        <h3 class="section-title">
+          Атрибуты
+          <button class="compendium-toggle" data-compendium="attributes" title="Показать описания">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <text x="8" y="11" text-anchor="middle" font-size="10" font-weight="bold">i</text>
+            </svg>
+          </button>
+        </h3>
         ${this.currentPhase === 'setup' ? `
         <div class="mb-4 p-4 bg-gray-800 rounded">
           <div class="text-sm font-medium mb-2">Правила распределения: 9/7/5</div>
@@ -334,8 +342,31 @@ class CharacterCreatorApp {
           ${this.renderAttributeCategory('social', 'Социальные', attributesData.social)}
           ${this.renderAttributeCategory('mental', 'Ментальные', attributesData.mental)}
         </div>
+
+        <!-- Compendium Panel -->
+        <div class="compendium-panel" id="compendium-attributes" data-direction="down">
+          <div class="compendium-content">
+            ${this.renderAttributesCompendium()}
+          </div>
+        </div>
       </div>
     `;
+  }
+
+  renderAttributesCompendium() {
+    const allAttributes = [
+      ...attributesData.physical,
+      ...attributesData.social,
+      ...attributesData.mental
+    ];
+
+    return allAttributes.map((attr, index) => `
+      <div class="compendium-item" style="--item-index: ${index}">
+        <h4 class="compendium-item-title">${attr.name}</h4>
+        <p class="compendium-item-description">${attr.description}</p>
+        <span class="compendium-item-pageref">${attr.pageRef}</span>
+      </div>
+    `).join('');
   }
 
   renderAttributeCategory(category, title, attributes) {
@@ -429,9 +460,23 @@ class CharacterCreatorApp {
   }
 
   renderAbilityCategory(category, title, abilities) {
+    // Determine expansion direction based on category
+    let direction;
+    if (category === 'talents') direction = 'right';
+    else if (category === 'skills') direction = 'both';
+    else direction = 'left';
+
     return `
-      <div>
-        <h4 class="subsection-title">${title}</h4>
+      <div class="ability-category-wrapper">
+        <h4 class="subsection-title">
+          ${title}
+          <button class="compendium-toggle" data-compendium="abilities-${category}" title="Показать описания">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <text x="8" y="11" text-anchor="middle" font-size="10" font-weight="bold">i</text>
+            </svg>
+          </button>
+        </h4>
         ${abilities.map(ability => {
           // Get level at current phase (not total across all phases)
           const currentLevel = this.character.setupBaseline
@@ -483,6 +528,19 @@ class CharacterCreatorApp {
             ` : ''}
           `;
         }).join('')}
+
+        <!-- Compendium Panel -->
+        <div class="compendium-panel" id="compendium-abilities-${category}" data-direction="${direction}">
+          <div class="compendium-content">
+            ${abilities.map((ability, index) => `
+              <div class="compendium-item" style="--item-index: ${index}">
+                <h4 class="compendium-item-title">${ability.name}</h4>
+                <p class="compendium-item-description">${ability.description}</p>
+                <span class="compendium-item-pageref">${ability.pageRef}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
       </div>
     `;
   }
@@ -1798,6 +1856,14 @@ class CharacterCreatorApp {
         this.removeSpecialization(id, type);
         return;
       }
+
+      // Handle compendium toggle button clicks (including SVG children)
+      const toggleBtn = e.target.closest('.compendium-toggle');
+      if (toggleBtn) {
+        const compendiumId = toggleBtn.dataset.compendium;
+        this.toggleCompendium(compendiumId);
+        return;
+      }
     };
 
     document.addEventListener('click', this.globalClickHandler);
@@ -3051,6 +3117,35 @@ class CharacterCreatorApp {
     }
     this.saveToLocalStorage();
     this.updateAllDisplays();
+  }
+
+  toggleCompendium(compendiumId) {
+    const targetPanel = document.getElementById(`compendium-${compendiumId}`);
+    if (!targetPanel) return;
+
+    const isCurrentlyOpen = targetPanel.classList.contains('active');
+
+    // Close all compendium panels (accordion behavior)
+    const allPanels = document.querySelectorAll('.compendium-panel');
+    allPanels.forEach(panel => {
+      panel.classList.remove('active');
+    });
+
+    // Toggle all compendium buttons to inactive
+    const allButtons = document.querySelectorAll('.compendium-toggle');
+    allButtons.forEach(btn => {
+      btn.classList.remove('active');
+    });
+
+    // If the target panel wasn't open, open it now
+    if (!isCurrentlyOpen) {
+      targetPanel.classList.add('active');
+      // Also activate the button
+      const targetButton = document.querySelector(`[data-compendium="${compendiumId}"]`);
+      if (targetButton) {
+        targetButton.classList.add('active');
+      }
+    }
   }
 
   updateSpecializationButton(category, id, type = 'ability') {
