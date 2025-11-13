@@ -1099,6 +1099,11 @@ class CharacterCreatorApp {
       allowedMax = 0;
     }
 
+    // Block modern technology skills for Elders (torpid for centuries)
+    if (category === 'abilities' && (attr === 'computer' || attr === 'technology')) {
+      allowedMax = 0;
+    }
+
     // Calculate phase boundaries for colored dots
     const phases = ['setup', 'freebies', 'xp'];
     const currentPhaseIndex = phases.indexOf(this.currentPhase);
