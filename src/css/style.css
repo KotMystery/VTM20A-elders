@@ -135,19 +135,24 @@
     @apply text-vtm-red;
   }
 
-  /* Compendium panel - hidden by default */
+  /* Compendium panel - hidden by default, revealed like a blood pool beneath the page */
   .compendium-panel {
-    @apply overflow-hidden bg-vtm-grey border-l-2 border-vtm-red mt-2 mb-4;
+    @apply overflow-hidden mt-2 mb-4;
     max-height: 0;
     opacity: 0;
-    transition: max-height 2s cubic-bezier(0.4, 0, 0.2, 1),
-                opacity 2s cubic-bezier(0.4, 0, 0.2, 1);
-    filter: url(#blood-turbulence);
+    background: linear-gradient(180deg, #3d0000 0%, #5a0000 50%, #3d0000 100%);
+    border: 2px solid #1a0000;
+    box-shadow: inset 0 6px 24px rgba(0, 0, 0, 0.8),
+                inset 0 -6px 24px rgba(0, 0, 0, 0.6),
+                inset 0 0 60px rgba(139, 0, 0, 0.3);
+    transition: max-height 2.5s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 2.5s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .compendium-panel.active {
     max-height: 2000px;
     opacity: 1;
+    filter: url(#blood-turbulence);
   }
 
   .compendium-content {
@@ -157,7 +162,9 @@
 
   /* Compendium items with stagger animation */
   .compendium-item {
-    @apply p-3 bg-black bg-opacity-30 rounded border border-gray-700;
+    @apply p-3 rounded;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(139, 0, 0, 0.4);
     opacity: 0;
     transform: translateY(20px);
     transition: opacity 0.6s ease-out, transform 0.6s ease-out;
@@ -195,15 +202,15 @@
   }
 
   .compendium-item-title {
-    @apply text-vtm-red font-bold text-sm mb-1;
+    @apply text-red-300 font-bold text-sm mb-1;
   }
 
   .compendium-item-description {
-    @apply text-gray-300 text-xs leading-relaxed mb-2;
+    @apply text-gray-200 text-xs leading-relaxed mb-2;
   }
 
   .compendium-item-pageref {
-    @apply text-gray-500 text-xs italic;
+    @apply text-gray-400 text-xs italic;
   }
 }
 
