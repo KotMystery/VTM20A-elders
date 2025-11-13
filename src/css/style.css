@@ -160,6 +160,10 @@
                 inset 0 0 60px rgba(139, 0, 0, 0.3);
     transition: max-height 3.0s cubic-bezier(0.4, 0, 0.2, 1),
                 opacity 3.0s cubic-bezier(0.4, 0, 0.2, 1);
+    /* 3D perspective for blood droplets falling into depth */
+    perspective: 800px;
+    perspective-origin: 50% 50%;
+    transform-style: preserve-3d;
   }
 
   /* 8. Viscosity Drips + 10. Time Decay - Blood slowly dripping and drying */
@@ -334,13 +338,13 @@
 
   @keyframes causticsDrift {
     0%, 100% {
-      transform: translate(0%, 0%) rotate(0deg);
+      transform: translate(calc(0% + var(--disruption-x, 0%) * 0.8), calc(0% + var(--disruption-y, 0%) * 0.8)) rotate(0deg);
     }
     33% {
-      transform: translate(5%, -3%) rotate(2deg);
+      transform: translate(calc(5% + var(--disruption-x, 0%) * 0.8), calc(-3% + var(--disruption-y, 0%) * 0.8)) rotate(calc(2deg + var(--disruption-x, 0) * 0.2deg));
     }
     66% {
-      transform: translate(-4%, 6%) rotate(-2deg);
+      transform: translate(calc(-4% + var(--disruption-x, 0%) * 0.8), calc(6% + var(--disruption-y, 0%) * 0.8)) rotate(calc(-2deg + var(--disruption-x, 0) * 0.2deg));
     }
   }
 
@@ -371,11 +375,11 @@
   @keyframes mistRising {
     0%, 100% {
       opacity: var(--mist-opacity, 0.3);
-      transform: translateY(0%) scaleY(1);
+      transform: translate(calc(0% + var(--disruption-x, 0%) * 0.6), calc(0% + var(--disruption-y, 0%) * 0.6)) scaleY(1);
     }
     50% {
       opacity: calc(var(--mist-opacity, 0.3) + 0.2);
-      transform: translateY(-5%) scaleY(1.1);
+      transform: translate(calc(0% + var(--disruption-x, 0%) * 0.6), calc(-5% + var(--disruption-y, 0%) * 0.6)) scaleY(1.1);
     }
   }
 
@@ -559,16 +563,16 @@
 
 @keyframes depthFogDrift {
   0%, 100% {
-    transform: translate(0%, 0%) scale(1);
+    transform: translate(calc(0% + var(--disruption-x, 0%)), calc(0% + var(--disruption-y, 0%))) scale(1);
   }
   25% {
-    transform: translate(-3%, 5%) scale(1.05);
+    transform: translate(calc(-3% + var(--disruption-x, 0%)), calc(5% + var(--disruption-y, 0%))) scale(1.05);
   }
   50% {
-    transform: translate(2%, -3%) scale(1.02);
+    transform: translate(calc(2% + var(--disruption-x, 0%)), calc(-3% + var(--disruption-y, 0%))) scale(1.02);
   }
   75% {
-    transform: translate(-2%, 4%) scale(1.08);
+    transform: translate(calc(-2% + var(--disruption-x, 0%)), calc(4% + var(--disruption-y, 0%))) scale(1.08);
   }
 }
 
@@ -595,4 +599,86 @@
                 inset 0 0 100px rgba(139, 0, 0, 0.15),
                 inset 0px -30px 40px rgba(160, 40, 40, 0.05);
   }
+}
+
+/* ============================================
+   BLOOD DROPLET SYSTEM
+   4th-wall breaking droplets falling into depth
+   ============================================ */
+
+/* Blood droplet falling from viewer into screen */
+.blood-droplet {
+  position: absolute;
+  width: 12px;
+  height: 16px;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: radial-gradient(ellipse at 30% 30%, rgba(180, 20, 20, 0.9), rgba(100, 0, 0, 0.95));
+  pointer-events: none;
+  will-change: transform, opacity, filter;
+  transform-origin: center center;
+  box-shadow: inset -2px -2px 4px rgba(0, 0, 0, 0.5),
+              0 0 8px rgba(139, 0, 0, 0.6);
+  z-index: 100;
+}
+
+/* Droplet animation: from viewer (large, close) to depth (small, far) */
+@keyframes dropletFall {
+  0% {
+    transform: scale(1.8) translateZ(250px);
+    opacity: 0.9;
+    filter: blur(0px);
+  }
+  15% {
+    transform: scale(1.5) translateZ(150px);
+    opacity: 1;
+    filter: blur(0px);
+  }
+  85% {
+    transform: scale(0.4) translateZ(-250px);
+    opacity: 0.8;
+    filter: blur(0.5px);
+  }
+  100% {
+    transform: scale(0.2) translateZ(-350px);
+    opacity: 0;
+    filter: blur(1px);
+  }
+}
+
+.blood-droplet.falling {
+  animation: dropletFall 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* Impact ripple expanding outward */
+.blood-ripple {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid rgba(139, 0, 0, 0.6);
+  pointer-events: none;
+  will-change: transform, opacity;
+  transform: translate(-50%, -50%);
+  z-index: 99;
+}
+
+@keyframes rippleExpand {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 0.8;
+    border-width: 3px;
+  }
+  50% {
+    opacity: 0.4;
+    border-width: 2px;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(3);
+    opacity: 0;
+    border-width: 1px;
+  }
+}
+
+.blood-ripple.expanding {
+  animation: rippleExpand 1.5s ease-out forwards;
 }
