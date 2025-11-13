@@ -160,9 +160,6 @@
     z-index: 10;
     top: 0;
     width: 0;
-    height: auto;
-    min-height: 600px;
-    max-height: none;
     transition: width 2.5s cubic-bezier(0.4, 0, 0.2, 1),
                 opacity 2.5s cubic-bezier(0.4, 0, 0.2, 1);
   }
@@ -185,6 +182,17 @@
     /* Skills expand both ways - cover Talents on left and Knowledges on right */
     .ability-category-wrapper .compendium-panel[data-direction="both"] {
       left: calc(-100% - 1rem); /* Start at left edge (Talents column) */
+      /* Mask out the middle column to avoid covering Skills */
+      -webkit-mask-image: linear-gradient(to right,
+        black 0%, black calc(33.333% - 0.5rem),
+        transparent calc(33.333% - 0.5rem), transparent calc(66.666% + 0.5rem),
+        black calc(66.666% + 0.5rem), black 100%
+      );
+      mask-image: linear-gradient(to right,
+        black 0%, black calc(33.333% - 0.5rem),
+        transparent calc(33.333% - 0.5rem), transparent calc(66.666% + 0.5rem),
+        black calc(66.666% + 0.5rem), black 100%
+      );
     }
 
     .ability-category-wrapper .compendium-panel[data-direction="both"].active {
