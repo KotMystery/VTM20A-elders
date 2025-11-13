@@ -555,8 +555,6 @@ class CharacterCreatorApp {
               `).join('')}
             </div>
           </div>
-          <!-- Spacer to push content below -->
-          <div class="compendium-spacer" data-for="abilities-${category}"></div>
         ` : `
           <!-- Single panel for Talents/Knowledges -->
           <div class="compendium-panel" id="compendium-abilities-${category}" data-direction="${direction}">
@@ -570,8 +568,6 @@ class CharacterCreatorApp {
               `).join('')}
             </div>
           </div>
-          <!-- Spacer to push content below -->
-          <div class="compendium-spacer" data-for="abilities-${category}"></div>
         `}
       </div>
     `;
@@ -3164,15 +3160,10 @@ class CharacterCreatorApp {
 
     if (!hasSplitPanels && !singlePanel) return;
 
-    // Close all compendium panels and reset spacers (accordion behavior)
+    // Close all compendium panels (accordion behavior)
     const allPanels = document.querySelectorAll('.compendium-panel');
     allPanels.forEach(panel => {
       panel.classList.remove('active');
-    });
-
-    const allSpacers = document.querySelectorAll('.compendium-spacer');
-    allSpacers.forEach(spacer => {
-      spacer.style.height = '0';
     });
 
     // Toggle all compendium buttons to inactive
@@ -3183,27 +3174,14 @@ class CharacterCreatorApp {
 
     // If the target panel(s) weren't open, open them now
     if (!isCurrentlyOpen) {
-      let panelToMeasure;
-
       if (hasSplitPanels) {
         // Open both left and right panels for Skills
         leftPanel.classList.add('active');
         rightPanel.classList.add('active');
-        panelToMeasure = leftPanel; // Use left panel for height measurement
       } else {
         // Open single panel for Talents/Knowledges
         singlePanel.classList.add('active');
-        panelToMeasure = singlePanel;
       }
-
-      // Set spacer height to match panel height after a brief delay
-      setTimeout(() => {
-        const spacer = document.querySelector(`[data-for="${compendiumId}"]`);
-        if (spacer && panelToMeasure) {
-          const height = panelToMeasure.offsetHeight;
-          spacer.style.height = `${height}px`;
-        }
-      }, 50);
 
       // Also activate the button
       const targetButton = document.querySelector(`[data-compendium="${compendiumId}"]`);
