@@ -138,6 +138,8 @@
   /* Ability category wrapper - relative positioning for absolute compendium */
   .ability-category-wrapper {
     position: relative;
+    min-height: 0;
+    transition: min-height 2.5s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   /* Compendium panel - hidden by default, revealed like a blood pool beneath the page */

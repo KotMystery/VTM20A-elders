@@ -3160,6 +3160,12 @@ class CharacterCreatorApp {
 
     if (!hasSplitPanels && !singlePanel) return;
 
+    // Reset all wrapper min-heights
+    const allWrappers = document.querySelectorAll('.ability-category-wrapper');
+    allWrappers.forEach(wrapper => {
+      wrapper.style.minHeight = '0';
+    });
+
     // Close all compendium panels (accordion behavior)
     const allPanels = document.querySelectorAll('.compendium-panel');
     allPanels.forEach(panel => {
@@ -3174,14 +3180,28 @@ class CharacterCreatorApp {
 
     // If the target panel(s) weren't open, open them now
     if (!isCurrentlyOpen) {
+      let panelToMeasure, wrapperToExpand;
+
       if (hasSplitPanels) {
         // Open both left and right panels for Skills
         leftPanel.classList.add('active');
         rightPanel.classList.add('active');
+        panelToMeasure = leftPanel;
+        wrapperToExpand = leftPanel.closest('.ability-category-wrapper');
       } else {
         // Open single panel for Talents/Knowledges
         singlePanel.classList.add('active');
+        panelToMeasure = singlePanel;
+        wrapperToExpand = singlePanel.closest('.ability-category-wrapper');
       }
+
+      // Set wrapper min-height after a brief delay to allow panel to expand
+      setTimeout(() => {
+        if (panelToMeasure && wrapperToExpand) {
+          const height = panelToMeasure.offsetHeight;
+          wrapperToExpand.style.minHeight = `${height}px`;
+        }
+      }, 50);
 
       // Also activate the button
       const targetButton = document.querySelector(`[data-compendium="${compendiumId}"]`);
