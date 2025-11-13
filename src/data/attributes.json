@@ -1,17 +1,17 @@
 {
   "physical": [
-    { "id": "strength", "name": "Сила", "specializationAt": 4, "specializationDescription": "Выберите применение силы (например: мощные удары, поднятие тяжестей, сокрушение)" },
-    { "id": "dexterity", "name": "Ловкость", "specializationAt": 4, "specializationDescription": "Выберите применение ловкости (например: акробатика, уклонение, точные движения)" },
-    { "id": "stamina", "name": "Выносливость", "specializationAt": 4, "specializationDescription": "Выберите применение выносливости (например: сопротивление болезням, длительные нагрузки, стойкость)" }
+    { "id": "strength", "name": "Сила", "specializationAt": 4, "specializationDescription": "Выберите применение силы (например: мёртвая хватка, мощные ручищи, второе дыхание, грозный вид)" },
+    { "id": "dexterity", "name": "Ловкость", "specializationAt": 4, "specializationDescription": "Выберите применение ловкости (например: точность, быстрота, кошачья грация, молниеносная реакция)" },
+    { "id": "stamina", "name": "Выносливость", "specializationAt": 4, "specializationDescription": "Выберите применение выносливости (например: неутомимость, твёрдость, несгибаемость, энергичность)" }
   ],
   "social": [
-    { "id": "charisma", "name": "Обаяние", "specializationAt": 4, "specializationDescription": "Выберите применение обаяния (например: первое впечатление, публичные выступления, вдохновение)" },
-    { "id": "manipulation", "name": "Манипулирование", "specializationAt": 4, "specializationDescription": "Выберите применение манипуляции (например: убеждение, торг, обман)" },
-    { "id": "appearance", "name": "Привлекательность", "specializationAt": 4, "specializationDescription": "Выберите тип привлекательности (например: классическая красота, экзотичность, харизматичность)" }
+    { "id": "charisma", "name": "Обаяние", "specializationAt": 4, "specializationDescription": "Выберите применение обаяния (например: изящество, лесть, напористость, вежливость, остроумие, выразительность, прямота)" },
+    { "id": "manipulation", "name": "Манипулирование", "specializationAt": 4, "specializationDescription": "Выберите применение манипуляции (например: убеждение, соблазнение, здравый смысл, отвлечение внимания, искажение фактов)" },
+    { "id": "appearance", "name": "Привлекательность", "specializationAt": 4, "specializationDescription": "Выберите тип привлекательности (например: экзотичность, фотогеничность, чувство стиля, потрясающая внешность, запоминающийся образ)" }
   ],
   "mental": [
-    { "id": "perception", "name": "Восприятие", "specializationAt": 4, "specializationDescription": "Выберите применение восприятия (например: наблюдение за деталями, поиск, предчувствия)" },
-    { "id": "intelligence", "name": "Интеллект", "specializationAt": 4, "specializationDescription": "Выберите применение интеллекта (например: анализ, память, решение задач)" },
-    { "id": "wits", "name": "Смекалка", "specializationAt": 4, "specializationDescription": "Выберите применение смекалки (например: быстрая реакция, импровизация, хитрость)" }
+    { "id": "perception", "name": "Восприятие", "specializationAt": 4, "specializationDescription": "Выберите применение восприятия (например: внимательность, проницательность, осторожность, распознавание, тактика)" },
+    { "id": "intelligence", "name": "Интеллект", "specializationAt": 4, "specializationDescription": "Выберите применение интеллекта (например: начитанность, творческий подход, аналитика, решение задач, систематика)" },
+    { "id": "wits", "name": "Смекалка", "specializationAt": 4, "specializationDescription": "Выберите применение смекалки (например: деловая хватка, подвешенный язык, импровизация, засады)" }
   ]
 }

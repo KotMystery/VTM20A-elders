@@ -524,7 +524,7 @@ class CharacterCreatorApp {
                 <div class="text-xs text-gray-400">${bg.description}</div>
               </div>
               <div class="dot-tracker" data-category="backgrounds" data-subcategory="" data-attr="${bg.id}">
-                ${this.renderDots(this.character.backgrounds[bg.id] || 0, 5, 'backgrounds', null, bg.id)}
+                ${this.renderDots(this.character.backgrounds[bg.id] || 0, bg.maxValue || 5, 'backgrounds', null, bg.id)}
               </div>
             </div>
           `).join('')}
