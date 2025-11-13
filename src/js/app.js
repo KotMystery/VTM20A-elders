@@ -3346,6 +3346,13 @@ class CharacterCreatorApp {
 
       // Impact happens at ~85% of fall animation (1.2s * 0.85 = ~1020ms)
       setTimeout(() => {
+        // DEBUG: Log positions
+        const panelRect = panel.getBoundingClientRect();
+        const dropletRect = droplet.getBoundingClientRect();
+        console.log('Panel rect:', panelRect);
+        console.log('Droplet rect:', dropletRect);
+        console.log('Droplet computed style:', window.getComputedStyle(droplet).transform);
+
         this.createRipple(panel, droplet);
         this.createFlowDisruption(panel, droplet, activeDisruptions);
       }, 1020);
