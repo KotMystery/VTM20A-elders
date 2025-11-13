@@ -2919,6 +2919,8 @@ class CharacterCreatorApp {
     const ability = allAbilities.find(a => a.id === abilityId);
     if (!ability) return;
 
+    const description = ability.specializationDescription || 'Введите название специализации';
+
     // Create modal
     const modal = document.createElement('div');
     modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50';
@@ -2930,10 +2932,9 @@ class CharacterCreatorApp {
         </div>
 
         <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-300 mb-2">Название специализации</label>
+          <p class="text-sm text-gray-300 mb-3">${description}</p>
           <input type="text" id="specializationInput"
                  class="input-field"
-                 placeholder="Например: Столярное дело, Ораторское искусство..."
                  autocomplete="off">
         </div>
 
