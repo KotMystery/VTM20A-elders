@@ -673,6 +673,7 @@
   will-change: transform, opacity;
   transform: translate(-50%, -50%);
   z-index: 3;
+  filter: none; /* Prevent inheriting turbulence filter from parent panel */
 }
 
 /* Viscous expansion - slow, damped movement */
