@@ -3384,15 +3384,24 @@ class CharacterCreatorApp {
   createRipple(panel, x, y) {
     // Droplet positioned with top-left at (x, y)
     // Droplet size: 18px wide, 24px tall
-    // At 85% animation, translateY(60%) moves it down by 0.6 * 24px = 14.4px
-    // Impact point is at the BOTTOM center of the droplet after translation
+    // transform-origin: center center, so center is initially at (x+9, y+12)
+
+    // At 85% animation:
+    // - translateY(60%) moves the entire element down by 14.4px
+    // - scale(0.4) scales around center -> scaled size is 7.2px x 9.6px
+    // - Bottom of scaled droplet = centerY + (scaledHeight/2)
+
     const dropletWidth = 18;
     const dropletHeight = 24;
-    const translateYOffset = dropletHeight * 0.60; // 14.4px down
+    const translateYOffset = dropletHeight * 0.60; // 14.4px
+    const scaleAtImpact = 0.4; // scale at 85% animation
 
-    // Bottom-center of droplet: (x + width/2, y + height + translation)
-    const impactX = x + dropletWidth / 2;  // 9px to the right (horizontal center)
-    const impactY = y + dropletHeight + translateYOffset; // 24px + 14.4px = 38.4px down (bottom)
+    const centerX = x + dropletWidth / 2;  // 9px
+    const centerY = y + dropletHeight / 2 + translateYOffset; // 12 + 14.4 = 26.4px
+    const scaledHeight = dropletHeight * scaleAtImpact; // 24 * 0.4 = 9.6px
+
+    const impactX = centerX;
+    const impactY = centerY + scaledHeight / 2; // 26.4 + 4.8 = 31.2px
 
     // Create multiple ripple rings for viscous fluid effect
     const rings = [
