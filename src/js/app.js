@@ -529,18 +529,46 @@ class CharacterCreatorApp {
           `;
         }).join('')}
 
-        <!-- Compendium Panel -->
-        <div class="compendium-panel" id="compendium-abilities-${category}" data-direction="${direction}">
-          <div class="compendium-content">
-            ${abilities.map((ability, index) => `
-              <div class="compendium-item" style="--item-index: ${index}">
-                <h4 class="compendium-item-title">${ability.name}</h4>
-                <p class="compendium-item-description">${ability.description}</p>
-                <span class="compendium-item-pageref">${ability.pageRef}</span>
-              </div>
-            `).join('')}
+        <!-- Compendium Panel(s) -->
+        ${direction === 'both' ? `
+          <!-- Skills: Left panel (over Talents) -->
+          <div class="compendium-panel" id="compendium-abilities-${category}-left" data-direction="left-split" data-parent="${category}">
+            <div class="compendium-content">
+              ${abilities.slice(0, 5).map((ability, index) => `
+                <div class="compendium-item" style="--item-index: ${index}">
+                  <h4 class="compendium-item-title">${ability.name}</h4>
+                  <p class="compendium-item-description">${ability.description}</p>
+                  <span class="compendium-item-pageref">${ability.pageRef}</span>
+                </div>
+              `).join('')}
+            </div>
           </div>
-        </div>
+          <!-- Skills: Right panel (over Knowledges) -->
+          <div class="compendium-panel" id="compendium-abilities-${category}-right" data-direction="right-split" data-parent="${category}">
+            <div class="compendium-content">
+              ${abilities.slice(5).map((ability, index) => `
+                <div class="compendium-item" style="--item-index: ${index + 5}">
+                  <h4 class="compendium-item-title">${ability.name}</h4>
+                  <p class="compendium-item-description">${ability.description}</p>
+                  <span class="compendium-item-pageref">${ability.pageRef}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : `
+          <!-- Single panel for Talents/Knowledges -->
+          <div class="compendium-panel" id="compendium-abilities-${category}" data-direction="${direction}">
+            <div class="compendium-content">
+              ${abilities.map((ability, index) => `
+                <div class="compendium-item" style="--item-index: ${index}">
+                  <h4 class="compendium-item-title">${ability.name}</h4>
+                  <p class="compendium-item-description">${ability.description}</p>
+                  <span class="compendium-item-pageref">${ability.pageRef}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `}
       </div>
     `;
   }
@@ -3120,10 +3148,17 @@ class CharacterCreatorApp {
   }
 
   toggleCompendium(compendiumId) {
-    const targetPanel = document.getElementById(`compendium-${compendiumId}`);
-    if (!targetPanel) return;
+    // Check if this is Skills (has split panels)
+    const leftPanel = document.getElementById(`compendium-${compendiumId}-left`);
+    const rightPanel = document.getElementById(`compendium-${compendiumId}-right`);
+    const singlePanel = document.getElementById(`compendium-${compendiumId}`);
 
-    const isCurrentlyOpen = targetPanel.classList.contains('active');
+    const hasSplitPanels = leftPanel && rightPanel;
+    const isCurrentlyOpen = hasSplitPanels
+      ? leftPanel.classList.contains('active')
+      : singlePanel?.classList.contains('active');
+
+    if (!hasSplitPanels && !singlePanel) return;
 
     // Close all compendium panels (accordion behavior)
     const allPanels = document.querySelectorAll('.compendium-panel');
@@ -3137,9 +3172,17 @@ class CharacterCreatorApp {
       btn.classList.remove('active');
     });
 
-    // If the target panel wasn't open, open it now
+    // If the target panel(s) weren't open, open them now
     if (!isCurrentlyOpen) {
-      targetPanel.classList.add('active');
+      if (hasSplitPanels) {
+        // Open both left and right panels for Skills
+        leftPanel.classList.add('active');
+        rightPanel.classList.add('active');
+      } else {
+        // Open single panel for Talents/Knowledges
+        singlePanel.classList.add('active');
+      }
+
       // Also activate the button
       const targetButton = document.querySelector(`[data-compendium="${compendiumId}"]`);
       if (targetButton) {
