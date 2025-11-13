@@ -3346,8 +3346,8 @@ class CharacterCreatorApp {
 
       // Impact happens at ~85% of fall animation (1.2s * 0.85 = ~1020ms)
       setTimeout(() => {
-        this.createRipple(panel, lastCursorX, lastCursorY);
-        this.createFlowDisruption(panel, lastCursorX, lastCursorY, activeDisruptions);
+        this.createRipple(panel, droplet);
+        this.createFlowDisruption(panel, droplet, activeDisruptions);
       }, 1020);
 
       // Remove droplet after animation completes
@@ -3381,27 +3381,18 @@ class CharacterCreatorApp {
     observer.observe(panel, { attributes: true });
   }
 
-  createRipple(panel, x, y) {
-    // Droplet positioned with top-left at (x, y)
-    // Droplet size: 18px wide, 24px tall
-    // transform-origin: center center, so center is initially at (x+9, y+12)
+  createRipple(panel, droplet) {
+    // Get the actual visual position of the droplet at impact time
+    const panelRect = panel.getBoundingClientRect();
+    const dropletRect = droplet.getBoundingClientRect();
 
-    // At 85% animation:
-    // - translateY(60%) moves the entire element down by 14.4px
-    // - scale(0.4) scales around center -> scaled size is 7.2px x 9.6px
-    // - Bottom of scaled droplet = centerY + (scaledHeight/2)
+    // Calculate position relative to panel
+    const relativeX = dropletRect.left - panelRect.left;
+    const relativeY = dropletRect.top - panelRect.top;
 
-    const dropletWidth = 18;
-    const dropletHeight = 24;
-    const translateYOffset = dropletHeight * 0.60; // 14.4px
-    const scaleAtImpact = 0.4; // scale at 85% animation
-
-    const centerX = x + dropletWidth / 2;  // 9px
-    const centerY = y + dropletHeight / 2 + translateYOffset; // 12 + 14.4 = 26.4px
-    const scaledHeight = dropletHeight * scaleAtImpact; // 24 * 0.4 = 9.6px
-
-    const impactX = centerX;
-    const impactY = centerY + scaledHeight / 2; // 26.4 + 4.8 = 31.2px
+    // Impact at center-bottom of droplet's current visual position
+    const impactX = relativeX + dropletRect.width / 2;
+    const impactY = relativeY + dropletRect.height;
 
     // Create multiple ripple rings for viscous fluid effect
     const rings = [
@@ -3464,11 +3455,17 @@ class CharacterCreatorApp {
     const splashInterval = setInterval(updateSplash, 50);
   }
 
-  createFlowDisruption(panel, x, y, activeDisruptions) {
-    const rect = panel.getBoundingClientRect();
+  createFlowDisruption(panel, droplet, activeDisruptions) {
+    const panelRect = panel.getBoundingClientRect();
+    const dropletRect = droplet.getBoundingClientRect();
+
+    // Calculate position relative to panel
+    const relativeX = dropletRect.left - panelRect.left + dropletRect.width / 2;
+    const relativeY = dropletRect.top - panelRect.top + dropletRect.height;
+
     // Normalize impact position to percentage
-    const impactX = (x / rect.width - 0.5) * 100; // -50 to +50
-    const impactY = (y / rect.height - 0.5) * 100;
+    const impactX = (relativeX / panelRect.width - 0.5) * 100; // -50 to +50
+    const impactY = (relativeY / panelRect.height - 0.5) * 100;
 
     // Create disruption force that decays over time
     const disruption = {
