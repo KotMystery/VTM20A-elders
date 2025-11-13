@@ -650,36 +650,60 @@
   animation: dropletFall 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
-/* Impact ripple expanding outward */
+/* Impact ripples - multiple concentric rings for viscous fluid */
 .blood-ripple {
   position: absolute;
-  width: 20px;
-  height: 20px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  border: 2px solid rgba(139, 0, 0, 0.6);
+  border: 2px solid rgba(139, 0, 0, 0.7);
   pointer-events: none;
-  will-change: transform, opacity;
+  will-change: transform, opacity, filter;
   transform: translate(-50%, -50%);
   z-index: 3;
+  filter: url(#blood-turbulence);
 }
 
+/* Viscous expansion - slow, damped movement */
 @keyframes rippleExpand {
   0% {
-    transform: translate(-50%, -50%) scale(0.5);
-    opacity: 0.8;
+    transform: translate(-50%, -50%) scale(0.3);
+    opacity: 0;
     border-width: 3px;
   }
-  50% {
-    opacity: 0.4;
+  10% {
+    opacity: 0.8;
+  }
+  40% {
+    opacity: 0.6;
+    border-width: 2.5px;
+  }
+  70% {
+    opacity: 0.3;
     border-width: 2px;
   }
   100% {
-    transform: translate(-50%, -50%) scale(3);
+    transform: translate(-50%, -50%) scale(1.8);
     opacity: 0;
     border-width: 1px;
   }
 }
 
-.blood-ripple.expanding {
-  animation: rippleExpand 1.5s ease-out forwards;
+/* First ripple - primary wave */
+.blood-ripple.ring-1 {
+  animation: rippleExpand 4s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+
+/* Second ripple - delayed, slightly faster */
+.blood-ripple.ring-2 {
+  animation: rippleExpand 3.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+  animation-delay: 0.3s;
+  border-color: rgba(100, 0, 0, 0.6);
+}
+
+/* Third ripple - most delayed, weakest */
+.blood-ripple.ring-3 {
+  animation: rippleExpand 3s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+  animation-delay: 0.6s;
+  border-color: rgba(80, 0, 0, 0.5);
 }

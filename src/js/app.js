@@ -3382,22 +3382,72 @@ class CharacterCreatorApp {
   }
 
   createRipple(panel, x, y) {
-    const ripple = document.createElement('div');
-    ripple.className = 'blood-ripple expanding';
-
     // Droplet moves down 80% of its height (24px) during fall = ~19px
-    // This is where it visually impacts, so spawn ripple there
+    // This is where it visually impacts, so spawn ripples there
     const dropletHeight = 24;
     const yOffset = dropletHeight * 0.8;
+    const impactX = x;
+    const impactY = y + yOffset;
 
-    ripple.style.left = `${x}px`;
-    ripple.style.top = `${y + yOffset}px`;
-    panel.appendChild(ripple);
+    // Create multiple ripple rings for viscous fluid effect
+    const rings = [
+      { className: 'ring-1', duration: 4000 },
+      { className: 'ring-2', duration: 4300 }, // 3.5s + 0.3s delay + buffer
+      { className: 'ring-3', duration: 4600 }  // 3s + 0.6s delay + buffer
+    ];
 
-    // Remove ripple after animation completes
-    setTimeout(() => {
-      ripple.remove();
-    }, 1500);
+    rings.forEach(ring => {
+      const ripple = document.createElement('div');
+      ripple.className = `blood-ripple ${ring.className}`;
+      ripple.style.left = `${impactX}px`;
+      ripple.style.top = `${impactY}px`;
+      panel.appendChild(ripple);
+
+      // Remove ripple after animation completes
+      setTimeout(() => {
+        ripple.remove();
+      }, ring.duration);
+    });
+
+    // Create temporary "splash" disruption at impact point
+    // This makes ripples interact with the flow animations
+    this.createSplashDisruption(panel, impactX, impactY);
+  }
+
+  createSplashDisruption(panel, x, y) {
+    const rect = panel.getBoundingClientRect();
+    // Normalize impact position to percentage
+    const splashX = (x / rect.width - 0.5) * 100;
+    const splashY = (y / rect.height - 0.5) * 100;
+
+    // Create a temporary, intense disruption that fades quickly
+    // This represents the immediate splash/impact wave
+    let splashStrength = 2.5; // Much stronger than flow disruption
+    let elapsed = 0;
+    const splashDuration = 4000; // 4 seconds - matches ripple duration
+
+    const updateSplash = () => {
+      elapsed += 50;
+      const progress = elapsed / splashDuration;
+
+      if (progress >= 1) {
+        clearInterval(splashInterval);
+        return;
+      }
+
+      // Fast exponential decay - impact fades quickly
+      splashStrength = 2.5 * Math.pow(1 - progress, 3);
+
+      // Get current disruption values and add splash
+      const currentX = parseFloat(panel.style.getPropertyValue('--disruption-x')) || 0;
+      const currentY = parseFloat(panel.style.getPropertyValue('--disruption-y')) || 0;
+
+      // Add splash force to current disruption
+      panel.style.setProperty('--disruption-x', `${currentX + splashX * splashStrength * 0.08}%`);
+      panel.style.setProperty('--disruption-y', `${currentY + splashY * splashStrength * 0.08}%`);
+    };
+
+    const splashInterval = setInterval(updateSplash, 50);
   }
 
   createFlowDisruption(panel, x, y, activeDisruptions) {
