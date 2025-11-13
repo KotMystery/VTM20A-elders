@@ -140,6 +140,12 @@
     position: relative;
   }
 
+  /* Spacer to push content below when compendium is expanded */
+  .compendium-spacer {
+    height: 0;
+    transition: height 2.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
   /* Compendium panel - hidden by default, revealed like a blood pool beneath the page */
   .compendium-panel {
     @apply overflow-hidden mt-2 mb-4;
