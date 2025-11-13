@@ -162,25 +162,40 @@
     right: 0;
   }
 
-  /* Talents expand right - cover center and right columns */
+  /* Talents expand right - cover Skills and Knowledges columns ONLY */
   @media (min-width: 768px) {
     .ability-category-wrapper .compendium-panel[data-direction="right"] {
-      left: 0;
-      width: calc(300% + 2rem); /* 3 columns + 2 gaps */
+      left: calc(100% + 1rem); /* Start after Talents column */
+      width: calc(200% + 1rem); /* Cover 2 columns + 1 gap */
     }
 
-    /* Skills expand both ways - cover left and right columns */
+    /* Skills expand both ways - cover Talents on left and Knowledges on right */
     .ability-category-wrapper .compendium-panel[data-direction="both"] {
-      left: calc(-100% - 1rem); /* Move left by 1 column + 1 gap */
-      width: calc(300% + 2rem); /* 3 columns + 2 gaps */
+      left: calc(-100% - 1rem); /* Start at left edge (Talents column) */
+      width: calc(300% + 2rem); /* Span all 3 columns */
     }
 
-    /* Knowledges expand left - cover center and left columns */
+    /* Skills compendium uses 3-column layout with middle column empty */
+    .compendium-panel[data-direction="both"] .compendium-content {
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-auto-flow: dense;
+    }
+
+    /* First half of items go in first column */
+    .compendium-panel[data-direction="both"] .compendium-item:nth-child(-n+5) {
+      grid-column: 1;
+    }
+
+    /* Second half of items go in third column */
+    .compendium-panel[data-direction="both"] .compendium-item:nth-child(n+6) {
+      grid-column: 3;
+    }
+
+    /* Knowledges expand left - cover Talents and Skills columns ONLY */
     .ability-category-wrapper .compendium-panel[data-direction="left"] {
-      right: 0;
+      right: calc(100% + 1rem); /* Start before Knowledges column */
       left: auto;
-      width: calc(300% + 2rem); /* 3 columns + 2 gaps */
-      transform: translateX(0);
+      width: calc(200% + 1rem); /* Cover 2 columns + 1 gap */
     }
   }
 
