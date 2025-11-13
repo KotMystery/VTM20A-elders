@@ -161,7 +161,7 @@ class CharacterCreatorApp {
 
           <!-- Action buttons -->
           ${this.currentPhase !== 'summary' ? `
-          <div class="mt-6 flex gap-3 justify-center flex-wrap sticky bottom-2 bg-vtm-dark p-3 rounded-lg shadow-lg">
+          <div class="action-buttons-sticky mt-6 flex gap-3 justify-center flex-wrap sticky bottom-2 bg-vtm-dark p-3 rounded-lg shadow-lg">
             <button class="btn btn-secondary text-sm" id="saveBtn">💾 Сохранить</button>
             <button class="btn btn-secondary text-sm" id="loadBtn">📂 Загрузить</button>
             <button class="btn btn-primary text-sm" id="exportBtn">📄 PDF</button>
@@ -3195,11 +3195,11 @@ class CharacterCreatorApp {
         wrapperToExpand = singlePanel.closest('.ability-category-wrapper');
       }
 
-      // Set wrapper min-height after a brief delay to allow panel to expand
+      // Set wrapper min-height to HALF of panel height
       setTimeout(() => {
         if (panelToMeasure && wrapperToExpand) {
           const height = panelToMeasure.offsetHeight;
-          wrapperToExpand.style.minHeight = `${height}px`;
+          wrapperToExpand.style.minHeight = `${height / 2}px`;
         }
       }, 50);
 
