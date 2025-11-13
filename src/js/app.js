@@ -3252,7 +3252,7 @@ class CharacterCreatorApp {
     const glowDelay = Math.random() < 0.5 ? 0 : rand(2, 10);
     const mistDelay = Math.random() < 0.5 ? 0 : rand(2, 10);
     const dripsDelay = Math.random() < 0.5 ? 0 : rand(2, 10);
-    const decayDelay = Math.random() < 0.5 ? 180 : rand(182, 190); // Time decay base 180s ±20%
+    const decayDelay = Math.random() < 0.5 ? 120 : rand(122, 130); // Time decay starts at 2 min ±20%
 
     // 3. Random cycle durations (±20% from base)
     const depthFogDuration = randVariation(90);  // Base: 90s
@@ -3260,7 +3260,7 @@ class CharacterCreatorApp {
     const glowDuration = randVariation(120);     // Base: 120s
     const mistDuration = randVariation(100);     // Base: 100s
     const dripsDuration = randVariation(200);    // Base: 200s
-    const decayDuration = randVariation(240);    // Base: 240s
+    const decayDuration = randVariation(480);    // Base: 480s (8 minutes)
 
     // 4. Random initial opacity for subtle effects
     const fogOpacity = rand(0.85, 1);
@@ -3382,10 +3382,10 @@ class CharacterCreatorApp {
   }
 
   createRipple(panel, x, y) {
-    // Droplet moves down 80% of its height (24px) during fall = ~19px
-    // This is where it visually impacts, so spawn ripples there
+    // At impact time (85% of animation), droplet is at translateY(60%)
+    // translateY percentage is relative to element's own height (24px)
     const dropletHeight = 24;
-    const yOffset = dropletHeight * 0.8;
+    const yOffset = dropletHeight * 0.60; // 60% at 85% animation progress
     const impactX = x;
     const impactY = y + yOffset;
 
