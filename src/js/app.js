@@ -3384,8 +3384,14 @@ class CharacterCreatorApp {
   createRipple(panel, x, y) {
     const ripple = document.createElement('div');
     ripple.className = 'blood-ripple expanding';
+
+    // Droplet moves down 80% of its height (24px) during fall = ~19px
+    // This is where it visually impacts, so spawn ripple there
+    const dropletHeight = 24;
+    const yOffset = dropletHeight * 0.8;
+
     ripple.style.left = `${x}px`;
-    ripple.style.top = `${y}px`;
+    ripple.style.top = `${y + yOffset}px`;
     panel.appendChild(ripple);
 
     // Remove ripple after animation completes
