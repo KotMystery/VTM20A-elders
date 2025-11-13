@@ -3195,11 +3195,11 @@ class CharacterCreatorApp {
         wrapperToExpand = singlePanel.closest('.ability-category-wrapper');
       }
 
-      // Set wrapper min-height to 57% of panel height
+      // Set wrapper min-height to 54% of panel height
       setTimeout(() => {
         if (panelToMeasure && wrapperToExpand) {
           const height = panelToMeasure.offsetHeight;
-          wrapperToExpand.style.minHeight = `${height * 0.57}px`;
+          wrapperToExpand.style.minHeight = `${height * 0.54}px`;
         }
       }, 50);
 
