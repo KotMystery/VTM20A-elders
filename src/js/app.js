@@ -3257,19 +3257,19 @@ class CharacterCreatorApp {
     };
 
     // 1. Random starting positions for transform-based animations
-    // Depth fog starting position
-    const fogStartX = rand(-2, 2);
-    const fogStartY = rand(-2, 2);
-    const fogStartScale = rand(0.98, 1.05);
+    // Depth fog starting position - subtle to avoid throwing elements out of panel
+    const fogStartX = rand(-0.5, 0.5);
+    const fogStartY = rand(-0.5, 0.5);
+    const fogStartScale = rand(0.98, 1.02);
 
-    // Caustics starting position
-    const causticsStartX = rand(-3, 3);
-    const causticsStartY = rand(-3, 3);
-    const causticsStartRotate = rand(-3, 3);
+    // Caustics starting position - subtle variations
+    const causticsStartX = rand(-0.5, 0.5);
+    const causticsStartY = rand(-0.5, 0.5);
+    const causticsStartRotate = rand(-1, 1);
 
-    // Mist starting position
-    const mistStartY = rand(-2, 2);
-    const mistStartScale = rand(0.95, 1.05);
+    // Mist starting position - minimal offset
+    const mistStartY = rand(-0.5, 0.5);
+    const mistStartScale = rand(0.98, 1.02);
 
     // 2. Random delays (2-10s range) for each animation cycle
     // 50% chance to trigger immediately (0s) or with delay (2-10s)
@@ -3372,13 +3372,6 @@ class CharacterCreatorApp {
 
       // Impact happens at ~85% of fall animation (1.2s * 0.85 = ~1020ms)
       setTimeout(() => {
-        // DEBUG: Log positions
-        const panelRect = panel.getBoundingClientRect();
-        const dropletRect = droplet.getBoundingClientRect();
-        console.log('Panel rect:', panelRect);
-        console.log('Droplet rect:', dropletRect);
-        console.log('Droplet computed style:', window.getComputedStyle(droplet).transform);
-
         this.createRipple(panel, droplet);
         this.createFlowDisruption(panel, droplet, activeDisruptions);
       }, 1020);
