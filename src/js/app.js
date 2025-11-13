@@ -4,6 +4,7 @@ import { PointTracker, ELDER_RULES, FREEBIE_COSTS, XP_COSTS } from './pointTrack
 // Import data
 import clansData from '../data/clans.json';
 import disciplinesData from '../data/disciplines.json';
+import attributesData from '../data/attributes.json';
 import abilitiesData from '../data/abilities.json';
 import backgroundsData from '../data/backgrounds.json';
 import necromancyData from '../data/necromancy.json';
@@ -329,26 +330,71 @@ class CharacterCreatorApp {
         ` : ''}
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          ${this.renderAttributeCategory('physical', 'Физические', ['strength', 'dexterity', 'stamina'], ['Сила', 'Ловкость', 'Выносливость'])}
-          ${this.renderAttributeCategory('social', 'Социальные', ['charisma', 'manipulation', 'appearance'], ['Обаяние', 'Манипулирование', 'Привлекательность'])}
-          ${this.renderAttributeCategory('mental', 'Ментальные', ['perception', 'intelligence', 'wits'], ['Восприятие', 'Интеллект', 'Смекалка'])}
+          ${this.renderAttributeCategory('physical', 'Физические', attributesData.physical)}
+          ${this.renderAttributeCategory('social', 'Социальные', attributesData.social)}
+          ${this.renderAttributeCategory('mental', 'Ментальные', attributesData.mental)}
         </div>
       </div>
     `;
   }
 
-  renderAttributeCategory(category, title, attrs, labels) {
+  renderAttributeCategory(category, title, attributes) {
     return `
       <div>
         <h4 class="subsection-title">${title}</h4>
-        ${attrs.map((attr, idx) => `
-          <div class="stat-row">
-            <span class="stat-label">${labels[idx]}</span>
-            <div class="dot-tracker" data-category="attributes" data-subcategory="${category}" data-attr="${attr}">
-              ${this.renderDots(this.character.attributes[category][attr], 10, 'attributes', category, attr)}
+        ${attributes.map(attribute => {
+          // Get level at current phase (not total across all phases)
+          const currentLevel = this.character.setupBaseline
+            ? this.character.getValueAtPhase('attributes', category, attribute.id, this.currentPhase)
+            : (this.character.attributes[category][attribute.id] || 1);
+
+          const specializationAt = attribute.specializationAt || 4;
+          const hasSpecialization = this.character.specializations.attributes[attribute.id];
+          const canAddSpecialization = currentLevel >= specializationAt && !hasSpecialization;
+
+          // Determine button title and style
+          let buttonTitle, buttonDisabled;
+          if (hasSpecialization) {
+            buttonTitle = 'Специализация уже добавлена';
+            buttonDisabled = true;
+          } else if (currentLevel < specializationAt) {
+            buttonTitle = `Требуется уровень ${specializationAt}`;
+            buttonDisabled = true;
+          } else {
+            buttonTitle = 'Добавить специализацию';
+            buttonDisabled = false;
+          }
+
+          return `
+            <div class="stat-row">
+              <span class="stat-label">${attribute.name}</span>
+              <div class="flex items-center gap-2">
+                <div class="dot-tracker" data-category="attributes" data-subcategory="${category}" data-attr="${attribute.id}">
+                  ${this.renderDots(this.character.attributes[category][attribute.id], 10, 'attributes', category, attribute.id)}
+                </div>
+                <button
+                  class="text-sm font-bold ${!buttonDisabled ? 'text-vtm-red hover:text-red-400 cursor-pointer' : 'text-gray-600 cursor-not-allowed'}"
+                  data-add-specialization="${attribute.id}"
+                  data-category="${category}"
+                  data-type="attribute"
+                  ${buttonDisabled ? 'disabled' : ''}
+                  title="${buttonTitle}"
+                >+</button>
+              </div>
             </div>
-          </div>
-        `).join('')}
+            ${hasSpecialization ? `
+              <div class="ml-8 mt-1 mb-2 text-sm text-gray-400 border-l-2 border-gray-600 pl-3 flex items-center justify-between">
+                <span>${hasSpecialization}</span>
+                <button
+                  class="text-red-500 hover:text-red-400 font-bold ml-2"
+                  data-remove-specialization="${attribute.id}"
+                  data-type="attribute"
+                  title="Удалить специализацию"
+                >×</button>
+              </div>
+            ` : ''}
+          `;
+        }).join('')}
       </div>
     `;
   }
@@ -478,7 +524,7 @@ class CharacterCreatorApp {
                 <div class="text-xs text-gray-400">${bg.description}</div>
               </div>
               <div class="dot-tracker" data-category="backgrounds" data-subcategory="" data-attr="${bg.id}">
-                ${this.renderDots(this.character.backgrounds[bg.id] || 0, 5, 'backgrounds', null, bg.id)}
+                ${this.renderDots(this.character.backgrounds[bg.id] || 0, bg.maxValue || 5, 'backgrounds', null, bg.id)}
               </div>
             </div>
           `).join('')}
@@ -1738,16 +1784,18 @@ class CharacterCreatorApp {
 
       // Handle add specialization button clicks
       if (e.target.dataset.addSpecialization) {
-        const abilityId = e.target.dataset.addSpecialization;
+        const id = e.target.dataset.addSpecialization;
         const category = e.target.dataset.category;
-        this.showSpecializationModal(abilityId, category);
+        const type = e.target.dataset.type || 'ability'; // Default to ability for backward compatibility
+        this.showSpecializationModal(id, category, type);
         return;
       }
 
       // Handle remove specialization button clicks
       if (e.target.dataset.removeSpecialization) {
-        const abilityId = e.target.dataset.removeSpecialization;
-        this.removeSpecialization(abilityId);
+        const id = e.target.dataset.removeSpecialization;
+        const type = e.target.dataset.type || 'ability'; // Default to ability for backward compatibility
+        this.removeSpecialization(id, type);
         return;
       }
     };
@@ -1945,6 +1993,18 @@ class CharacterCreatorApp {
         this.updateAllDisplays();
         return; // Exit early since we're re-rendering
       }
+    } else if (category === 'attributes' && this.character.specializations.attributes[attr]) {
+      const allAttributes = [...attributesData.physical, ...attributesData.social, ...attributesData.mental];
+      const attribute = allAttributes.find(a => a.id === attr);
+      const specializationAt = attribute?.specializationAt || 4;
+
+      if (newValue < specializationAt) {
+        delete this.character.specializations.attributes[attr];
+        this.saveToLocalStorage();
+        // Re-render to update the UI
+        this.updateAllDisplays();
+        return; // Exit early since we're re-rendering
+      }
     }
 
     // Update the dots visually WITHOUT re-rendering
@@ -2012,6 +2072,13 @@ class CharacterCreatorApp {
         }
       }
     });
+
+    // If ability or attribute changed, update the + button state for specializations
+    if (category === 'abilities') {
+      this.updateSpecializationButton(subcategory, attr, 'ability');
+    } else if (category === 'attributes') {
+      this.updateSpecializationButton(subcategory, attr, 'attribute');
+    }
 
     // If virtues changed IN SETUP PHASE, update derived stats (humanity, willpower)
     // In later phases, virtues can be raised independently without affecting humanity/willpower
@@ -2908,11 +2975,19 @@ class CharacterCreatorApp {
     this.updateAllDisplays();
   }
 
-  showSpecializationModal(abilityId, category) {
-    // Get ability name
-    const allAbilities = [...abilitiesData.talents, ...abilitiesData.skills, ...abilitiesData.knowledges];
-    const ability = allAbilities.find(a => a.id === abilityId);
-    if (!ability) return;
+  showSpecializationModal(id, category, type = 'ability') {
+    // Get the stat data
+    let stat, description;
+    if (type === 'attribute') {
+      const allAttributes = [...attributesData.physical, ...attributesData.social, ...attributesData.mental];
+      stat = allAttributes.find(a => a.id === id);
+    } else {
+      const allAbilities = [...abilitiesData.talents, ...abilitiesData.skills, ...abilitiesData.knowledges];
+      stat = allAbilities.find(a => a.id === id);
+    }
+
+    if (!stat) return;
+    description = stat.specializationDescription || 'Введите название специализации';
 
     // Create modal
     const modal = document.createElement('div');
@@ -2920,15 +2995,14 @@ class CharacterCreatorApp {
     modal.innerHTML = `
       <div class="bg-vtm-grey rounded-lg p-6 max-w-md w-full mx-4">
         <div class="flex justify-between items-center mb-4">
-          <h3 class="text-xl font-bold text-vtm-red">Специализация: ${ability.name}</h3>
+          <h3 class="text-xl font-bold text-vtm-red">Специализация: ${stat.name}</h3>
           <button class="text-3xl text-gray-400 hover:text-white" onclick="this.closest('.fixed').remove()">&times;</button>
         </div>
 
         <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-300 mb-2">Название специализации</label>
+          <p class="text-sm text-gray-300 mb-3">${description}</p>
           <input type="text" id="specializationInput"
                  class="input-field"
-                 placeholder="Например: Столярное дело, Ораторское искусство..."
                  autocomplete="off">
         </div>
 
@@ -2950,7 +3024,11 @@ class CharacterCreatorApp {
     const handleSave = () => {
       const value = input.value.trim();
       if (value) {
-        this.character.specializations.abilities[abilityId] = value;
+        if (type === 'attribute') {
+          this.character.specializations.attributes[id] = value;
+        } else {
+          this.character.specializations.abilities[id] = value;
+        }
         this.saveToLocalStorage();
         modal.remove();
         this.updateAllDisplays();
@@ -2965,10 +3043,68 @@ class CharacterCreatorApp {
     });
   }
 
-  removeSpecialization(abilityId) {
-    delete this.character.specializations.abilities[abilityId];
+  removeSpecialization(id, type = 'ability') {
+    if (type === 'attribute') {
+      delete this.character.specializations.attributes[id];
+    } else {
+      delete this.character.specializations.abilities[id];
+    }
     this.saveToLocalStorage();
     this.updateAllDisplays();
+  }
+
+  updateSpecializationButton(category, id, type = 'ability') {
+    // Find the + button for this stat
+    const button = document.querySelector(`[data-add-specialization="${id}"][data-category="${category}"]`);
+    if (!button) return;
+
+    // Get stat data
+    let stat, currentLevel, hasSpecialization;
+    if (type === 'attribute') {
+      const allAttributes = [...attributesData.physical, ...attributesData.social, ...attributesData.mental];
+      stat = allAttributes.find(a => a.id === id);
+      currentLevel = this.character.setupBaseline
+        ? this.character.getValueAtPhase('attributes', category, id, this.currentPhase)
+        : (this.character.attributes[category][id] || 1);
+      hasSpecialization = this.character.specializations.attributes[id];
+    } else {
+      const allAbilities = [...abilitiesData.talents, ...abilitiesData.skills, ...abilitiesData.knowledges];
+      stat = allAbilities.find(a => a.id === id);
+      currentLevel = this.character.setupBaseline
+        ? this.character.getValueAtPhase('abilities', category, id, this.currentPhase)
+        : (this.character.abilities[category][id] || 0);
+      hasSpecialization = this.character.specializations.abilities[id];
+    }
+
+    if (!stat) return;
+
+    const specializationAt = stat.specializationAt || 4;
+
+    // Determine button state
+    let buttonTitle, buttonDisabled;
+    if (hasSpecialization) {
+      buttonTitle = 'Специализация уже добавлена';
+      buttonDisabled = true;
+    } else if (currentLevel < specializationAt) {
+      buttonTitle = `Требуется уровень ${specializationAt}`;
+      buttonDisabled = true;
+    } else {
+      buttonTitle = 'Добавить специализацию';
+      buttonDisabled = false;
+    }
+
+    // Update button
+    button.disabled = buttonDisabled;
+    button.title = buttonTitle;
+
+    // Update classes
+    if (buttonDisabled) {
+      button.classList.remove('text-vtm-red', 'hover:text-red-400', 'cursor-pointer');
+      button.classList.add('text-gray-600', 'cursor-not-allowed');
+    } else {
+      button.classList.remove('text-gray-600', 'cursor-not-allowed');
+      button.classList.add('text-vtm-red', 'hover:text-red-400', 'cursor-pointer');
+    }
   }
 
   managePaths(discId) {
