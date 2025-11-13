@@ -386,14 +386,40 @@ class CharacterCreatorApp {
     return `
       <div>
         <h4 class="subsection-title">${title}</h4>
-        ${abilities.map(ability => `
-          <div class="stat-row">
-            <span class="stat-label">${ability.name}</span>
-            <div class="dot-tracker" data-category="abilities" data-subcategory="${category}" data-attr="${ability.id}">
-              ${this.renderDots(this.character.abilities[category][ability.id] || 0, 10, 'abilities', category, ability.id)}
+        ${abilities.map(ability => {
+          const currentLevel = this.character.abilities[category][ability.id] || 0;
+          const specializationAt = ability.specializationAt || 4; // Default to 4 if not specified
+          const canAddSpecialization = currentLevel >= specializationAt;
+          const hasSpecialization = this.character.specializations.abilities[ability.id];
+
+          return `
+            <div class="stat-row">
+              <span class="stat-label">${ability.name}</span>
+              <div class="flex items-center gap-2">
+                <div class="dot-tracker" data-category="abilities" data-subcategory="${category}" data-attr="${ability.id}">
+                  ${this.renderDots(currentLevel, 10, 'abilities', category, ability.id)}
+                </div>
+                <button
+                  class="text-sm font-bold ${canAddSpecialization ? 'text-vtm-red hover:text-red-400 cursor-pointer' : 'text-gray-600 cursor-not-allowed'}"
+                  data-add-specialization="${ability.id}"
+                  data-category="${category}"
+                  ${!canAddSpecialization ? 'disabled' : ''}
+                  title="${canAddSpecialization ? 'Добавить специализацию' : `Требуется уровень ${specializationAt}`}"
+                >+</button>
+              </div>
             </div>
-          </div>
-        `).join('')}
+            ${hasSpecialization ? `
+              <div class="ml-8 mt-1 mb-2 text-sm text-gray-400 border-l-2 border-gray-600 pl-3 flex items-center justify-between">
+                <span>${hasSpecialization}</span>
+                <button
+                  class="text-red-500 hover:text-red-400 font-bold ml-2"
+                  data-remove-specialization="${ability.id}"
+                  title="Удалить специализацию"
+                >×</button>
+              </div>
+            ` : ''}
+          `;
+        }).join('')}
       </div>
     `;
   }
@@ -1692,6 +1718,21 @@ class CharacterCreatorApp {
         }
         return;
       }
+
+      // Handle add specialization button clicks
+      if (e.target.dataset.addSpecialization) {
+        const abilityId = e.target.dataset.addSpecialization;
+        const category = e.target.dataset.category;
+        this.showSpecializationModal(abilityId, category);
+        return;
+      }
+
+      // Handle remove specialization button clicks
+      if (e.target.dataset.removeSpecialization) {
+        const abilityId = e.target.dataset.removeSpecialization;
+        this.removeSpecialization(abilityId);
+        return;
+      }
     };
 
     document.addEventListener('click', this.globalClickHandler);
@@ -1872,6 +1913,21 @@ class CharacterCreatorApp {
     const updated = this.updateCharacterValue(category, subcategory, attr, newValue);
     if (!updated) {
       return; // Update was rejected
+    }
+
+    // Auto-remove specialization if requirements no longer met
+    if (category === 'abilities' && this.character.specializations.abilities[attr]) {
+      const allAbilities = [...abilitiesData.talents, ...abilitiesData.skills, ...abilitiesData.knowledges];
+      const ability = allAbilities.find(a => a.id === attr);
+      const specializationAt = ability?.specializationAt || 4;
+
+      if (newValue < specializationAt) {
+        delete this.character.specializations.abilities[attr];
+        this.saveToLocalStorage();
+        // Re-render the abilities tab to update the UI
+        this.updateAllDisplays();
+        return; // Exit early since we're re-rendering
+      }
     }
 
     // Update the dots visually WITHOUT re-rendering
@@ -2831,6 +2887,69 @@ class CharacterCreatorApp {
 
   removeDiscipline(discId) {
     delete this.character.disciplines[discId];
+    this.saveToLocalStorage();
+    this.updateAllDisplays();
+  }
+
+  showSpecializationModal(abilityId, category) {
+    // Get ability name
+    const allAbilities = [...abilitiesData.talents, ...abilitiesData.skills, ...abilitiesData.knowledges];
+    const ability = allAbilities.find(a => a.id === abilityId);
+    if (!ability) return;
+
+    // Create modal
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50';
+    modal.innerHTML = `
+      <div class="bg-vtm-grey rounded-lg p-6 max-w-md w-full mx-4">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-bold text-vtm-red">Специализация: ${ability.name}</h3>
+          <button class="text-3xl text-gray-400 hover:text-white" onclick="this.closest('.fixed').remove()">&times;</button>
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-300 mb-2">Название специализации</label>
+          <input type="text" id="specializationInput"
+                 class="input-field"
+                 placeholder="Например: Столярное дело, Ораторское искусство..."
+                 autocomplete="off">
+        </div>
+
+        <div class="flex gap-2">
+          <button class="btn btn-primary flex-1" id="saveSpecializationBtn">Сохранить</button>
+          <button class="btn btn-secondary flex-1" onclick="this.closest('.fixed').remove()">Отмена</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Focus input
+    const input = document.getElementById('specializationInput');
+    input.focus();
+
+    // Handle save
+    const saveBtn = document.getElementById('saveSpecializationBtn');
+    const handleSave = () => {
+      const value = input.value.trim();
+      if (value) {
+        this.character.specializations.abilities[abilityId] = value;
+        this.saveToLocalStorage();
+        modal.remove();
+        this.updateAllDisplays();
+      }
+    };
+
+    saveBtn.addEventListener('click', handleSave);
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        handleSave();
+      }
+    });
+  }
+
+  removeSpecialization(abilityId) {
+    delete this.character.specializations.abilities[abilityId];
     this.saveToLocalStorage();
     this.updateAllDisplays();
   }

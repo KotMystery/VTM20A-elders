@@ -108,6 +108,12 @@ export class Character {
       virtues: 0
     };
 
+    // Specializations
+    this.specializations = {
+      attributes: {}, // e.g., { strength: "Поднятие тяжестей" }
+      abilities: {}    // e.g., { crafts: "Столярное дело" }
+    };
+
     // Priority selections
     this.priorities = {
       attributes: null, // 'physical', 'social', or 'mental'
@@ -633,6 +639,14 @@ export class Character {
     }
     if (!char.xpDeltas) {
       char.xpDeltas = char.createEmptyDeltas();
+    }
+
+    // Initialize specializations if they don't exist (legacy saves)
+    if (!char.specializations) {
+      char.specializations = {
+        attributes: {},
+        abilities: {}
+      };
     }
 
     return char;
