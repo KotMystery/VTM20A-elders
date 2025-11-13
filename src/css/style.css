@@ -261,7 +261,7 @@
     opacity: 0;
     transform: translateY(20px);
     transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-    transition-delay: calc(2.35s + var(--item-index) * (0.50s - var(--item-index) * 0.05s));
+    transition-delay: calc(1.7s + var(--item-index) * (0.50s - var(--item-index) * 0.05s));
   }
 
   .compendium-panel.active .compendium-item {
