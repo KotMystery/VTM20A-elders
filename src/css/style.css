@@ -144,7 +144,7 @@
   .ability-category-wrapper {
     position: relative;
     min-height: 0;
-    transition: min-height 2.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: min-height 5s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   /* Compendium panel - hidden by default, revealed like a blood pool beneath the page */
@@ -157,8 +157,8 @@
     box-shadow: inset 0 6px 24px rgba(0, 0, 0, 0.8),
                 inset 0 -6px 24px rgba(0, 0, 0, 0.6),
                 inset 0 0 60px rgba(139, 0, 0, 0.3);
-    transition: max-height 2.5s cubic-bezier(0.4, 0, 0.2, 1),
-                opacity 2.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: max-height 5s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 5s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   /* Ability compendiums expand laterally to cover other columns */
@@ -170,8 +170,8 @@
     height: auto;
     min-height: 600px;
     max-height: none;
-    transition: width 2.5s cubic-bezier(0.4, 0, 0.2, 1),
-                opacity 2.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: width 5s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 5s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .ability-category-wrapper .compendium-panel.active {
@@ -233,8 +233,8 @@
       height: auto;
       min-height: 0;
       max-height: 0;
-      transition: max-height 2.5s cubic-bezier(0.4, 0, 0.2, 1),
-                  opacity 2.5s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: max-height 5s cubic-bezier(0.4, 0, 0.2, 1),
+                  opacity 5s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .ability-category-wrapper .compendium-panel.active {
@@ -261,7 +261,7 @@
     opacity: 0;
     transform: translateY(20px);
     transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-    transition-delay: calc(0.5s + var(--item-index) * 0.08s);
+    transition-delay: calc(1.2s + var(--item-index) * 0.12s);
   }
 
   .compendium-panel.active .compendium-item {
