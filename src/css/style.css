@@ -609,15 +609,15 @@
 /* Blood droplet falling from viewer into screen */
 .blood-droplet {
   position: absolute;
-  width: 12px;
-  height: 16px;
+  width: 18px;
+  height: 24px;
   border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
   background: radial-gradient(ellipse at 30% 30%, rgba(180, 20, 20, 0.9), rgba(100, 0, 0, 0.95));
   pointer-events: none;
   will-change: transform, opacity, filter;
   transform-origin: center center;
-  box-shadow: inset -2px -2px 4px rgba(0, 0, 0, 0.5),
-              0 0 8px rgba(139, 0, 0, 0.6);
+  box-shadow: inset -3px -3px 6px rgba(0, 0, 0, 0.5),
+              0 0 12px rgba(139, 0, 0, 0.6);
   z-index: 100;
 }
 
@@ -649,7 +649,7 @@
   animation: dropletFall 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
-/* Impact ripple expanding outward */
+/* Impact ripple expanding outward - appears at depth layer */
 .blood-ripple {
   position: absolute;
   width: 20px;
@@ -658,22 +658,22 @@
   border: 2px solid rgba(139, 0, 0, 0.6);
   pointer-events: none;
   will-change: transform, opacity;
-  transform: translate(-50%, -50%);
-  z-index: 99;
+  transform: translate(-50%, -50%) translateZ(-200px) scale(0.4);
+  z-index: 3;
 }
 
 @keyframes rippleExpand {
   0% {
-    transform: translate(-50%, -50%) scale(0.5);
+    transform: translate(-50%, -50%) translateZ(-200px) scale(0.35);
     opacity: 0.8;
-    border-width: 3px;
+    border-width: 2px;
   }
   50% {
     opacity: 0.4;
-    border-width: 2px;
+    border-width: 1.5px;
   }
   100% {
-    transform: translate(-50%, -50%) scale(3);
+    transform: translate(-50%, -50%) translateZ(-200px) scale(1.2);
     opacity: 0;
     border-width: 1px;
   }
