@@ -3296,6 +3296,154 @@ class CharacterCreatorApp {
 
     panel.style.setProperty('--decay-delay', `${decayDelay}s`);
     panel.style.setProperty('--decay-duration', `${decayDuration}s`);
+
+    // Initialize blood droplet system for this panel
+    this.initializeBloodDroplets(panel);
+  }
+
+  initializeBloodDroplets(panel) {
+    if (!panel) return;
+
+    // Store last cursor position
+    let lastCursorX = 0;
+    let lastCursorY = 0;
+    let dropletTimer = null;
+    let activeDisruptions = [];
+
+    // Track cursor/touch position
+    const updateCursorPosition = (e) => {
+      const rect = panel.getBoundingClientRect();
+      if (e.type.startsWith('touch')) {
+        const touch = e.touches[0] || e.changedTouches[0];
+        lastCursorX = touch.clientX - rect.left;
+        lastCursorY = touch.clientY - rect.top;
+      } else {
+        lastCursorX = e.clientX - rect.left;
+        lastCursorY = e.clientY - rect.top;
+      }
+    };
+
+    panel.addEventListener('mousemove', updateCursorPosition);
+    panel.addEventListener('touchmove', updateCursorPosition);
+    panel.addEventListener('touchstart', updateCursorPosition);
+
+    // Random droplet spawning
+    const spawnDroplet = () => {
+      if (!panel.classList.contains('active')) return;
+
+      // Random chance (30%) to spawn droplet
+      if (Math.random() > 0.3) {
+        scheduleNextDroplet();
+        return;
+      }
+
+      // Create droplet at last cursor position
+      const droplet = document.createElement('div');
+      droplet.className = 'blood-droplet falling';
+      droplet.style.left = `${lastCursorX}px`;
+      droplet.style.top = `${lastCursorY}px`;
+      panel.appendChild(droplet);
+
+      // Impact happens at ~85% of fall animation (1.2s * 0.85 = ~1020ms)
+      setTimeout(() => {
+        this.createRipple(panel, lastCursorX, lastCursorY);
+        this.createFlowDisruption(panel, lastCursorX, lastCursorY, activeDisruptions);
+      }, 1020);
+
+      // Remove droplet after animation completes
+      setTimeout(() => {
+        droplet.remove();
+      }, 1200);
+
+      scheduleNextDroplet();
+    };
+
+    const scheduleNextDroplet = () => {
+      clearTimeout(dropletTimer);
+      // Random interval between 3-8 seconds
+      const interval = 3000 + Math.random() * 5000;
+      dropletTimer = setTimeout(spawnDroplet, interval);
+    };
+
+    // Start the droplet spawning cycle
+    scheduleNextDroplet();
+
+    // Cleanup on panel close (when active class is removed)
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class' && !panel.classList.contains('active')) {
+          clearTimeout(dropletTimer);
+          activeDisruptions.forEach(d => clearInterval(d.interval));
+          activeDisruptions = [];
+        }
+      });
+    });
+    observer.observe(panel, { attributes: true });
+  }
+
+  createRipple(panel, x, y) {
+    const ripple = document.createElement('div');
+    ripple.className = 'blood-ripple expanding';
+    ripple.style.left = `${x}px`;
+    ripple.style.top = `${y}px`;
+    panel.appendChild(ripple);
+
+    // Remove ripple after animation completes
+    setTimeout(() => {
+      ripple.remove();
+    }, 1500);
+  }
+
+  createFlowDisruption(panel, x, y, activeDisruptions) {
+    const rect = panel.getBoundingClientRect();
+    // Normalize impact position to percentage
+    const impactX = (x / rect.width - 0.5) * 100; // -50 to +50
+    const impactY = (y / rect.height - 0.5) * 100;
+
+    // Create disruption force that decays over time
+    const disruption = {
+      x: impactX,
+      y: impactY,
+      strength: 1,
+      startTime: Date.now(),
+      duration: 25000, // 25 seconds for momentum to dissipate
+    };
+
+    // Update flow disruption over time
+    const updateDisruption = () => {
+      const elapsed = Date.now() - disruption.startTime;
+      const progress = elapsed / disruption.duration;
+
+      if (progress >= 1) {
+        // Disruption fully decayed
+        clearInterval(disruption.interval);
+        const index = activeDisruptions.indexOf(disruption);
+        if (index > -1) activeDisruptions.splice(index, 1);
+
+        // Reset to defaults
+        panel.style.setProperty('--disruption-x', '0');
+        panel.style.setProperty('--disruption-y', '0');
+        return;
+      }
+
+      // Exponential decay
+      disruption.strength = Math.pow(1 - progress, 2);
+
+      // Calculate cumulative disruption from all active impacts
+      let totalX = 0;
+      let totalY = 0;
+      activeDisruptions.forEach(d => {
+        totalX += d.x * d.strength;
+        totalY += d.y * d.strength;
+      });
+
+      // Apply disruption to panel
+      panel.style.setProperty('--disruption-x', `${totalX * 0.05}%`);
+      panel.style.setProperty('--disruption-y', `${totalY * 0.05}%`);
+    };
+
+    disruption.interval = setInterval(updateDisruption, 100);
+    activeDisruptions.push(disruption);
   }
 
   updateSpecializationButton(category, id, type = 'ability') {
