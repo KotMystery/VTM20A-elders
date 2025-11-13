@@ -158,20 +158,36 @@
   .ability-category-wrapper .compendium-panel {
     position: absolute;
     z-index: 10;
-    left: 0;
-    right: 0;
+    top: 0;
+    width: 0;
+    height: auto;
+    min-height: 600px;
+    max-height: none;
+    transition: width 2.5s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 2.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .ability-category-wrapper .compendium-panel.active {
+    opacity: 1;
+    filter: url(#blood-turbulence);
   }
 
   /* Talents expand right - cover Skills and Knowledges columns ONLY */
   @media (min-width: 768px) {
     .ability-category-wrapper .compendium-panel[data-direction="right"] {
       left: calc(100% + 1rem); /* Start after Talents column */
+    }
+
+    .ability-category-wrapper .compendium-panel[data-direction="right"].active {
       width: calc(200% + 1rem); /* Cover 2 columns + 1 gap */
     }
 
     /* Skills expand both ways - cover Talents on left and Knowledges on right */
     .ability-category-wrapper .compendium-panel[data-direction="both"] {
       left: calc(-100% - 1rem); /* Start at left edge (Talents column) */
+    }
+
+    .ability-category-wrapper .compendium-panel[data-direction="both"].active {
       width: calc(300% + 2rem); /* Span all 3 columns */
     }
 
@@ -195,7 +211,27 @@
     .ability-category-wrapper .compendium-panel[data-direction="left"] {
       right: calc(100% + 1rem); /* Start before Knowledges column */
       left: auto;
+    }
+
+    .ability-category-wrapper .compendium-panel[data-direction="left"].active {
       width: calc(200% + 1rem); /* Cover 2 columns + 1 gap */
+    }
+  }
+
+  /* Mobile: abilities expand vertically like attributes */
+  @media (max-width: 767px) {
+    .ability-category-wrapper .compendium-panel {
+      position: relative;
+      width: 100%;
+      height: auto;
+      min-height: 0;
+      max-height: 0;
+      transition: max-height 2.5s cubic-bezier(0.4, 0, 0.2, 1),
+                  opacity 2.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .ability-category-wrapper .compendium-panel.active {
+      max-height: 2000px;
     }
   }
 
