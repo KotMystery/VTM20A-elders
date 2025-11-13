@@ -387,24 +387,41 @@ class CharacterCreatorApp {
       <div>
         <h4 class="subsection-title">${title}</h4>
         ${abilities.map(ability => {
-          const currentLevel = this.character.abilities[category][ability.id] || 0;
+          // Get level at current phase (not total across all phases)
+          const currentLevel = this.character.setupBaseline
+            ? this.character.getValueAtPhase('abilities', category, ability.id, this.currentPhase)
+            : (this.character.abilities[category][ability.id] || 0);
+
           const specializationAt = ability.specializationAt || 4; // Default to 4 if not specified
-          const canAddSpecialization = currentLevel >= specializationAt;
           const hasSpecialization = this.character.specializations.abilities[ability.id];
+          const canAddSpecialization = currentLevel >= specializationAt && !hasSpecialization;
+
+          // Determine button title and style
+          let buttonTitle, buttonDisabled;
+          if (hasSpecialization) {
+            buttonTitle = 'Специализация уже добавлена';
+            buttonDisabled = true;
+          } else if (currentLevel < specializationAt) {
+            buttonTitle = `Требуется уровень ${specializationAt}`;
+            buttonDisabled = true;
+          } else {
+            buttonTitle = 'Добавить специализацию';
+            buttonDisabled = false;
+          }
 
           return `
             <div class="stat-row">
               <span class="stat-label">${ability.name}</span>
               <div class="flex items-center gap-2">
                 <div class="dot-tracker" data-category="abilities" data-subcategory="${category}" data-attr="${ability.id}">
-                  ${this.renderDots(currentLevel, 10, 'abilities', category, ability.id)}
+                  ${this.renderDots(this.character.abilities[category][ability.id] || 0, 10, 'abilities', category, ability.id)}
                 </div>
                 <button
-                  class="text-sm font-bold ${canAddSpecialization ? 'text-vtm-red hover:text-red-400 cursor-pointer' : 'text-gray-600 cursor-not-allowed'}"
+                  class="text-sm font-bold ${!buttonDisabled ? 'text-vtm-red hover:text-red-400 cursor-pointer' : 'text-gray-600 cursor-not-allowed'}"
                   data-add-specialization="${ability.id}"
                   data-category="${category}"
-                  ${!canAddSpecialization ? 'disabled' : ''}
-                  title="${canAddSpecialization ? 'Добавить специализацию' : `Требуется уровень ${specializationAt}`}"
+                  ${buttonDisabled ? 'disabled' : ''}
+                  title="${buttonTitle}"
                 >+</button>
               </div>
             </div>
