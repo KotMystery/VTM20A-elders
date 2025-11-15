@@ -2040,8 +2040,9 @@ class CharacterCreatorApp {
 
     const disableGraphicsToggle = document.getElementById('disableGraphicsToggle');
     if (disableGraphicsToggle) {
-      // Load saved preference
-      const graphicsDisabled = localStorage.getItem('vtm_graphicsDisabled') === 'true';
+      // Load saved preference (default to true = checked = disabled if not set)
+      const savedValue = localStorage.getItem('vtm_graphicsDisabled');
+      const graphicsDisabled = savedValue === null ? true : savedValue === 'true';
       disableGraphicsToggle.checked = graphicsDisabled;
 
       if (disableGraphicsToggle._changeListener) {
