@@ -3336,6 +3336,7 @@ class CharacterCreatorApp {
     let lastCursorY = 0;
     let dropletTimer = null;
     let activeDisruptions = [];
+    let rainTimers = [];
 
     // Track cursor/touch position
     const updateCursorPosition = (e) => {
@@ -3354,7 +3355,79 @@ class CharacterCreatorApp {
     panel.addEventListener('touchmove', updateCursorPosition);
     panel.addEventListener('touchstart', updateCursorPosition);
 
-    // Random droplet spawning
+    // Blood rain effect - 30 second sequence when panel opens
+    const startBloodRain = () => {
+      const rect = panel.getBoundingClientRect();
+      const startTime = Date.now();
+      const totalDuration = 30000; // 30 seconds
+      const rampUpDuration = 10000; // 0-10s
+      const fullIntensityDuration = 15000; // 10-25s
+      const dieDownStart = 25000; // 25-30s
+
+      const spawnRainDroplet = () => {
+        if (!panel.classList.contains('active')) return;
+
+        const elapsed = Date.now() - startTime;
+        if (elapsed >= totalDuration) return; // Rain sequence complete
+
+        // Calculate intensity based on phase
+        let intensity;
+        if (elapsed < rampUpDuration) {
+          // Ramp up: 0 → 1 over 10 seconds
+          intensity = elapsed / rampUpDuration;
+        } else if (elapsed < dieDownStart) {
+          // Full intensity
+          intensity = 1;
+        } else {
+          // Die down: 1 → 0 over 5 seconds
+          const dieDownElapsed = elapsed - dieDownStart;
+          const dieDownDuration = totalDuration - dieDownStart;
+          intensity = 1 - (dieDownElapsed / dieDownDuration);
+        }
+
+        // Spawn droplet at random position
+        const x = Math.random() * rect.width;
+        const y = Math.random() * rect.height;
+
+        const droplet = document.createElement('div');
+        droplet.className = 'blood-droplet falling';
+        droplet.style.left = `${x}px`;
+        droplet.style.top = `${y}px`;
+        panel.appendChild(droplet);
+
+        // Impact happens at ~85% of fall animation
+        setTimeout(() => {
+          this.createRipple(panel, droplet);
+          this.createFlowDisruption(panel, droplet, activeDisruptions);
+        }, 1020);
+
+        // Remove droplet after animation completes
+        setTimeout(() => {
+          droplet.remove();
+        }, 1200);
+
+        // Schedule next droplet based on intensity
+        // At full intensity: ~100-300ms between drops
+        // At low intensity: ~500-1000ms between drops
+        const baseInterval = 100;
+        const maxInterval = 1000;
+        const interval = baseInterval + (1 - intensity) * (maxInterval - baseInterval);
+        const randomizedInterval = interval + Math.random() * 200;
+
+        const timer = setTimeout(spawnRainDroplet, randomizedInterval);
+        rainTimers.push(timer);
+      };
+
+      // Start the rain
+      spawnRainDroplet();
+    };
+
+    // Start blood rain when panel becomes active
+    if (panel.classList.contains('active')) {
+      startBloodRain();
+    }
+
+    // Random droplet spawning (original system - keep for ongoing subtle drops)
     const spawnDroplet = () => {
       if (!panel.classList.contains('active')) return;
 
@@ -3400,6 +3473,8 @@ class CharacterCreatorApp {
       mutations.forEach((mutation) => {
         if (mutation.attributeName === 'class' && !panel.classList.contains('active')) {
           clearTimeout(dropletTimer);
+          rainTimers.forEach(timer => clearTimeout(timer));
+          rainTimers = [];
           activeDisruptions.forEach(d => clearInterval(d.interval));
           activeDisruptions = [];
         }
