@@ -3331,38 +3331,15 @@ class CharacterCreatorApp {
   initializeBloodDroplets(panel) {
     if (!panel) return;
 
-    // Store last cursor position
-    let lastCursorX = 0;
-    let lastCursorY = 0;
-    let dropletTimer = null;
-    let activeDisruptions = [];
     let rainTimers = [];
 
-    // Track cursor/touch position
-    const updateCursorPosition = (e) => {
-      const rect = panel.getBoundingClientRect();
-      if (e.type.startsWith('touch')) {
-        const touch = e.touches[0] || e.changedTouches[0];
-        lastCursorX = touch.clientX - rect.left;
-        lastCursorY = touch.clientY - rect.top;
-      } else {
-        lastCursorX = e.clientX - rect.left;
-        lastCursorY = e.clientY - rect.top;
-      }
-    };
-
-    panel.addEventListener('mousemove', updateCursorPosition);
-    panel.addEventListener('touchmove', updateCursorPosition);
-    panel.addEventListener('touchstart', updateCursorPosition);
-
-    // Blood rain effect - 30 second sequence when panel opens
+    // Blood rain effect - continuous realistic rain sequence when panel opens
     const startBloodRain = () => {
-      const rect = panel.getBoundingClientRect();
       const startTime = Date.now();
-      const totalDuration = 30000; // 30 seconds
-      const rampUpDuration = 10000; // 0-10s
-      const fullIntensityDuration = 15000; // 10-25s
-      const dieDownStart = 25000; // 25-30s
+      const totalDuration = 90000; // 90 seconds - longer, more atmospheric
+      const rampUpDuration = 20000; // 0-20s gradual build
+      const fullIntensityDuration = 50000; // 20-70s sustained rain
+      const dieDownStart = 70000; // 70-90s gradual fade
 
       const spawnRainDroplet = () => {
         if (!panel.classList.contains('active')) return;
@@ -3370,35 +3347,40 @@ class CharacterCreatorApp {
         const elapsed = Date.now() - startTime;
         if (elapsed >= totalDuration) return; // Rain sequence complete
 
-        // Calculate intensity based on phase
+        // Calculate intensity based on phase with smooth curves
         let intensity;
         if (elapsed < rampUpDuration) {
-          // Ramp up: 0 → 1 over 10 seconds
-          intensity = elapsed / rampUpDuration;
+          // Gradual ramp up with easing
+          const progress = elapsed / rampUpDuration;
+          intensity = progress * progress; // Quadratic easing
         } else if (elapsed < dieDownStart) {
-          // Full intensity
-          intensity = 1;
+          // Full intensity with slight variation
+          intensity = 0.9 + Math.random() * 0.1;
         } else {
-          // Die down: 1 → 0 over 5 seconds
+          // Gradual die down with easing
           const dieDownElapsed = elapsed - dieDownStart;
           const dieDownDuration = totalDuration - dieDownStart;
-          intensity = 1 - (dieDownElapsed / dieDownDuration);
+          const progress = dieDownElapsed / dieDownDuration;
+          intensity = 1 - (progress * progress); // Quadratic easing
         }
 
-        // Spawn droplet at random position
+        // Get current panel dimensions (recalculate each time for responsiveness)
+        const rect = panel.getBoundingClientRect();
+
+        // Spawn droplet from ABOVE the panel at random horizontal position
         const x = Math.random() * rect.width;
-        const y = Math.random() * rect.height;
+        // Start above the visible area (negative top)
+        const startY = -30 - Math.random() * 20; // Start 30-50px above panel
 
         const droplet = document.createElement('div');
         droplet.className = 'blood-droplet falling';
         droplet.style.left = `${x}px`;
-        droplet.style.top = `${y}px`;
+        droplet.style.top = `${startY}px`;
         panel.appendChild(droplet);
 
         // Impact happens at ~85% of fall animation
         setTimeout(() => {
           this.createRipple(panel, droplet);
-          this.createFlowDisruption(panel, droplet, activeDisruptions);
         }, 1020);
 
         // Remove droplet after animation completes
@@ -3406,13 +3388,13 @@ class CharacterCreatorApp {
           droplet.remove();
         }, 1200);
 
-        // Schedule next droplet based on intensity
-        // At full intensity: ~100-300ms between drops
-        // At low intensity: ~500-1000ms between drops
-        const baseInterval = 100;
-        const maxInterval = 1000;
+        // Schedule next droplet based on intensity - more realistic intervals
+        // At full intensity: ~40-120ms between drops (heavy rain)
+        // At low intensity: ~200-600ms between drops (light drizzle)
+        const baseInterval = 40;
+        const maxInterval = 600;
         const interval = baseInterval + (1 - intensity) * (maxInterval - baseInterval);
-        const randomizedInterval = interval + Math.random() * 200;
+        const randomizedInterval = interval + Math.random() * (intensity * 80);
 
         const timer = setTimeout(spawnRainDroplet, randomizedInterval);
         rainTimers.push(timer);
@@ -3427,56 +3409,12 @@ class CharacterCreatorApp {
       startBloodRain();
     }
 
-    // Random droplet spawning (original system - keep for ongoing subtle drops)
-    const spawnDroplet = () => {
-      if (!panel.classList.contains('active')) return;
-
-      // Random chance (20%) to spawn droplet - rarer for subtlety
-      if (Math.random() > 0.2) {
-        scheduleNextDroplet();
-        return;
-      }
-
-      // Create droplet at last cursor position
-      const droplet = document.createElement('div');
-      droplet.className = 'blood-droplet falling';
-      droplet.style.left = `${lastCursorX}px`;
-      droplet.style.top = `${lastCursorY}px`;
-      panel.appendChild(droplet);
-
-      // Impact happens at ~85% of fall animation (1.2s * 0.85 = ~1020ms)
-      setTimeout(() => {
-        this.createRipple(panel, droplet);
-        this.createFlowDisruption(panel, droplet, activeDisruptions);
-      }, 1020);
-
-      // Remove droplet after animation completes
-      setTimeout(() => {
-        droplet.remove();
-      }, 1200);
-
-      scheduleNextDroplet();
-    };
-
-    const scheduleNextDroplet = () => {
-      clearTimeout(dropletTimer);
-      // Random interval between 5-12 seconds - longer for subtlety
-      const interval = 5000 + Math.random() * 7000;
-      dropletTimer = setTimeout(spawnDroplet, interval);
-    };
-
-    // Start the droplet spawning cycle
-    scheduleNextDroplet();
-
     // Cleanup on panel close (when active class is removed)
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (mutation.attributeName === 'class' && !panel.classList.contains('active')) {
-          clearTimeout(dropletTimer);
           rainTimers.forEach(timer => clearTimeout(timer));
           rainTimers = [];
-          activeDisruptions.forEach(d => clearInterval(d.interval));
-          activeDisruptions = [];
         }
       });
     });
@@ -3557,63 +3495,6 @@ class CharacterCreatorApp {
     const splashInterval = setInterval(updateSplash, 50);
   }
 
-  createFlowDisruption(panel, droplet, activeDisruptions) {
-    const panelRect = panel.getBoundingClientRect();
-    const dropletRect = droplet.getBoundingClientRect();
-
-    // Calculate position relative to panel
-    const relativeX = dropletRect.left - panelRect.left + dropletRect.width / 2;
-    const relativeY = dropletRect.top - panelRect.top + dropletRect.height;
-
-    // Normalize impact position to percentage
-    const impactX = (relativeX / panelRect.width - 0.5) * 100; // -50 to +50
-    const impactY = (relativeY / panelRect.height - 0.5) * 100;
-
-    // Create disruption force that decays over time
-    const disruption = {
-      x: impactX,
-      y: impactY,
-      strength: 1,
-      startTime: Date.now(),
-      duration: 25000, // 25 seconds for momentum to dissipate
-    };
-
-    // Update flow disruption over time
-    const updateDisruption = () => {
-      const elapsed = Date.now() - disruption.startTime;
-      const progress = elapsed / disruption.duration;
-
-      if (progress >= 1) {
-        // Disruption fully decayed
-        clearInterval(disruption.interval);
-        const index = activeDisruptions.indexOf(disruption);
-        if (index > -1) activeDisruptions.splice(index, 1);
-
-        // Reset to defaults
-        panel.style.setProperty('--disruption-x', '0');
-        panel.style.setProperty('--disruption-y', '0');
-        return;
-      }
-
-      // Exponential decay
-      disruption.strength = Math.pow(1 - progress, 2);
-
-      // Calculate cumulative disruption from all active impacts
-      let totalX = 0;
-      let totalY = 0;
-      activeDisruptions.forEach(d => {
-        totalX += d.x * d.strength;
-        totalY += d.y * d.strength;
-      });
-
-      // Apply disruption to panel
-      panel.style.setProperty('--disruption-x', `${totalX * 0.05}%`);
-      panel.style.setProperty('--disruption-y', `${totalY * 0.05}%`);
-    };
-
-    disruption.interval = setInterval(updateDisruption, 100);
-    activeDisruptions.push(disruption);
-  }
 
   toggleBloodPoolGraphics(enabled) {
     this.graphicsEnabled = enabled;
