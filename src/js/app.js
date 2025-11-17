@@ -3332,8 +3332,9 @@ class CharacterCreatorApp {
     if (!panel) return;
 
     let rainTimers = [];
+    let checkInterval = null;
 
-    // Blood rain effect - continuous realistic rain sequence when panel opens
+    // Blood rain effect - continuous realistic rain sequence
     const startBloodRain = () => {
       const startTime = Date.now();
       const totalDuration = 90000; // 90 seconds - longer, more atmospheric
@@ -3428,9 +3429,30 @@ class CharacterCreatorApp {
       spawnRainDroplet();
     };
 
-    // Start blood rain when panel becomes active
+    // Probabilistic rain trigger system
+    // Check every 90 seconds with 2% chance to trigger rain
+    const checkForRain = () => {
+      if (!panel.classList.contains('active')) return;
+
+      // 2% chance to trigger rain
+      if (Math.random() < 0.02) {
+        startBloodRain();
+      }
+    };
+
+    // Initialize check cycle when panel becomes active
     if (panel.classList.contains('active')) {
-      startBloodRain();
+      // Initial random delay: 0-30 seconds before first check
+      const initialDelay = Math.random() * 30000;
+
+      setTimeout(() => {
+        if (panel.classList.contains('active')) {
+          checkForRain(); // First check after initial delay
+
+          // Set up recurring 90-second checks
+          checkInterval = setInterval(checkForRain, 90000);
+        }
+      }, initialDelay);
     }
 
     // Cleanup on panel close (when active class is removed)
@@ -3439,6 +3461,10 @@ class CharacterCreatorApp {
         if (mutation.attributeName === 'class' && !panel.classList.contains('active')) {
           rainTimers.forEach(timer => clearTimeout(timer));
           rainTimers = [];
+          if (checkInterval) {
+            clearInterval(checkInterval);
+            checkInterval = null;
+          }
         }
       });
     });
@@ -3458,11 +3484,12 @@ class CharacterCreatorApp {
     const impactX = relativeX + dropletRect.width / 2;
     const impactY = relativeY + dropletRect.height;
 
-    // Create multiple ripple rings for viscous fluid effect
+    // Create multiple ripple rings for Elder Blood viscous effect
     const rings = [
-      { className: 'ring-1', duration: 4000 },
-      { className: 'ring-2', duration: 4300 }, // 3.5s + 0.3s delay + buffer
-      { className: 'ring-3', duration: 4600 }  // 3s + 0.6s delay + buffer
+      { className: 'ring-1', duration: 8000 },   // 8s animation
+      { className: 'ring-2', duration: 8000 },   // 7s + 0.8s delay + buffer
+      { className: 'ring-3', duration: 8100 },   // 6.5s + 1.4s delay + buffer
+      { className: 'ring-4', duration: 8200 }    // 6s + 2.0s delay + buffer
     ];
 
     rings.forEach(ring => {
