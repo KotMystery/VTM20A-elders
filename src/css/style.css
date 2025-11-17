@@ -672,10 +672,8 @@
   pointer-events: none;
   will-change: transform, opacity;
   transform: translate(-50%, -50%);
-  z-index: 3;
+  z-index: 0; /* Below atmospheric layers (mist, fog, caustics) - on the blood surface */
   filter: none; /* Prevent inheriting turbulence filter from parent panel */
-  box-shadow: 0 0 8px rgba(139, 0, 0, 0.4),
-              inset 0 0 4px rgba(80, 0, 0, 0.3);
 }
 
 /* Elder Blood viscous expansion - very slow, thick, heavily damped */
