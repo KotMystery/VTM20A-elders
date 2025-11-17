@@ -169,7 +169,6 @@ class CharacterCreatorApp {
           <div class="action-buttons-sticky mt-6 flex gap-3 justify-center flex-wrap sticky bottom-2 bg-vtm-dark p-3 rounded-lg shadow-lg">
             <button class="btn btn-secondary text-sm" id="saveBtn">💾 Сохранить</button>
             <button class="btn btn-secondary text-sm" id="loadBtn">📂 Загрузить</button>
-            <button class="btn btn-primary text-sm" id="exportBtn">📄 PDF</button>
           </div>
           ` : ''}
         </div>
@@ -2016,16 +2015,6 @@ class CharacterCreatorApp {
       const clickListener = () => this.loadCharacter();
       loadBtn.addEventListener('click', clickListener);
       loadBtn._clickListener = clickListener;
-    }
-
-    const exportBtn = document.getElementById('exportBtn');
-    if (exportBtn) {
-      if (exportBtn._clickListener) {
-        exportBtn.removeEventListener('click', exportBtn._clickListener);
-      }
-      const clickListener = () => this.exportToPDF();
-      exportBtn.addEventListener('click', clickListener);
-      exportBtn._clickListener = clickListener;
     }
 
     const newCharacterBtn = document.getElementById('newCharacterBtn');
@@ -4631,10 +4620,6 @@ class CharacterCreatorApp {
       reader.readAsText(file);
     };
     input.click();
-  }
-
-  exportToPDF() {
-    alert('Экспорт в PDF будет реализован позже. Пока используйте функцию печати браузера.');
   }
 }
 
