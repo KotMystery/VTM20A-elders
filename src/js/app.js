@@ -3365,31 +3365,29 @@ class CharacterCreatorApp {
         return;
       }
 
-      const rect = panel.getBoundingClientRect();
+      // Land at actual cursor position for true interactivity
+      const cursorX = lastCursorX;
+      const cursorY = lastCursorY;
+      const cursorStartY = -30 - Math.random() * 20;
 
-      // Spawn droplet at cursor position, land at same X but random Y
-      const landingX = lastCursorX;
-      const landingY = Math.random() * rect.height;
-      const startY = -30 - Math.random() * 20;
+      const cursorDroplet = document.createElement('div');
+      cursorDroplet.className = 'blood-droplet falling';
+      cursorDroplet.style.left = `${cursorX}px`;
+      cursorDroplet.style.top = `${cursorStartY}px`;
 
-      const droplet = document.createElement('div');
-      droplet.className = 'blood-droplet falling';
-      droplet.style.left = `${landingX}px`;
-      droplet.style.top = `${startY}px`;
+      const cursorFallDistance = cursorY - cursorStartY;
+      cursorDroplet.style.setProperty('--fall-distance', `${cursorFallDistance}px`);
+      panel.appendChild(cursorDroplet);
 
-      const fallDistance = landingY - startY;
-      droplet.style.setProperty('--fall-distance', `${fallDistance}px`);
-      panel.appendChild(droplet);
-
-      const impactTime = 1020;
+      const cursorImpactTime = 1020;
 
       setTimeout(() => {
-        droplet.remove();
+        cursorDroplet.remove();
       }, 1200);
 
       setTimeout(() => {
-        this.createRipple(panel, droplet);
-      }, impactTime);
+        this.createRipple(panel, cursorDroplet);
+      }, cursorImpactTime);
 
       scheduleCursorDroplet();
     };
@@ -3446,33 +3444,33 @@ class CharacterCreatorApp {
 
         for (let i = 0; i < dropletsToSpawn; i++) {
           // Random landing position across entire panel surface (both X and Y)
-          const landingX = Math.random() * rect.width;
-          const landingY = Math.random() * rect.height;
+          const rainX = Math.random() * rect.width;
+          const rainY = Math.random() * rect.height;
 
           // Start droplet above the panel at the landing X coordinate
-          const startY = -30 - Math.random() * 20; // Start 30-50px above panel
+          const rainStartY = -30 - Math.random() * 20; // Start 30-50px above panel
 
-          const droplet = document.createElement('div');
-          droplet.className = 'blood-droplet falling';
-          droplet.style.left = `${landingX}px`;
-          droplet.style.top = `${startY}px`;
+          const rainDroplet = document.createElement('div');
+          rainDroplet.className = 'blood-droplet falling';
+          rainDroplet.style.left = `${rainX}px`;
+          rainDroplet.style.top = `${rainStartY}px`;
           // Store the distance to fall for this specific droplet
-          const fallDistance = landingY - startY;
-          droplet.style.setProperty('--fall-distance', `${fallDistance}px`);
-          panel.appendChild(droplet);
+          const rainFallDistance = rainY - rainStartY;
+          rainDroplet.style.setProperty('--fall-distance', `${rainFallDistance}px`);
+          panel.appendChild(rainDroplet);
 
           // Impact timing based on actual fall distance (proportional to distance)
           // Base animation is 1.2s, impact at ~85%
-          const impactTime = 1020; // 85% of 1200ms
+          const rainImpactTime = 1020; // 85% of 1200ms
 
           // Remove droplet after animation completes
           setTimeout(() => {
-            droplet.remove();
+            rainDroplet.remove();
           }, 1200);
 
           setTimeout(() => {
-            this.createRipple(panel, droplet);
-          }, impactTime);
+            this.createRipple(panel, rainDroplet);
+          }, rainImpactTime);
         }
 
         // Schedule next droplet based on intensity - more realistic intervals with clustering
