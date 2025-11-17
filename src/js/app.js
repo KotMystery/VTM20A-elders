@@ -3367,15 +3367,19 @@ class CharacterCreatorApp {
         // Get current panel dimensions (recalculate each time for responsiveness)
         const rect = panel.getBoundingClientRect();
 
-        // Spawn droplet from ABOVE the panel at random horizontal position
-        const x = Math.random() * rect.width;
-        // Start above the visible area (negative top)
+        // Random landing position across entire panel surface (both X and Y)
+        const landingX = Math.random() * rect.width;
+        const landingY = Math.random() * rect.height;
+
+        // Start droplet above the panel at the landing X coordinate
         const startY = -30 - Math.random() * 20; // Start 30-50px above panel
 
         const droplet = document.createElement('div');
         droplet.className = 'blood-droplet falling';
-        droplet.style.left = `${x}px`;
+        droplet.style.left = `${landingX}px`;
         droplet.style.top = `${startY}px`;
+        // Store the distance to fall for this specific droplet
+        droplet.style.setProperty('--fall-distance', `${landingY - startY}px`);
         panel.appendChild(droplet);
 
         // Impact happens at ~85% of fall animation
