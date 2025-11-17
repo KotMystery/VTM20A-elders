@@ -3333,6 +3333,76 @@ class CharacterCreatorApp {
 
     let rainTimers = [];
     let checkInterval = null;
+    let cursorDropletTimer = null;
+
+    // Track cursor/touch position for interactive blood drips
+    let lastCursorX = 0;
+    let lastCursorY = 0;
+
+    const updateCursorPosition = (e) => {
+      const rect = panel.getBoundingClientRect();
+      if (e.type.startsWith('touch')) {
+        const touch = e.touches[0] || e.changedTouches[0];
+        lastCursorX = touch.clientX - rect.left;
+        lastCursorY = touch.clientY - rect.top;
+      } else {
+        lastCursorX = e.clientX - rect.left;
+        lastCursorY = e.clientY - rect.top;
+      }
+    };
+
+    panel.addEventListener('mousemove', updateCursorPosition);
+    panel.addEventListener('touchmove', updateCursorPosition);
+    panel.addEventListener('touchstart', updateCursorPosition);
+
+    // Interactive cursor blood drip system
+    const spawnCursorDroplet = () => {
+      if (!panel.classList.contains('active')) return;
+
+      // 30% chance to spawn droplet - keeps it rare and atmospheric
+      if (Math.random() > 0.3) {
+        scheduleCursorDroplet();
+        return;
+      }
+
+      const rect = panel.getBoundingClientRect();
+
+      // Spawn droplet at cursor position, land at same X but random Y
+      const landingX = lastCursorX;
+      const landingY = Math.random() * rect.height;
+      const startY = -30 - Math.random() * 20;
+
+      const droplet = document.createElement('div');
+      droplet.className = 'blood-droplet falling';
+      droplet.style.left = `${landingX}px`;
+      droplet.style.top = `${startY}px`;
+
+      const fallDistance = landingY - startY;
+      droplet.style.setProperty('--fall-distance', `${fallDistance}px`);
+      panel.appendChild(droplet);
+
+      const impactTime = 1020;
+
+      setTimeout(() => {
+        droplet.remove();
+      }, 1200);
+
+      setTimeout(() => {
+        this.createRipple(panel, droplet);
+      }, impactTime);
+
+      scheduleCursorDroplet();
+    };
+
+    const scheduleCursorDroplet = () => {
+      clearTimeout(cursorDropletTimer);
+      // Random interval between 3-8 seconds
+      const interval = 3000 + Math.random() * 5000;
+      cursorDropletTimer = setTimeout(spawnCursorDroplet, interval);
+    };
+
+    // Start cursor droplet system
+    scheduleCursorDroplet();
 
     // Blood rain effect - continuous realistic rain sequence
     const startBloodRain = () => {
@@ -3459,11 +3529,20 @@ class CharacterCreatorApp {
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (mutation.attributeName === 'class' && !panel.classList.contains('active')) {
+          // Clear rain timers
           rainTimers.forEach(timer => clearTimeout(timer));
           rainTimers = [];
+
+          // Clear rain check interval
           if (checkInterval) {
             clearInterval(checkInterval);
             checkInterval = null;
+          }
+
+          // Clear cursor droplet timer
+          if (cursorDropletTimer) {
+            clearTimeout(cursorDropletTimer);
+            cursorDropletTimer = null;
           }
         }
       });
