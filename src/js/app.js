@@ -3337,9 +3337,9 @@ class CharacterCreatorApp {
     const startBloodRain = () => {
       const startTime = Date.now();
       const totalDuration = 90000; // 90 seconds - longer, more atmospheric
-      const rampUpDuration = 20000; // 0-20s gradual build
-      const fullIntensityDuration = 50000; // 20-70s sustained rain
-      const dieDownStart = 70000; // 70-90s gradual fade
+      const rampUpDuration = 15000; // 0-15s faster gradual build
+      const fullIntensityDuration = 60000; // 15-75s longer sustained rain
+      const dieDownStart = 75000; // 75-90s gradual fade
 
       const spawnRainDroplet = () => {
         if (!panel.classList.contains('active')) return;
@@ -3347,58 +3347,78 @@ class CharacterCreatorApp {
         const elapsed = Date.now() - startTime;
         if (elapsed >= totalDuration) return; // Rain sequence complete
 
-        // Calculate intensity based on phase with smooth curves
+        // Calculate intensity based on phase with smooth curves and natural variation
         let intensity;
         if (elapsed < rampUpDuration) {
-          // Gradual ramp up with easing
+          // Gradual ramp up with cubic easing for slower start
           const progress = elapsed / rampUpDuration;
-          intensity = progress * progress; // Quadratic easing
+          intensity = progress * progress * progress; // Cubic easing - slower start, faster end
         } else if (elapsed < dieDownStart) {
-          // Full intensity with slight variation
-          intensity = 0.9 + Math.random() * 0.1;
+          // Full intensity with realistic variation (rain bursts)
+          const timeInPeak = elapsed - rampUpDuration;
+          const burstCycle = Math.sin(timeInPeak / 3000) * 0.15; // 6s cycle, ±15% variation
+          const randomNoise = (Math.random() - 0.5) * 0.1; // ±5% random noise
+          intensity = Math.max(0.7, Math.min(1.0, 0.85 + burstCycle + randomNoise));
         } else {
-          // Gradual die down with easing
+          // Gradual die down with cubic easing
           const dieDownElapsed = elapsed - dieDownStart;
           const dieDownDuration = totalDuration - dieDownStart;
           const progress = dieDownElapsed / dieDownDuration;
-          intensity = 1 - (progress * progress); // Quadratic easing
+          intensity = 1 - (progress * progress * progress); // Cubic easing
         }
 
         // Get current panel dimensions (recalculate each time for responsiveness)
         const rect = panel.getBoundingClientRect();
 
-        // Random landing position across entire panel surface (both X and Y)
-        const landingX = Math.random() * rect.width;
-        const landingY = Math.random() * rect.height;
+        // Spawn multiple droplets for clustering effect (like real rain)
+        const dropletsToSpawn = Math.random() < intensity * 0.3 ? 2 : 1; // 30% chance of double drop at high intensity
 
-        // Start droplet above the panel at the landing X coordinate
-        const startY = -30 - Math.random() * 20; // Start 30-50px above panel
+        for (let i = 0; i < dropletsToSpawn; i++) {
+          // Random landing position across entire panel surface (both X and Y)
+          const landingX = Math.random() * rect.width;
+          const landingY = Math.random() * rect.height;
 
-        const droplet = document.createElement('div');
-        droplet.className = 'blood-droplet falling';
-        droplet.style.left = `${landingX}px`;
-        droplet.style.top = `${startY}px`;
-        // Store the distance to fall for this specific droplet
-        droplet.style.setProperty('--fall-distance', `${landingY - startY}px`);
-        panel.appendChild(droplet);
+          // Start droplet above the panel at the landing X coordinate
+          const startY = -30 - Math.random() * 20; // Start 30-50px above panel
 
-        // Impact happens at ~85% of fall animation
-        setTimeout(() => {
-          this.createRipple(panel, droplet);
-        }, 1020);
+          const droplet = document.createElement('div');
+          droplet.className = 'blood-droplet falling';
+          droplet.style.left = `${landingX}px`;
+          droplet.style.top = `${startY}px`;
+          // Store the distance to fall for this specific droplet
+          const fallDistance = landingY - startY;
+          droplet.style.setProperty('--fall-distance', `${fallDistance}px`);
+          panel.appendChild(droplet);
 
-        // Remove droplet after animation completes
-        setTimeout(() => {
-          droplet.remove();
-        }, 1200);
+          // Impact timing based on actual fall distance (proportional to distance)
+          // Base animation is 1.2s, impact at ~85%
+          const impactTime = 1020; // 85% of 1200ms
 
-        // Schedule next droplet based on intensity - more realistic intervals
-        // At full intensity: ~40-120ms between drops (heavy rain)
-        // At low intensity: ~200-600ms between drops (light drizzle)
-        const baseInterval = 40;
-        const maxInterval = 600;
-        const interval = baseInterval + (1 - intensity) * (maxInterval - baseInterval);
-        const randomizedInterval = interval + Math.random() * (intensity * 80);
+          // Remove droplet after animation completes
+          setTimeout(() => {
+            droplet.remove();
+          }, 1200);
+
+          setTimeout(() => {
+            this.createRipple(panel, droplet);
+          }, impactTime);
+        }
+
+        // Schedule next droplet based on intensity - more realistic intervals with clustering
+        // At full intensity: ~25-60ms between drops (heavy downpour)
+        // At medium intensity: ~60-150ms (steady rain)
+        // At low intensity: ~150-400ms between drops (light drizzle)
+        const baseInterval = 25;
+        const maxInterval = 400;
+
+        // Use power curve for more dramatic scaling
+        const intensityFactor = Math.pow(intensity, 1.5);
+        const interval = maxInterval - (intensityFactor * (maxInterval - baseInterval));
+
+        // Add clustering randomness - sometimes droplets come in rapid succession
+        const clusterRandom = Math.random();
+        const clusterFactor = clusterRandom < 0.15 ? 0.3 : 1.0; // 15% chance of rapid cluster
+        const randomizedInterval = interval * clusterFactor + Math.random() * (50 * intensityFactor);
 
         const timer = setTimeout(spawnRainDroplet, randomizedInterval);
         rainTimers.push(timer);
@@ -3458,45 +3478,6 @@ class CharacterCreatorApp {
       }, ring.duration);
     });
 
-    // Create temporary "splash" disruption at impact point
-    // This makes ripples interact with the flow animations
-    this.createSplashDisruption(panel, impactX, impactY);
-  }
-
-  createSplashDisruption(panel, x, y) {
-    const rect = panel.getBoundingClientRect();
-    // Normalize impact position to percentage
-    const splashX = (x / rect.width - 0.5) * 100;
-    const splashY = (y / rect.height - 0.5) * 100;
-
-    // Create a temporary, intense disruption that fades quickly
-    // This represents the immediate splash/impact wave
-    let splashStrength = 2.5; // Much stronger than flow disruption
-    let elapsed = 0;
-    const splashDuration = 4000; // 4 seconds - matches ripple duration
-
-    const updateSplash = () => {
-      elapsed += 50;
-      const progress = elapsed / splashDuration;
-
-      if (progress >= 1) {
-        clearInterval(splashInterval);
-        return;
-      }
-
-      // Fast exponential decay - impact fades quickly
-      splashStrength = 2.5 * Math.pow(1 - progress, 3);
-
-      // Get current disruption values and add splash
-      const currentX = parseFloat(panel.style.getPropertyValue('--disruption-x')) || 0;
-      const currentY = parseFloat(panel.style.getPropertyValue('--disruption-y')) || 0;
-
-      // Add splash force to current disruption
-      panel.style.setProperty('--disruption-x', `${currentX + splashX * splashStrength * 0.08}%`);
-      panel.style.setProperty('--disruption-y', `${currentY + splashY * splashStrength * 0.08}%`);
-    };
-
-    const splashInterval = setInterval(updateSplash, 50);
   }
 
 
