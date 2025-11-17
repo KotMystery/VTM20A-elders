@@ -634,25 +634,25 @@
 }
 
 /* Droplet animation: from viewer (large, close) to depth (small, far) */
-/* Droplets also move DOWN (Y-axis) as they recede to sell the perspective */
+/* Droplets fall DOWN to their random landing position using --fall-distance */
 @keyframes dropletFall {
   0% {
-    transform: translateY(0%) scale(1.8) translateZ(250px);
+    transform: translateY(0px) scale(1.8) translateZ(250px);
     opacity: 0.9;
     filter: blur(0px);
   }
   15% {
-    transform: translateY(15%) scale(1.5) translateZ(150px);
+    transform: translateY(calc(var(--fall-distance) * 0.15)) scale(1.5) translateZ(150px);
     opacity: 1;
     filter: blur(0px);
   }
   85% {
-    transform: translateY(60%) scale(0.4) translateZ(-250px);
+    transform: translateY(calc(var(--fall-distance) * 0.85)) scale(0.4) translateZ(-250px);
     opacity: 0.8;
     filter: blur(0.5px);
   }
   100% {
-    transform: translateY(80%) scale(0.2) translateZ(-350px);
+    transform: translateY(var(--fall-distance)) scale(0.2) translateZ(-350px);
     opacity: 0;
     filter: blur(1px);
   }
