@@ -662,67 +662,88 @@
   animation: dropletFall 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
-/* Impact ripples - multiple concentric rings for viscous fluid */
+/* Impact ripples - Elder Blood viscous fluid (thick, slow, resistant) */
 .blood-ripple {
   position: absolute;
-  width: 30px;
-  height: 30px;
+  width: 35px;
+  height: 35px;
   border-radius: 50%;
-  border: 2px solid rgba(139, 0, 0, 0.7);
+  border: 3px solid rgba(139, 0, 0, 0.85);
   pointer-events: none;
   will-change: transform, opacity;
   transform: translate(-50%, -50%);
   z-index: 3;
   filter: none; /* Prevent inheriting turbulence filter from parent panel */
+  box-shadow: 0 0 8px rgba(139, 0, 0, 0.4),
+              inset 0 0 4px rgba(80, 0, 0, 0.3);
 }
 
-/* Viscous expansion - slow, damped movement */
+/* Elder Blood viscous expansion - very slow, thick, heavily damped */
 @keyframes rippleExpand {
   0% {
-    transform: translate(-50%, -50%) scale(0.3);
+    transform: translate(-50%, -50%) scale(0.4);
     opacity: 0;
+    border-width: 4px;
+  }
+  5% {
+    opacity: 0.9;
+    border-width: 4px;
+  }
+  25% {
+    opacity: 0.85;
+    border-width: 3.5px;
+  }
+  50% {
+    opacity: 0.7;
     border-width: 3px;
   }
-  10% {
-    opacity: 0.8;
-  }
-  40% {
-    opacity: 0.6;
+  75% {
+    opacity: 0.45;
     border-width: 2.5px;
   }
-  70% {
-    opacity: 0.3;
+  90% {
+    opacity: 0.2;
     border-width: 2px;
   }
   100% {
-    transform: translate(-50%, -50%) scale(1.8);
+    transform: translate(-50%, -50%) scale(1.2);
     opacity: 0;
-    border-width: 1px;
+    border-width: 1.5px;
   }
 }
 
-/* First ripple - primary wave */
+/* First ripple - primary wave (slowest, thickest) */
 .blood-ripple.ring-1 {
-  animation: rippleExpand 4s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+  animation: rippleExpand 8s cubic-bezier(0.12, 0.02, 0.58, 1) forwards;
+  border-width: 4px;
+}
+
+/* Second ripple - delayed, still very slow */
+.blood-ripple.ring-2 {
+  animation: rippleExpand 7s cubic-bezier(0.12, 0.02, 0.58, 1) forwards;
+  animation-delay: 0.8s;
+  width: 30px;
+  height: 30px;
+  border-color: rgba(120, 0, 0, 0.75);
+  border-width: 3px;
+}
+
+/* Third ripple - most delayed, still thick and slow */
+.blood-ripple.ring-3 {
+  animation: rippleExpand 6.5s cubic-bezier(0.12, 0.02, 0.58, 1) forwards;
+  animation-delay: 1.4s;
+  width: 25px;
+  height: 25px;
+  border-color: rgba(100, 0, 0, 0.65);
   border-width: 2.5px;
 }
 
-/* Second ripple - delayed, slightly faster, smaller */
-.blood-ripple.ring-2 {
-  animation: rippleExpand 3.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
-  animation-delay: 0.5s;
-  width: 25px;
-  height: 25px;
-  border-color: rgba(120, 0, 0, 0.6);
+/* Fourth ripple - ancient blood, lingering resonance */
+.blood-ripple.ring-4 {
+  animation: rippleExpand 6s cubic-bezier(0.12, 0.02, 0.58, 1) forwards;
+  animation-delay: 2.0s;
+  width: 22px;
+  height: 22px;
+  border-color: rgba(90, 0, 0, 0.55);
   border-width: 2px;
-}
-
-/* Third ripple - most delayed, weakest, smallest */
-.blood-ripple.ring-3 {
-  animation: rippleExpand 3.2s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
-  animation-delay: 0.9s;
-  width: 20px;
-  height: 20px;
-  border-color: rgba(100, 0, 0, 0.5);
-  border-width: 1.5px;
 }
