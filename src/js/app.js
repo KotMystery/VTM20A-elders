@@ -3365,11 +3365,9 @@ class CharacterCreatorApp {
         return;
       }
 
-      const rect = panel.getBoundingClientRect();
-
-      // Spawn droplet at cursor position, land at same X but random Y
+      // Land at actual cursor position for true interactivity
       const landingX = lastCursorX;
-      const landingY = Math.random() * rect.height;
+      const landingY = lastCursorY;
       const startY = -30 - Math.random() * 20;
 
       const droplet = document.createElement('div');
